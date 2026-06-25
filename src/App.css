@@ -1573,3 +1573,109 @@ button {
     text-align: center;
   }
 }
+
+.expense-summary-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.expense-summary-card {
+  min-height: 112px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(6, 6, 6, 0.42);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.expense-summary-card svg {
+  color: var(--gold);
+}
+
+.expense-summary-card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.expense-summary-card strong {
+  color: #fff4df;
+  font-size: 22px;
+  word-break: break-word;
+}
+
+.expense-form {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(6, 6, 6, 0.42);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  display: grid;
+  gap: 14px;
+}
+
+.expense-form label {
+  display: grid;
+  gap: 8px;
+  color: #f8ead6;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.expense-form input,
+.expense-form select,
+.expense-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  border-radius: 16px;
+  padding: 14px 15px;
+  background: rgba(6, 6, 6, 0.56);
+  color: var(--text);
+  outline: none;
+  font: inherit;
+}
+
+.expense-form select option {
+  background: #10100f;
+  color: var(--text);
+}
+
+.expense-form textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+.expense-form input:focus,
+.expense-form select:focus,
+.expense-form textarea:focus {
+  border-color: rgba(255, 122, 24, 0.64);
+  box-shadow: 0 0 0 4px rgba(255, 122, 24, 0.12);
+}
+
+.form-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .expense-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form-grid.three {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .expense-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .expense-form {
+    padding: 16px;
+    border-radius: 22px;
+  }
+}
