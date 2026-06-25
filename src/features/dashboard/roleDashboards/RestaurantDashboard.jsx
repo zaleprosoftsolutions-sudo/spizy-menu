@@ -1,6 +1,7 @@
 import { BarChart3, Globe2, ReceiptText, Store, Utensils } from 'lucide-react'
 import MiniCard from '../components/MiniCard'
 import ModuleCard from '../components/ModuleCard'
+import MenuItemsManagement from '../../restaurant/MenuItemsManagement'
 
 function RestaurantDashboard({ profile, restaurant }) {
   return (
@@ -34,6 +35,7 @@ function RestaurantDashboard({ profile, restaurant }) {
         <MiniCard label="Currency" value={restaurant?.currency || 'AED'} />
       </div>
 
+      <MenuItemsManagement restaurant={restaurant} />
       <div className="module-grid">
         <ModuleCard
           icon={<Store />}
