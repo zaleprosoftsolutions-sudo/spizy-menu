@@ -1,18 +1,64 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import ProductsManagement from '../../restaurant/ProductsManagement'
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
 
+const restaurantSections = [
+  'overview',
+  'pos',
+  'orders',
+  'products',
+  'menu',
+  'categories',
+  'qr',
+  'customers',
+  'discounts',
+  'campaigns',
+  'staff',
+  'reviews',
+  'reports',
+  'settings',
+]
+
+function getSafeSection(section) {
+  if (!section) return 'overview'
+
+  return restaurantSections.includes(section) ? section : 'overview'
+}
+
 function RestaurantDashboard({ profile, restaurant }) {
-  const [activeSection, setActiveSection] = useState('overview')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const urlSection = useMemo(
+    () => getSafeSection(searchParams.get('section')),
+    [searchParams],
+  )
+
+  const [activeSection, setActiveSection] = useState(urlSection)
+
+  useEffect(() => {
+    setActiveSection(urlSection)
+  }, [urlSection])
+
+  const handleSectionChange = (section) => {
+    const safeSection = getSafeSection(section)
+
+    setActiveSection(safeSection)
+
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('section', safeSection)
+
+    setSearchParams(nextParams, { replace: true })
+  }
 
   return (
     <div className="restaurant-layout">
       <RestaurantSidebar
         restaurant={restaurant}
         activeSection={activeSection}
-        onSectionChange={setActiveSection}
+        onSectionChange={handleSectionChange}
       />
 
       <div className="restaurant-workspace">
@@ -20,7 +66,7 @@ function RestaurantDashboard({ profile, restaurant }) {
           <RestaurantOverview
             profile={profile}
             restaurant={restaurant}
-            onOpenSection={setActiveSection}
+            onOpenSection={handleSectionChange}
           />
         )}
 
