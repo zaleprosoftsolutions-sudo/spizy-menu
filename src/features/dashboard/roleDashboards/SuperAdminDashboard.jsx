@@ -13,6 +13,7 @@ import MiniCard from '../components/MiniCard'
 import ModuleCard from '../components/ModuleCard'
 import RestaurantsManagement from '../../superAdmin/RestaurantsManagement'
 import ProjectExpensesManagement from '../../superAdmin/ProjectExpensesManagement'
+import SalesChannelAnalytics from '../../superAdmin/SalesChannelAnalytics'
 
 function SuperAdminDashboard({ profile, stats, onStatsRefresh }) {
   return (
@@ -57,6 +58,7 @@ function SuperAdminDashboard({ profile, stats, onStatsRefresh }) {
 
      <RestaurantsManagement onStatsRefresh={onStatsRefresh} />
      <ProjectExpensesManagement onStatsRefresh={onStatsRefresh} />
+     <SalesChannelAnalytics />
      <div className="module-grid">
         <ModuleCard
           icon={<ReceiptText />}
