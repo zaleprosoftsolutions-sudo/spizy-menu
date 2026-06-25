@@ -25,6 +25,11 @@ export async function uploadProductImageToR2({
   }
 
   const imageBlob = dataUrlToBlob(imageDataUrl)
+  const maxFinalImageSizeBytes = 900 * 1024
+
+if (imageBlob.size > maxFinalImageSizeBytes) {
+  throw new Error('Final product image should be below 900 KB.')
+}
 
   const { data, error } = await supabase.functions.invoke(
     'create-r2-upload-url',

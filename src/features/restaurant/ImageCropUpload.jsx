@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { ImagePlus, Scissors, Trash2, Upload } from 'lucide-react'
+import { ImagePlus, Trash2, Upload } from 'lucide-react'
+
+const maxSourceImageSizeMb = 4
+const maxSourceImageSizeBytes = maxSourceImageSizeMb * 1024 * 1024
+const outputSize = 900
+const outputQuality = 0.82
 
 function ImageCropUpload({ value, onChange, onError }) {
   const inputRef = useRef(null)
-  const [source, setSource] = useState(value || '')
-  const [zoom, setZoom] = useState(1)
-  const [offsetX, setOffsetX] = useState(0)
-  const [offsetY, setOffsetY] = useState(0)
+  const [preview, setPreview] = useState(value || '')
+  const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
-    setSource(value || '')
+    setPreview(value || '')
   }, [value])
 
-  const handleChooseFile = (event) => {
+  const handleChooseFile = async (event) => {
     const file = event.target.files?.[0]
 
     if (!file) return
@@ -22,90 +25,37 @@ function ImageCropUpload({ value, onChange, onError }) {
       return
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      onError?.('Image size should be below 5 MB.')
+    if (file.size > maxSourceImageSizeBytes) {
+      onError?.(`Image size should be below ${maxSourceImageSizeMb} MB.`)
+      resetInput()
       return
     }
 
-    const reader = new FileReader()
+    setProcessing(true)
 
-    reader.onload = () => {
-      setSource(String(reader.result || ''))
-      onChange('')
-      setZoom(1)
-      setOffsetX(0)
-      setOffsetY(0)
-    }
+    try {
+      const croppedDataUrl = await autoCropImageToSquare(file)
 
-    reader.readAsDataURL(file)
-  }
-
-  const handleCrop = async () => {
-    if (!source) {
-      onError?.('Please choose an image first.')
-      return
-    }
-
-    const image = new Image()
-    image.crossOrigin = 'anonymous'
-
-    image.onload = () => {
-      const size = 700
-      const canvas = document.createElement('canvas')
-      const context = canvas.getContext('2d')
-
-      canvas.width = size
-      canvas.height = size
-
-      const naturalWidth = image.naturalWidth
-      const naturalHeight = image.naturalHeight
-      const cropSize = Math.min(naturalWidth, naturalHeight) / zoom
-
-      const maxX = naturalWidth - cropSize
-      const maxY = naturalHeight - cropSize
-
-      const centerX =
-        naturalWidth / 2 + (Number(offsetX) / 100) * (maxX / 2)
-      const centerY =
-        naturalHeight / 2 + (Number(offsetY) / 100) * (maxY / 2)
-
-      const sourceX = clamp(centerX - cropSize / 2, 0, maxX)
-      const sourceY = clamp(centerY - cropSize / 2, 0, maxY)
-
-      context.fillStyle = '#111111'
-      context.fillRect(0, 0, size, size)
-      context.drawImage(
-        image,
-        sourceX,
-        sourceY,
-        cropSize,
-        cropSize,
-        0,
-        0,
-        size,
-        size,
+      setPreview(croppedDataUrl)
+      onChange(croppedDataUrl)
+    } catch (error) {
+      onError?.(
+        error instanceof Error
+          ? error.message
+          : 'Image processing failed. Please try another image.',
       )
-
-      const croppedImage = canvas.toDataURL('image/jpeg', 0.82)
-
-      setSource(croppedImage)
-      onChange(croppedImage)
+    } finally {
+      setProcessing(false)
     }
-
-    image.onerror = () => {
-      onError?.('Image crop failed. Please try another image.')
-    }
-
-    image.src = source
   }
 
   const handleRemove = () => {
-    setSource('')
+    setPreview('')
     onChange('')
-    setZoom(1)
-    setOffsetX(0)
-    setOffsetY(0)
+    resetInput()
+  }
 
+  const resetInput = () => {
     if (inputRef.current) {
       inputRef.current.value = ''
     }
@@ -116,36 +66,31 @@ function ImageCropUpload({ value, onChange, onError }) {
       <div className="image-upload-head">
         <div>
           <strong>Product image</strong>
-          <span>Upload and crop to 1:1 square ratio</span>
+          <span>Recommended 1:1 square image. Max {maxSourceImageSizeMb} MB.</span>
         </div>
 
         <button
           type="button"
           className="tiny-button"
           onClick={() => inputRef.current?.click()}
+          disabled={processing}
         >
           <Upload size={15} />
-          Choose
+          {processing ? 'Processing...' : 'Choose'}
         </button>
       </div>
 
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/jpg,image/webp"
         onChange={handleChooseFile}
         hidden
       />
 
       <div className="crop-preview">
-        {source ? (
-          <img
-            src={source}
-            alt="Product preview"
-            style={{
-              transform: `translate(${offsetX / 3}%, ${offsetY / 3}%) scale(${zoom})`,
-            }}
-          />
+        {preview ? (
+          <img src={preview} alt="Product preview" />
         ) : (
           <div className="crop-empty">
             <ImagePlus size={34} />
@@ -154,69 +99,93 @@ function ImageCropUpload({ value, onChange, onError }) {
         )}
       </div>
 
-      {source && (
-        <>
-          <div className="crop-controls">
-            <label>
-              Zoom
-              <input
-                type="range"
-                min="1"
-                max="2"
-                step="0.05"
-                value={zoom}
-                onChange={(event) => setZoom(Number(event.target.value))}
-              />
-            </label>
+      {preview && (
+        <div className="auto-crop-note">
+          Image is automatically cropped to 1:1 square before upload.
+        </div>
+      )}
 
-            <label>
-              Move X
-              <input
-                type="range"
-                min="-100"
-                max="100"
-                step="1"
-                value={offsetX}
-                onChange={(event) => setOffsetX(Number(event.target.value))}
-              />
-            </label>
+      {preview && (
+        <div className="crop-actions">
+          <button
+            type="button"
+            className="tiny-button"
+            onClick={() => inputRef.current?.click()}
+            disabled={processing}
+          >
+            <Upload size={15} />
+            Change Image
+          </button>
 
-            <label>
-              Move Y
-              <input
-                type="range"
-                min="-100"
-                max="100"
-                step="1"
-                value={offsetY}
-                onChange={(event) => setOffsetY(Number(event.target.value))}
-              />
-            </label>
-          </div>
-
-          <div className="crop-actions">
-            <button type="button" className="tiny-button" onClick={handleCrop}>
-              <Scissors size={15} />
-              Use 1:1 Crop
-            </button>
-
-            <button
-              type="button"
-              className="tiny-button danger"
-              onClick={handleRemove}
-            >
-              <Trash2 size={15} />
-              Remove
-            </button>
-          </div>
-        </>
+          <button
+            type="button"
+            className="tiny-button danger"
+            onClick={handleRemove}
+            disabled={processing}
+          >
+            <Trash2 size={15} />
+            Remove
+          </button>
+        </div>
       )}
     </div>
   )
 }
 
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max)
+function autoCropImageToSquare(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    const objectUrl = URL.createObjectURL(file)
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+
+        if (!context) {
+          reject(new Error('Image editor not supported in this browser.'))
+          return
+        }
+
+        const sourceSize = Math.min(image.naturalWidth, image.naturalHeight)
+        const sourceX = Math.floor((image.naturalWidth - sourceSize) / 2)
+        const sourceY = Math.floor((image.naturalHeight - sourceSize) / 2)
+
+        canvas.width = outputSize
+        canvas.height = outputSize
+
+        context.fillStyle = '#111111'
+        context.fillRect(0, 0, outputSize, outputSize)
+
+        context.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          sourceSize,
+          sourceSize,
+          0,
+          0,
+          outputSize,
+          outputSize,
+        )
+
+        const dataUrl = canvas.toDataURL('image/jpeg', outputQuality)
+
+        URL.revokeObjectURL(objectUrl)
+        resolve(dataUrl)
+      } catch (error) {
+        URL.revokeObjectURL(objectUrl)
+        reject(error)
+      }
+    }
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Image loading failed. Please try another image.'))
+    }
+
+    image.src = objectUrl
+  })
 }
 
 export default ImageCropUpload
