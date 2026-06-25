@@ -20,7 +20,9 @@ function App() {
       <section className="hero-section">
         <nav className="navbar">
           <div className="brand-block">
-            <div className="brand-mark">S</div>
+            <div className="brand-mark logo-mark">
+              <img src="/spizy-logo.png" alt="Spizy Menu logo" />
+              </div>
             <div>
               <p className="brand-name">SPIZY</p>
               <p className="brand-subtitle">Menu</p>
