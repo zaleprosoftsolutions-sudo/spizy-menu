@@ -321,3 +321,427 @@
     border-radius: 26px;
   }
 }
+
+.orders-action-stack {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.orders-inline-select option[value='bill_requested'] {
+  color: #fde68a;
+}
+
+.orders-table th:nth-child(6),
+.orders-table td:nth-child(6) {
+  width: 150px;
+}
+
+.orders-action-stack {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.orders-detail-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.orders-info-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(6, 6, 6, 0.5);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  min-width: 0;
+}
+
+.orders-info-card span,
+.orders-info-card small {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.orders-info-card strong {
+  display: block;
+  margin: 6px 0 4px;
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.orders-bill-request-alert {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 18px;
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  font-weight: 900;
+}
+
+.orders-modal-controls,
+.orders-add-item-form,
+.complete-payment-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.orders-modal-controls label,
+.orders-add-item-form label,
+.complete-payment-grid label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.orders-modal-controls select,
+.orders-add-item-form select,
+.orders-add-item-form input,
+.complete-payment-grid select {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  background: rgba(5, 5, 5, 0.74);
+  color: #ffffff;
+  padding: 0 14px;
+  outline: 0;
+  font: inherit;
+}
+
+.orders-modal-controls option,
+.orders-add-item-form option,
+.complete-payment-grid option {
+  background: #111;
+  color: #fff;
+}
+
+.orders-checkbox-line {
+  grid-template-columns: auto 1fr !important;
+  align-items: center;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 10px !important;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.orders-checkbox-line input {
+  width: 18px !important;
+  height: 18px !important;
+  min-height: 0 !important;
+}
+
+.orders-modal-action-row,
+.complete-modal-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.orders-modal-action-row button,
+.complete-modal-actions button,
+.orders-add-item-submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.orders-modal-action-row button.success,
+.complete-modal-actions button.success {
+  color: #052e16;
+  background: linear-gradient(135deg, #86efac, #22c55e);
+}
+
+.orders-modal-items {
+  margin-top: 20px;
+}
+
+.orders-modal-items h3 {
+  color: #ffffff;
+  margin: 0 0 12px;
+}
+
+.orders-modal-item {
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 191, 77, 0.1);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.orders-modal-item strong {
+  color: #ffffff;
+}
+
+.orders-modal-item span,
+.orders-modal-item small {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.orders-total-box {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(5, 5, 5, 0.58);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  display: grid;
+  gap: 8px;
+}
+
+.orders-total-box div,
+.receipt-line,
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.orders-total-box span,
+.receipt-line span,
+.receipt-item span {
+  color: #d6d6d6;
+}
+
+.orders-total-box strong,
+.receipt-line strong,
+.receipt-item strong {
+  color: #ffffff;
+}
+
+.orders-total-box .grand,
+.receipt-line.grand {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 191, 77, 0.14);
+  font-size: 20px;
+}
+
+.orders-notes-box {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.orders-notes-box span {
+  color: #f7c85f;
+  font-weight: 900;
+}
+
+.orders-notes-box p {
+  margin: 8px 0 0;
+  color: #ffffff;
+  white-space: pre-wrap;
+}
+
+.add-item-modal,
+.complete-order-modal {
+  width: min(680px, 100%);
+}
+
+.orders-add-item-summary {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.orders-add-item-summary div,
+.complete-total-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(6, 6, 6, 0.54);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.orders-add-item-summary span,
+.complete-total-card span {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+}
+
+.orders-add-item-summary strong,
+.complete-total-card strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--gold);
+  font-size: 22px;
+}
+
+.orders-add-item-submit {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.orders-add-item-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.completion-receipt {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  background: #080808;
+  border: 1px dashed rgba(255, 191, 77, 0.32);
+  display: grid;
+  gap: 10px;
+}
+
+.receipt-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+  font-weight: 1000;
+  margin-bottom: 4px;
+}
+
+.receipt-items {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px dashed rgba(255, 191, 77, 0.18);
+  border-bottom: 1px dashed rgba(255, 191, 77, 0.18);
+}
+
+.bill-requested-row {
+  background: rgba(245, 158, 11, 0.06);
+}
+
+@media (max-width: 980px) {
+  .orders-detail-grid,
+  .orders-modal-controls,
+  .orders-add-item-form,
+  .complete-payment-grid,
+  .orders-add-item-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .orders-modal-action-row,
+  .complete-modal-actions {
+    display: grid;
+  }
+}
+
+.orders-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.orders-sound-toggle {
+  min-height: 46px;
+  border-radius: 999px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 191, 77, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.orders-sound-toggle.ready {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.24);
+}
+
+.orders-live-alert {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255, 191, 77, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 16rem),
+    rgba(8, 8, 8, 0.82);
+}
+
+.orders-live-alert svg {
+  color: var(--gold);
+}
+
+.orders-live-alert strong {
+  display: block;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.orders-live-alert span {
+  display: block;
+  margin-top: 3px;
+  color: #d6d6d6;
+  font-size: 13px;
+}
+
+.orders-live-alert button {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.orders-live-alert.bill_requested {
+  border-color: rgba(245, 158, 11, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.2), transparent 16rem),
+    rgba(8, 8, 8, 0.82);
+}
+
+.orders-live-alert.new_order {
+  border-color: rgba(34, 197, 94, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 16rem),
+    rgba(8, 8, 8, 0.82);
+}
+
+@media (max-width: 760px) {
+  .orders-header-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .orders-header-actions button {
+    flex: 1;
+  }
+}
