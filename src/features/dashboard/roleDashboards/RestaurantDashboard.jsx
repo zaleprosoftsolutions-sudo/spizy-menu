@@ -4,6 +4,7 @@ import ProductsManagement from '../../restaurant/ProductsManagement'
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
+import NewOrderPOS from '../../restaurant/NewOrderPOS'
 
 const restaurantSections = [
   'overview',
@@ -70,14 +71,7 @@ function RestaurantDashboard({ profile, restaurant }) {
           />
         )}
 
-        {activeSection === 'pos' && (
-          <RestaurantPlaceholder
-            label="New Order / POS"
-            title="Counter order screen"
-            text="This will become the restaurant POS screen with product grid, one-click add to cart, discount, extra charges, checkout and invoice print."
-            nextText="Next build: POS product grid + right cart panel."
-          />
-        )}
+        {activeSection === 'pos' && <NewOrderPOS restaurant={restaurant} />}
 
         {(activeSection === 'products' ||
           activeSection === 'menu' ||
