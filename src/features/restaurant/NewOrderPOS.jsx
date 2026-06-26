@@ -14,6 +14,7 @@ import {
 import { useAppFeedback } from '../../components/AppFeedback'
 import { supabase } from '../../lib/supabaseClient'
 import './NewOrderPOS.css'
+import './POSModifiers.css'
 
 function NewOrderPOS({ restaurant }) {
   const { confirmAction, showToast } = useAppFeedback()
@@ -72,6 +73,13 @@ function NewOrderPOS({ restaurant }) {
       .eq('is_available', true)
       .order('created_at', { ascending: false })
 
+    const modifierGroupsByItem = await loadPOSModifierGroupsByItem(restaurant.id)
+
+    const enrichedProducts = (productData || []).map((product) => ({
+      ...product,
+      modifierGroups: modifierGroupsByItem[product.id] || [],
+    }))
+
     if (categoryError) {
       showToast({
         type: 'error',
@@ -89,7 +97,7 @@ function NewOrderPOS({ restaurant }) {
     }
 
     setCategories(categoryData || [])
-    setProducts(productData || [])
+    setProducts(enrichedProducts)
     setLoading(false)
   }, [restaurant?.id, showToast])
 
@@ -113,12 +121,25 @@ function NewOrderPOS({ restaurant }) {
       const variationNames = Array.isArray(product.variations)
         ? product.variations.map((variation) => variation.name).join(' ')
         : ''
+      const modifierNames = Array.isArray(product.modifierGroups)
+        ? product.modifierGroups
+            .map((group) =>
+              [
+                group.name,
+                ...(Array.isArray(group.options)
+                  ? group.options.map((option) => option.name)
+                  : []),
+              ].join(' '),
+            )
+            .join(' ')
+        : ''
 
       return [
         product.name,
         product.description,
         product.category?.name,
         variationNames,
+        modifierNames,
       ].some((value) =>
         String(value || '')
           .toLowerCase()
@@ -147,8 +168,12 @@ function NewOrderPOS({ restaurant }) {
 
   const handleProductClick = (product) => {
     const variations = getAvailableVariations(product)
+    const modifierGroups = getAvailableModifierGroups(product)
 
-    if (product.has_variations && variations.length > 0) {
+    if (
+      (product.has_variations && variations.length > 0) ||
+      modifierGroups.length > 0
+    ) {
       setVariationProduct(product)
       return
     }
@@ -157,11 +182,27 @@ function NewOrderPOS({ restaurant }) {
       product,
       variation: null,
       unitPrice: Number(product.price || 0),
+      modifiers: [],
     })
   }
 
-  const addToCart = ({ product, variation, unitPrice }) => {
-    const lineKey = `${product.id}-${variation?.id || 'base'}`
+  const addToCart = ({ product, variation, unitPrice, modifiers = [] }) => {
+    const safeModifiers = Array.isArray(modifiers) ? modifiers : []
+    const modifierKey = safeModifiers.length
+      ? safeModifiers
+          .map((modifier) => modifier.id)
+          .sort()
+          .join('-')
+      : 'noaddons'
+    const lineKey = `${product.id}-${variation?.id || 'base'}-${modifierKey}`
+    const modifierTotal = safeModifiers.reduce(
+      (total, modifier) => total + Number(modifier.priceDelta || 0),
+      0,
+    )
+    const finalUnitPrice = roundPOSMoney(Number(unitPrice || 0) + modifierTotal)
+    const modifierSummary = safeModifiers
+      .map((modifier) => modifier.name)
+      .join(', ')
 
     setCart((current) => {
       const existingLine = current.find((item) => item.lineKey === lineKey)
@@ -172,7 +213,7 @@ function NewOrderPOS({ restaurant }) {
             ? {
                 ...item,
                 quantity: item.quantity + 1,
-                totalPrice: (item.quantity + 1) * item.unitPrice,
+                totalPrice: roundPOSMoney((item.quantity + 1) * item.unitPrice),
               }
             : item,
         )
@@ -186,10 +227,14 @@ function NewOrderPOS({ restaurant }) {
           variationId: variation?.id || null,
           name: product.name,
           variationName: variation?.name || '',
+          modifierSummary,
+          modifiers: safeModifiers,
+          baseUnitPrice: Number(unitPrice || 0),
+          modifierTotal,
           imageUrl: product.image_url,
-          unitPrice,
+          unitPrice: finalUnitPrice,
           quantity: 1,
-          totalPrice: unitPrice,
+          totalPrice: finalUnitPrice,
         },
       ]
     })
@@ -209,7 +254,7 @@ function NewOrderPOS({ restaurant }) {
           ? {
               ...item,
               quantity,
-              totalPrice: quantity * item.unitPrice,
+              totalPrice: roundPOSMoney(quantity * item.unitPrice),
             }
           : item,
       ),
@@ -308,7 +353,7 @@ function NewOrderPOS({ restaurant }) {
           item_id: item.itemId,
           variation_id: item.variationId,
           item_name: item.name,
-          variation_name: item.variationName || null,
+          variation_name: buildOrderVariationName(item) || null,
           quantity: item.quantity,
           unit_price: item.unitPrice,
           total_price: item.totalPrice,
@@ -471,7 +516,17 @@ function NewOrderPOS({ restaurant }) {
                   {Number(product.price || 0).toFixed(2)}
                 </p>
 
-                {product.has_variations && <small>Choose variation</small>}
+                {(product.has_variations ||
+                  getAvailableModifierGroups(product).length > 0) && (
+                  <small>
+                    {product.has_variations &&
+                    getAvailableModifierGroups(product).length > 0
+                      ? 'Customize'
+                      : product.has_variations
+                        ? 'Choose variation'
+                        : 'Add-ons available'}
+                  </small>
+                )}
               </button>
             ))}
           </div>
@@ -548,6 +603,9 @@ function NewOrderPOS({ restaurant }) {
                 <div>
                   <strong>{item.name}</strong>
                   {item.variationName && <span>{item.variationName}</span>}
+                  {item.modifierSummary && (
+                    <span className="pos-cart-addons">Add-ons: {item.modifierSummary}</span>
+                  )}
                   <p>
                     {restaurant.currency || 'AED'} {item.unitPrice.toFixed(2)}
                   </p>
@@ -652,15 +710,23 @@ function NewOrderPOS({ restaurant }) {
       </aside>
 
       {variationProduct && (
-        <VariationModal
+        <POSCustomizeItemModal
           product={variationProduct}
           currency={restaurant.currency || 'AED'}
           onClose={() => setVariationProduct(null)}
-          onChoose={(variation) =>
+          onWarning={(message) =>
+            showToast({
+              type: 'warning',
+              title: 'Customize item',
+              message,
+            })
+          }
+          onAdd={({ variation, unitPrice, modifiers }) =>
             addToCart({
               product: variationProduct,
               variation,
-              unitPrice: Number(variation.price || 0),
+              unitPrice,
+              modifiers,
             })
           }
         />
@@ -677,6 +743,98 @@ function NewOrderPOS({ restaurant }) {
   )
 }
 
+async function loadPOSModifierGroupsByItem(restaurantId) {
+  if (!restaurantId) return {}
+
+  const { data: linkData, error: linkError } = await supabase
+    .from('restaurant_item_modifier_groups')
+    .select('item_id, group_id, sort_order')
+    .eq('restaurant_id', restaurantId)
+    .order('sort_order', { ascending: true })
+
+  if (linkError || !Array.isArray(linkData) || linkData.length === 0) {
+    return {}
+  }
+
+  const groupIds = [
+    ...new Set(linkData.map((link) => link.group_id).filter(Boolean)),
+  ]
+
+  if (groupIds.length === 0) return {}
+
+  const { data: groupData } = await supabase
+    .from('restaurant_modifier_groups')
+    .select(
+      'id, name, description, selection_type, is_required, min_select, max_select, sort_order',
+    )
+    .eq('restaurant_id', restaurantId)
+    .eq('is_deleted', false)
+    .eq('is_active', true)
+    .in('id', groupIds)
+    .order('sort_order', { ascending: true })
+
+  const { data: optionData } = await supabase
+    .from('restaurant_modifier_options')
+    .select('id, group_id, name, price_delta, is_default, is_available, sort_order')
+    .eq('restaurant_id', restaurantId)
+    .eq('is_deleted', false)
+    .eq('is_available', true)
+    .in('group_id', groupIds)
+    .order('sort_order', { ascending: true })
+
+  const optionsByGroup = (optionData || []).reduce((map, option) => {
+    const optionGroupId = option.group_id
+
+    if (!map[optionGroupId]) map[optionGroupId] = []
+
+    map[optionGroupId].push({
+      id: option.id,
+      name: option.name,
+      priceDelta: Number(option.price_delta || 0),
+      isDefault: Boolean(option.is_default),
+      sortOrder: Number(option.sort_order || 0),
+    })
+
+    return map
+  }, {})
+
+  const groupsById = (groupData || []).reduce((map, group) => {
+    map[group.id] = {
+      id: group.id,
+      name: group.name,
+      description: group.description || '',
+      selectionType: group.selection_type || 'single',
+      isRequired: Boolean(group.is_required),
+      minSelect: Number(group.min_select || 0),
+      maxSelect: Number(group.max_select || 1),
+      sortOrder: Number(group.sort_order || 0),
+      options: optionsByGroup[group.id] || [],
+    }
+
+    return map
+  }, {})
+
+  return linkData.reduce((map, link) => {
+    const group = groupsById[link.group_id]
+
+    if (!group || group.options.length === 0) return map
+
+    if (!map[link.item_id]) map[link.item_id] = []
+
+    map[link.item_id].push({
+      ...group,
+      itemSortOrder: Number(link.sort_order || 0),
+    })
+
+    map[link.item_id].sort(
+      (first, second) =>
+        Number(first.itemSortOrder || 0) - Number(second.itemSortOrder || 0),
+    )
+
+    return map
+  }, {})
+}
+
 function getAvailableVariations(product) {
   if (!Array.isArray(product.variations)) return []
 
@@ -685,20 +843,188 @@ function getAvailableVariations(product) {
     .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
 }
 
-function VariationModal({ product, currency, onClose, onChoose }) {
+function getAvailableModifierGroups(product) {
+  if (!Array.isArray(product.modifierGroups)) return []
+
+  return [...product.modifierGroups]
+    .filter((group) => Array.isArray(group.options) && group.options.length > 0)
+    .sort(
+      (first, second) =>
+        Number(first.itemSortOrder ?? first.sortOrder ?? 0) -
+        Number(second.itemSortOrder ?? second.sortOrder ?? 0),
+    )
+}
+
+function buildDefaultModifierSelection(groups) {
+  return groups.reduce((selection, group) => {
+    const defaultOptions = (group.options || []).filter(
+      (option) => option.isDefault,
+    )
+
+    if (group.selectionType === 'single') {
+      selection[group.id] = defaultOptions[0]?.id || ''
+      return selection
+    }
+
+    const maxSelect = Number(group.maxSelect || 0)
+    const selectedDefaults = defaultOptions.map((option) => option.id)
+
+    selection[group.id] =
+      maxSelect > 0 ? selectedDefaults.slice(0, maxSelect) : selectedDefaults
+
+    return selection
+  }, {})
+}
+
+function getSelectedModifierOptions(groups, selection) {
+  return groups.flatMap((group) => {
+    const selectedValue = selection[group.id]
+
+    if (group.selectionType === 'single') {
+      const selectedOption = (group.options || []).find(
+        (option) => option.id === selectedValue,
+      )
+
+      return selectedOption ? [selectedOption] : []
+    }
+
+    const selectedIds = Array.isArray(selectedValue) ? selectedValue : []
+
+    return (group.options || []).filter((option) =>
+      selectedIds.includes(option.id),
+    )
+  })
+}
+
+function getModifierMinSelect(group) {
+  return Math.max(group.isRequired ? 1 : 0, Number(group.minSelect || 0))
+}
+
+function validateModifierSelection(groups, selection) {
+  for (const group of groups) {
+    const selectedValue = selection[group.id]
+    const selectedCount = Array.isArray(selectedValue)
+      ? selectedValue.length
+      : selectedValue
+        ? 1
+        : 0
+    const minSelect = getModifierMinSelect(group)
+    const maxSelect = Number(group.maxSelect || 0)
+
+    if (selectedCount < minSelect) {
+      return `Please choose ${group.name}.`
+    }
+
+    if (maxSelect > 0 && selectedCount > maxSelect) {
+      return `Choose only ${maxSelect} option${maxSelect === 1 ? '' : 's'} for ${group.name}.`
+    }
+  }
+
+  return ''
+}
+
+function buildOrderVariationName(item) {
+  return [item.variationName, item.modifierSummary].filter(Boolean).join(' • ')
+}
+
+function roundPOSMoney(value) {
+  return Number(Number(value || 0).toFixed(2))
+}
+
+function POSCustomizeItemModal({ product, currency, onClose, onAdd, onWarning }) {
   const variations = getAvailableVariations(product)
+  const modifierGroups = getAvailableModifierGroups(product)
+  const [selectedVariationId, setSelectedVariationId] = useState(
+    variations[0]?.id || null,
+  )
+  const [selectedModifiers, setSelectedModifiers] = useState(() =>
+    buildDefaultModifierSelection(modifierGroups),
+  )
+
+  const selectedVariation = variations.find(
+    (variation) => variation.id === selectedVariationId,
+  )
+  const baseUnitPrice = Number(selectedVariation?.price ?? product.price ?? 0)
+  const selectedModifierOptions = getSelectedModifierOptions(
+    modifierGroups,
+    selectedModifiers,
+  )
+  const modifierTotal = selectedModifierOptions.reduce(
+    (total, option) => total + Number(option.priceDelta || 0),
+    0,
+  )
+  const finalUnitPrice = roundPOSMoney(baseUnitPrice + modifierTotal)
+
+  const toggleModifierOption = (group, option) => {
+    setSelectedModifiers((current) => {
+      if (group.selectionType === 'single') {
+        return {
+          ...current,
+          [group.id]: current[group.id] === option.id ? '' : option.id,
+        }
+      }
+
+      const currentValues = Array.isArray(current[group.id])
+        ? current[group.id]
+        : []
+      const alreadySelected = currentValues.includes(option.id)
+
+      if (alreadySelected) {
+        return {
+          ...current,
+          [group.id]: currentValues.filter((optionId) => optionId !== option.id),
+        }
+      }
+
+      const maxSelect = Number(group.maxSelect || 0)
+
+      if (maxSelect > 0 && currentValues.length >= maxSelect) {
+        onWarning?.(
+          `You can choose only ${maxSelect} option${
+            maxSelect === 1 ? '' : 's'
+          } for ${group.name}.`,
+        )
+        return current
+      }
+
+      return {
+        ...current,
+        [group.id]: [...currentValues, option.id],
+      }
+    })
+  }
+
+  const handleAddCustomizedItem = () => {
+    const validationMessage = validateModifierSelection(
+      modifierGroups,
+      selectedModifiers,
+    )
+
+    if (validationMessage) {
+      onWarning?.(validationMessage)
+      return
+    }
+
+    onAdd({
+      variation: selectedVariation || null,
+      unitPrice: baseUnitPrice,
+      modifiers: selectedModifierOptions,
+    })
+  }
 
   return (
     <div className="pos-modal-overlay" onClick={onClose}>
       <div
-        className="pos-variation-modal"
+        className="pos-variation-modal pos-customize-modal"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="pos-modal-head">
           <div>
-            <p className="pricing-label">Choose Variation</p>
+            <p className="pricing-label">Customize Item</p>
             <h3>{product.name}</h3>
-            <span>Select one option before adding to cart.</span>
+            <span>
+              Choose variation, spice level, sauces, toppings or extras.
+            </span>
           </div>
 
           <button type="button" className="tiny-button danger" onClick={onClose}>
@@ -707,19 +1033,121 @@ function VariationModal({ product, currency, onClose, onChoose }) {
           </button>
         </div>
 
-        <div className="variation-choice-grid">
-          {variations.map((variation) => (
-            <button
-              type="button"
-              key={variation.id}
-              onClick={() => onChoose(variation)}
-            >
-              <strong>{variation.name}</strong>
-              <span>
-                {currency} {Number(variation.price || 0).toFixed(2)}
-              </span>
-            </button>
-          ))}
+        {variations.length > 0 && (
+          <section className="pos-customize-section">
+            <div className="pos-customize-section-head">
+              <div>
+                <strong>Choose option</strong>
+                <span>Select one variation</span>
+              </div>
+            </div>
+
+            <div className="variation-choice-grid pos-option-choice-grid">
+              {variations.map((variation) => (
+                <button
+                  type="button"
+                  key={variation.id}
+                  className={
+                    selectedVariationId === variation.id ? 'selected' : ''
+                  }
+                  onClick={() => setSelectedVariationId(variation.id)}
+                >
+                  <strong>{variation.name}</strong>
+                  <span>
+                    {currency} {Number(variation.price || 0).toFixed(2)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {modifierGroups.map((group) => {
+          const selectedValue = selectedModifiers[group.id]
+          const selectedCount = Array.isArray(selectedValue)
+            ? selectedValue.length
+            : selectedValue
+              ? 1
+              : 0
+          const minSelect = getModifierMinSelect(group)
+          const maxSelect = Number(group.maxSelect || 0)
+
+          return (
+            <section className="pos-customize-section" key={group.id}>
+              <div className="pos-customize-section-head">
+                <div>
+                  <strong>{group.name}</strong>
+                  {group.description && <span>{group.description}</span>}
+                </div>
+
+                <small>
+                  {group.selectionType === 'single'
+                    ? group.isRequired
+                      ? 'Required'
+                      : 'Optional'
+                    : `${selectedCount}/${maxSelect || '∞'} selected`}
+                </small>
+              </div>
+
+              <div className="pos-modifier-option-list">
+                {(group.options || []).map((option) => {
+                  const isSelected =
+                    group.selectionType === 'single'
+                      ? selectedValue === option.id
+                      : Array.isArray(selectedValue) &&
+                        selectedValue.includes(option.id)
+
+                  return (
+                    <button
+                      type="button"
+                      key={option.id}
+                      className={isSelected ? 'selected' : ''}
+                      onClick={() => toggleModifierOption(group, option)}
+                    >
+                      <span>
+                        <strong>{option.name}</strong>
+                        {option.priceDelta > 0 ? (
+                          <small>
+                            +{currency}{' '}
+                            {Number(option.priceDelta || 0).toFixed(2)}
+                          </small>
+                        ) : (
+                          <small>Included</small>
+                        )}
+                      </span>
+
+                      <i>
+                        {isSelected
+                          ? '✓'
+                          : group.selectionType === 'single'
+                            ? '○'
+                            : '+'}
+                      </i>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {minSelect > 0 && selectedCount < minSelect && (
+                <p className="pos-modifier-hint">
+                  Choose at least {minSelect} option{minSelect === 1 ? '' : 's'}.
+                </p>
+              )}
+            </section>
+          )
+        })}
+
+        <div className="pos-customize-footer">
+          <div>
+            <span>Total per item</span>
+            <strong>
+              {currency} {Number(finalUnitPrice || 0).toFixed(2)}
+            </strong>
+          </div>
+
+          <button type="button" className="primary-button" onClick={handleAddCustomizedItem}>
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
@@ -826,6 +1254,7 @@ function OrderSummaryModal({ order, onClose, onNewOrder }) {
                 <div>
                   <strong>{item.name}</strong>
                   {item.variationName && <span>{item.variationName}</span>}
+                  {item.modifierSummary && <span>Add-ons: {item.modifierSummary}</span>}
                   <small>
                     {item.quantity} × {formatMoney(order.currency, item.unitPrice)}
                   </small>
@@ -965,6 +1394,11 @@ function buildReceiptHtml(order) {
             ${
               item.variationName
                 ? `<span>${escapeHtml(item.variationName)}</span>`
+                : ''
+            }
+            ${
+              item.modifierSummary
+                ? `<span>Add-ons: ${escapeHtml(item.modifierSummary)}</span>`
                 : ''
             }
             <small>${item.quantity} x ${formatMoney(

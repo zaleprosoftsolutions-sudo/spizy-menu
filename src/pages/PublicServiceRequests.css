@@ -1,0 +1,198 @@
+.public-service-call-button,
+.public-service-quick-card button,
+.public-service-send-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fb923c, #facc15);
+  color: #111827;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(251, 146, 60, 0.24);
+}
+
+.public-service-call-button.compact {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.84rem;
+}
+
+.public-service-quick-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 14px auto 0;
+  width: min(1120px, calc(100% - 28px));
+  padding: 16px;
+  border: 1px solid rgba(251, 146, 60, 0.22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(251, 146, 60, 0.18), transparent 38%),
+    rgba(15, 23, 42, 0.86);
+  color: #f8fafc;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.22);
+}
+
+.public-service-quick-card span,
+.public-service-quick-card small {
+  display: block;
+  color: #fbbf24;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.public-service-quick-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #fff7ed;
+  font-size: 1rem;
+}
+
+.public-service-quick-card small {
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.public-service-quick-card button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 15px;
+}
+
+.public-service-modal,
+.public-service-success-modal {
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  border: 1px solid rgba(251, 146, 60, 0.2);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+  color: #f8fafc;
+  padding: 18px;
+}
+
+.public-service-head span {
+  display: block;
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 0.86rem;
+}
+
+.public-service-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.public-service-type-grid button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 74px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  padding: 12px;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.72);
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.public-service-type-grid button strong {
+  font-size: 0.92rem;
+}
+
+.public-service-type-grid button span {
+  color: #94a3b8;
+  font-size: 0.76rem;
+}
+
+.public-service-type-grid button.active {
+  border-color: rgba(251, 146, 60, 0.62);
+  background: rgba(251, 146, 60, 0.14);
+}
+
+.public-service-fields {
+  margin-top: 8px;
+}
+
+.public-service-send-button {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 14px;
+  border-radius: 18px;
+  font-size: 1rem;
+}
+
+.public-service-send-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.public-service-success-modal {
+  text-align: center;
+  padding: 24px;
+}
+
+.public-service-success-icon {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #86efac);
+  color: #052e16;
+  font-size: 2rem;
+  font-weight: 1000;
+}
+
+.public-service-success-modal h2 {
+  margin: 8px 0;
+  color: #fff7ed;
+}
+
+.public-service-success-modal p {
+  margin: 0 auto 16px;
+  max-width: 380px;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.public-service-success-modal button {
+  border: 0;
+  border-radius: 16px;
+  padding: 12px 18px;
+  background: #f97316;
+  color: #111827;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .public-service-quick-card {
+    align-items: stretch;
+    flex-direction: column;
+    width: calc(100% - 20px);
+    border-radius: 20px;
+  }
+
+  .public-service-quick-card button {
+    width: 100%;
+  }
+
+  .public-service-call-button.compact {
+    width: 100%;
+  }
+
+  .public-service-type-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
+  CalendarCheck,
+  BellRing,
   ClipboardList,
   Copy,
   Banknote,
@@ -26,6 +28,9 @@ import './PublicMenuPage.css'
 import './PublicCampaignBanner.css'
 import './PublicReviews.css'
 import './PublicSettingsAddons.css'
+import './PublicReservations.css'
+import './PublicServiceRequests.css'
+import './PublicModifiers.css'
 
 const phoneCountryOptions = [
   { code: '+971', label: 'UAE' },
@@ -73,6 +78,40 @@ function PublicMenuPage() {
   const [couponApplying, setCouponApplying] = useState(false)
   const [deliveryPaymentChoice, setDeliveryPaymentChoice] = useState('')
   const [showCodChoiceModal, setShowCodChoiceModal] = useState(false)
+  const [showReservationModal, setShowReservationModal] = useState(false)
+  const [reservationSaving, setReservationSaving] = useState(false)
+  const [reservationSuccess, setReservationSuccess] = useState(null)
+  const [showServiceModal, setShowServiceModal] = useState(false)
+  const [serviceSaving, setServiceSaving] = useState(false)
+  const [serviceSuccess, setServiceSuccess] = useState(null)
+  const [serviceForm, setServiceForm] = useState(() => {
+    const savedProfile = getSavedCustomerProfile()
+
+    return {
+      name: savedProfile?.name || '',
+      countryCode: savedProfile?.countryCode || '+971',
+      phone: savedProfile?.phone || '',
+      requestType: 'waiter',
+      message: '',
+    }
+  })
+  const [reservationForm, setReservationForm] = useState(() => {
+    const savedProfile = getSavedCustomerProfile()
+
+    return {
+      name: savedProfile?.name || '',
+      countryCode: savedProfile?.countryCode || '+971',
+      phone: savedProfile?.phone || '',
+      email: '',
+      guestCount: '2',
+      date: getDefaultReservationDate(),
+      time: getDefaultReservationTime(),
+      duration: '90',
+      tablePreference: '',
+      occasion: '',
+      notes: '',
+    }
+  })
   const [savedCustomer, setSavedCustomer] = useState(() =>
     getSavedCustomerProfile(),
   )
@@ -92,6 +131,7 @@ function PublicMenuPage() {
   const orderType = isTableOrder ? 'dine_in' : 'delivery'
   const currency = restaurant?.currency || 'AED'
   const acceptsOrders = restaurant?.accept_outside_orders !== false
+  const reservationEnabled = restaurant?.reservations_enabled !== false
   const restaurantDirectionUrl = useMemo(
     () => getRestaurantDirectionUrl(restaurant),
     [restaurant],
@@ -128,6 +168,10 @@ function PublicMenuPage() {
         map_url,
         currency,
         accept_outside_orders,
+        reservations_enabled,
+        reservation_min_guests,
+        reservation_max_guests,
+        reservation_default_duration_minutes,
         accepts_cash,
         accepts_card,
         accepts_cod,
@@ -207,6 +251,15 @@ function PublicMenuPage() {
       .eq('is_available', true)
       .order('created_at', { ascending: false })
 
+    const modifierGroupsByItem = await loadPublicModifierGroupsByItem(
+      restaurantData.id,
+    )
+
+    const enrichedProducts = (productData || []).map((product) => ({
+      ...product,
+      modifierGroups: modifierGroupsByItem[product.id] || [],
+    }))
+
     const { data: campaignData } = await supabase
       .from('restaurant_campaigns')
       .select(
@@ -237,7 +290,7 @@ function PublicMenuPage() {
     )
 
     setCategories(categoryData || [])
-    setProducts(productData || [])
+    setProducts(enrichedProducts)
     setActiveCampaigns(visibleCampaigns.slice(0, 3))
     setLoading(false)
   }, [restaurantSlug, tableToken])
@@ -262,12 +315,23 @@ function PublicMenuPage() {
       const variationNames = Array.isArray(product.variations)
         ? product.variations.map((variation) => variation.name).join(' ')
         : ''
+      const modifierNames = Array.isArray(product.modifierGroups)
+        ? product.modifierGroups
+            .map((group) =>
+              [
+                group.name,
+                ...(group.options || []).map((option) => option.name),
+              ].join(' '),
+            )
+            .join(' ')
+        : ''
 
       return [
         product.name,
         product.description,
         product.category?.name,
         variationNames,
+        modifierNames,
       ].some((value) =>
         String(value || '')
           .toLowerCase()
@@ -364,7 +428,7 @@ function PublicMenuPage() {
   }
 
   const getBaseCartItem = (product) => {
-    return cart.find((item) => item.lineKey === `${product.id}-base`)
+    return cart.find((item) => item.lineKey === `${product.id}-base-noaddons`)
   }
 
   const saveCustomerProfileFromForm = () => {
@@ -408,8 +472,12 @@ function PublicMenuPage() {
     }
 
     const variations = getAvailableVariations(product)
+    const modifierGroups = getAvailableModifierGroups(product)
 
-    if (product.has_variations && variations.length > 0) {
+    if (
+      (product.has_variations && variations.length > 0) ||
+      modifierGroups.length > 0
+    ) {
       setVariationProduct(product)
       return
     }
@@ -418,16 +486,30 @@ function PublicMenuPage() {
       product,
       variation: null,
       unitPrice: Number(product.price || 0),
+      modifiers: [],
     })
   }
 
-  const addToCart = ({ product, variation, unitPrice }) => {
+  const addToCart = ({ product, variation, unitPrice, modifiers = [] }) => {
     if (!acceptsOrders) {
       showPublicMessage('This menu is currently view-only. Ordering is turned off.')
       return
     }
 
-    const lineKey = `${product.id}-${variation?.id || 'base'}`
+    const safeModifiers = Array.isArray(modifiers) ? modifiers : []
+    const modifierKey = safeModifiers.length
+      ? safeModifiers
+          .map((modifier) => modifier.id)
+          .sort()
+          .join('-')
+      : 'noaddons'
+    const lineKey = `${product.id}-${variation?.id || 'base'}-${modifierKey}`
+    const modifierTotal = safeModifiers.reduce(
+      (total, modifier) => total + Number(modifier.priceDelta || 0),
+      0,
+    )
+    const finalUnitPrice = roundPublicMoney(Number(unitPrice || 0) + modifierTotal)
+    const modifierSummary = safeModifiers.map((modifier) => modifier.name).join(', ')
 
     setCart((current) => {
       const existingLine = current.find((item) => item.lineKey === lineKey)
@@ -438,7 +520,7 @@ function PublicMenuPage() {
             ? {
                 ...item,
                 quantity: item.quantity + 1,
-                totalPrice: (item.quantity + 1) * item.unitPrice,
+                totalPrice: roundPublicMoney((item.quantity + 1) * item.unitPrice),
               }
             : item,
         )
@@ -452,10 +534,14 @@ function PublicMenuPage() {
           variationId: variation?.id || null,
           name: product.name,
           variationName: variation?.name || '',
+          modifierSummary,
+          modifiers: safeModifiers,
+          baseUnitPrice: Number(unitPrice || 0),
+          modifierTotal,
           imageUrl: product.image_url,
-          unitPrice,
+          unitPrice: finalUnitPrice,
           quantity: 1,
-          totalPrice: unitPrice,
+          totalPrice: finalUnitPrice,
         },
       ]
     })
@@ -475,7 +561,7 @@ function PublicMenuPage() {
           ? {
               ...item,
               quantity,
-              totalPrice: quantity * item.unitPrice,
+              totalPrice: roundPublicMoney(quantity * item.unitPrice),
             }
           : item,
       ),
@@ -607,10 +693,13 @@ function PublicMenuPage() {
           itemId: item.itemId,
           variationId: item.variationId,
           name: item.name,
-          variationName: item.variationName,
+          variationName: buildOrderVariationName(item),
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           totalPrice: item.totalPrice,
+          baseUnitPrice: item.baseUnitPrice || item.unitPrice,
+          modifierTotal: item.modifierTotal || 0,
+          modifiers: item.modifiers || [],
         })),
       },
     )
@@ -798,6 +887,200 @@ function PublicMenuPage() {
     await loadCustomerOrders()
   }
 
+  const handleOpenServiceRequest = () => {
+    if (!restaurant?.id) {
+      showPublicMessage('Restaurant not ready.')
+      return
+    }
+
+    if (!isTableOrder) {
+      showPublicMessage('Service request is available after scanning a table QR.')
+      return
+    }
+
+    setServiceForm((current) => ({
+      ...current,
+      name: savedCustomer?.name || current.name || customerForm.name,
+      countryCode:
+        savedCustomer?.countryCode ||
+        current.countryCode ||
+        customerForm.countryCode ||
+        '+971',
+      phone: savedCustomer?.phone || current.phone || customerForm.phone,
+    }))
+    setShowServiceModal(true)
+  }
+
+  const updateServiceForm = (key, value) => {
+    setServiceForm((current) => ({ ...current, [key]: value }))
+  }
+
+  const handleSubmitServiceRequest = async () => {
+    if (!restaurant?.id || !table?.id) return
+
+    const cleanPhone = cleanPhoneNumber(serviceForm.phone)
+    const fullPhone = getFullPhoneNumber({
+      countryCode: serviceForm.countryCode,
+      phone: cleanPhone,
+    })
+
+    setServiceSaving(true)
+
+    const { data, error } = await supabase.rpc('create_public_service_request', {
+      p_restaurant_id: restaurant.id,
+      p_table_id: table.id,
+      p_table_name: table.table_name || null,
+      p_customer_session_id: customerSessionId,
+      p_customer_name: serviceForm.name.trim() || null,
+      p_customer_phone: fullPhone || null,
+      p_request_type: serviceForm.requestType || 'waiter',
+      p_message: serviceForm.message.trim() || null,
+    })
+
+    setServiceSaving(false)
+
+    if (error) {
+      showPublicMessage(error.message)
+      return
+    }
+
+    if (cleanPhone) {
+      const profile = {
+        name: serviceForm.name.trim(),
+        countryCode: serviceForm.countryCode || '+971',
+        phone: cleanPhone,
+        fullPhone,
+      }
+      localStorage.setItem('spizy_customer_profile', JSON.stringify(profile))
+      setSavedCustomer(profile)
+    }
+
+    const requestResult = Array.isArray(data) ? data[0] : data
+
+    setServiceSuccess({
+      code: requestResult?.request_code || 'Request sent',
+      type: serviceForm.requestType,
+      tableName: table.table_name || 'Table',
+    })
+    setServiceForm((current) => ({
+      ...current,
+      requestType: 'waiter',
+      message: '',
+    }))
+    setShowServiceModal(false)
+    showPublicMessage('Service request sent to restaurant.')
+  }
+
+  const handleOpenReservation = () => {
+    if (!restaurant?.id) {
+      showPublicMessage('Restaurant not ready.')
+      return
+    }
+
+    if (!reservationEnabled) {
+      showPublicMessage('Table booking is not active for this restaurant.')
+      return
+    }
+
+    setReservationForm((current) => ({
+      ...current,
+      name: savedCustomer?.name || current.name || customerForm.name,
+      countryCode:
+        savedCustomer?.countryCode ||
+        current.countryCode ||
+        customerForm.countryCode ||
+        '+971',
+      phone: savedCustomer?.phone || current.phone || customerForm.phone,
+      duration:
+        current.duration ||
+        String(restaurant?.reservation_default_duration_minutes || 90),
+    }))
+    setShowReservationModal(true)
+  }
+
+  const updateReservationForm = (key, value) => {
+    setReservationForm((current) => ({ ...current, [key]: value }))
+  }
+
+  const handleSubmitReservation = async () => {
+    if (!restaurant?.id) return
+
+    const cleanName = reservationForm.name.trim()
+    const cleanPhone = cleanPhoneNumber(reservationForm.phone)
+    const fullPhone = getFullPhoneNumber({
+      countryCode: reservationForm.countryCode,
+      phone: cleanPhone,
+    })
+    const guestCount = Number(reservationForm.guestCount || 0)
+    const minGuests = Number(restaurant?.reservation_min_guests || 1)
+    const maxGuests = Number(restaurant?.reservation_max_guests || 30)
+
+    if (!cleanName) {
+      showPublicMessage('Enter your name for table booking.')
+      return
+    }
+
+    if (!cleanPhone) {
+      showPublicMessage('Enter your phone number for booking updates.')
+      return
+    }
+
+    if (!reservationForm.date || !reservationForm.time) {
+      showPublicMessage('Choose reservation date and time.')
+      return
+    }
+
+    if (guestCount < minGuests || guestCount > maxGuests) {
+      showPublicMessage(`Guest count should be between ${minGuests} and ${maxGuests}.`)
+      return
+    }
+
+    setReservationSaving(true)
+
+    const { data, error } = await supabase.rpc('create_public_reservation', {
+      p_restaurant_id: restaurant.id,
+      p_customer_session_id: customerSessionId,
+      p_customer_name: cleanName,
+      p_customer_phone: fullPhone,
+      p_customer_email: reservationForm.email.trim() || null,
+      p_guest_count: guestCount,
+      p_reservation_date: reservationForm.date,
+      p_reservation_time: reservationForm.time,
+      p_expected_duration_minutes: Number(reservationForm.duration || 90),
+      p_table_preference: reservationForm.tablePreference.trim() || null,
+      p_occasion: reservationForm.occasion.trim() || null,
+      p_notes: reservationForm.notes.trim() || null,
+    })
+
+    setReservationSaving(false)
+
+    if (error) {
+      showPublicMessage(error.message)
+      return
+    }
+
+    const reservationResult = Array.isArray(data) ? data[0] : data
+    const profile = {
+      name: cleanName,
+      countryCode: reservationForm.countryCode || '+971',
+      phone: cleanPhone,
+      fullPhone,
+    }
+
+    localStorage.setItem('spizy_customer_profile', JSON.stringify(profile))
+    setSavedCustomer(profile)
+
+    setReservationSuccess({
+      code: reservationResult?.reservation_code || 'Booking received',
+      date: reservationResult?.reservation_date || reservationForm.date,
+      time: reservationResult?.reservation_time || reservationForm.time,
+      guests: guestCount,
+      status: reservationResult?.status || 'pending',
+    })
+    setShowReservationModal(false)
+    showPublicMessage('Table booking request sent.')
+  }
+
   const handleOpenReview = (order) => {
     setReviewOrder(order)
     setReviewForm({
@@ -968,6 +1251,28 @@ function PublicMenuPage() {
         </div>
 
         <div className="public-header-side-actions">
+          {reservationEnabled && (
+            <button
+              type="button"
+              className="public-book-table-button compact"
+              onClick={handleOpenReservation}
+            >
+              <CalendarCheck size={16} />
+              Book Table
+            </button>
+          )}
+
+          {isTableOrder && (
+            <button
+              type="button"
+              className="public-service-call-button compact"
+              onClick={handleOpenServiceRequest}
+            >
+              <BellRing size={16} />
+              Call Waiter
+            </button>
+          )}
+
           {restaurantDirectionUrl && (
             <a
               className="public-direction-button"
@@ -995,6 +1300,36 @@ function PublicMenuPage() {
       </header>
 
       <PublicSocialLinks restaurant={restaurant} />
+
+      {isTableOrder && (
+        <section className="public-service-quick-card">
+          <div>
+            <span>Need help at your table?</span>
+            <strong>Call waiter, water, tissue or quick support</strong>
+            <small>Your request goes directly to the restaurant team.</small>
+          </div>
+
+          <button type="button" onClick={handleOpenServiceRequest}>
+            <BellRing size={17} />
+            Call Service
+          </button>
+        </section>
+      )}
+
+      {reservationEnabled && (
+        <section className="public-reservation-quick-card">
+          <div>
+            <span>Planning a visit?</span>
+            <strong>Reserve your table in seconds</strong>
+            <small>Choose date, time, guest count and special occasion.</small>
+          </div>
+
+          <button type="button" onClick={handleOpenReservation}>
+            <CalendarCheck size={17} />
+            Book Table
+          </button>
+        </section>
+      )}
 
       {!acceptsOrders && (
         <section className="public-view-only-notice">
@@ -1050,10 +1385,13 @@ function PublicMenuPage() {
           No available products found.
         </section>
       ) : (
-        <section className="public-product-grid">
+        <section className="public-product-grid" id="public-menu-items">
           {filteredProducts.map((product) => {
             const variations = getAvailableVariations(product)
+            const modifierGroups = getAvailableModifierGroups(product)
             const hasOptions = product.has_variations && variations.length > 0
+            const hasModifiers = modifierGroups.length > 0
+            const shouldCustomize = hasOptions || hasModifiers
             const productQuantity = getCartProductQuantity(product.id)
             const baseCartItem = getBaseCartItem(product)
 
@@ -1079,11 +1417,11 @@ function PublicMenuPage() {
 
                     <div className="public-product-price-row">
                       <strong>
-                        {hasOptions ? 'From ' : ''}
+                        {shouldCustomize ? 'From ' : ''}
                         {currency} {Number(product.price || 0).toFixed(2)}
                       </strong>
 
-                      {hasOptions && productQuantity > 0 && (
+                      {shouldCustomize && productQuantity > 0 && (
                         <small>{productQuantity} in cart</small>
                       )}
                     </div>
@@ -1093,13 +1431,17 @@ function PublicMenuPage() {
                 <div className="public-product-action-area">
                   {!acceptsOrders ? (
                     <div className="public-view-only-pill">View only</div>
-                  ) : hasOptions ? (
+                  ) : shouldCustomize ? (
                     <button
                       type="button"
                       className="public-add-button option"
                       onClick={() => setVariationProduct(product)}
                     >
-                      {productQuantity > 0 ? 'Options' : 'Choose'}
+                      {productQuantity > 0
+                        ? 'Customize'
+                        : hasOptions
+                          ? 'Choose'
+                          : 'Customize'}
                     </button>
                   ) : baseCartItem ? (
                     <div className="public-row-qty">
@@ -1138,6 +1480,7 @@ function PublicMenuPage() {
                           product,
                           variation: null,
                           unitPrice: Number(product.price || 0),
+                          modifiers: [],
                         })
                       }
                     >
@@ -1171,6 +1514,45 @@ function PublicMenuPage() {
         onRewards={() => loadCustomerRewards()}
         onProfile={() => setShowProfileModal(true)}
       />
+
+      {showServiceModal && (
+        <PublicServiceRequestModal
+          form={serviceForm}
+          table={table}
+          saving={serviceSaving}
+          phoneCountryOptions={phoneCountryOptions}
+          onClose={() => setShowServiceModal(false)}
+          onUpdate={updateServiceForm}
+          onSubmit={handleSubmitServiceRequest}
+        />
+      )}
+
+      {serviceSuccess && (
+        <PublicServiceRequestSuccessModal
+          request={serviceSuccess}
+          onClose={() => setServiceSuccess(null)}
+        />
+      )}
+
+      {showReservationModal && (
+        <PublicReservationModal
+          restaurant={restaurant}
+          form={reservationForm}
+          saving={reservationSaving}
+          phoneCountryOptions={phoneCountryOptions}
+          onClose={() => setShowReservationModal(false)}
+          onUpdate={updateReservationForm}
+          onSubmit={handleSubmitReservation}
+        />
+      )}
+
+      {reservationSuccess && (
+        <PublicReservationSuccessModal
+          reservation={reservationSuccess}
+          restaurantName={restaurant?.name || 'Restaurant'}
+          onClose={() => setReservationSuccess(null)}
+        />
+      )}
 
       {showCart && (
         <PublicCartSheet
@@ -1222,15 +1604,16 @@ function PublicMenuPage() {
       )}
 
       {variationProduct && (
-        <PublicVariationModal
+        <PublicCustomizeItemModal
           product={variationProduct}
           currency={currency}
           onClose={() => setVariationProduct(null)}
-          onChoose={(variation) =>
+          onAdd={({ variation, unitPrice, modifiers }) =>
             addToCart({
               product: variationProduct,
               variation,
-              unitPrice: Number(variation.price || 0),
+              unitPrice,
+              modifiers,
             })
           }
         />
@@ -1432,6 +1815,323 @@ function PublicCodChoiceModal({ currency, total, saving, onClose, onChoose }) {
   )
 }
 
+function PublicServiceRequestModal({
+  form,
+  table,
+  saving,
+  phoneCountryOptions,
+  onClose,
+  onUpdate,
+  onSubmit,
+}) {
+  const requestTypes = [
+    { value: 'waiter', label: 'Call waiter', text: 'Need staff assistance' },
+    { value: 'water', label: 'Water', text: 'Request drinking water' },
+    { value: 'tissue', label: 'Tissue', text: 'Need tissue or napkins' },
+    { value: 'cutlery', label: 'Cutlery', text: 'Spoon, fork or plates' },
+    { value: 'cleaning', label: 'Clean table', text: 'Table cleaning help' },
+    { value: 'bill', label: 'Bill help', text: 'Ask for bill/payment help' },
+    { value: 'custom', label: 'Other', text: 'Write your request' },
+  ]
+
+  return (
+    <div className="public-modal-overlay" onClick={onClose}>
+      <div
+        className="public-service-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="public-cart-head public-service-head">
+          <div>
+            <p className="public-menu-label">Table Service</p>
+            <h2>{table?.table_name || 'Your table'}</h2>
+            <span>Send a quick help request to the restaurant team.</span>
+          </div>
+
+          <button type="button" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="public-service-type-grid">
+          {requestTypes.map((type) => (
+            <button
+              type="button"
+              key={type.value}
+              className={form.requestType === type.value ? 'active' : ''}
+              onClick={() => onUpdate('requestType', type.value)}
+            >
+              <strong>{type.label}</strong>
+              <span>{type.text}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="public-customer-fields public-service-fields">
+          <input
+            type="text"
+            value={form.name}
+            onChange={(event) => onUpdate('name', event.target.value)}
+            placeholder="Your name optional"
+          />
+
+          <div className="public-phone-row">
+            <select
+              value={form.countryCode}
+              onChange={(event) => onUpdate('countryCode', event.target.value)}
+            >
+              {phoneCountryOptions.map((country) => (
+                <option value={country.code} key={country.code}>
+                  {country.label} {country.code}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={(event) => onUpdate('phone', event.target.value)}
+              placeholder="Phone optional"
+            />
+          </div>
+
+          <textarea
+            value={form.message}
+            onChange={(event) => onUpdate('message', event.target.value)}
+            placeholder="Extra note optional"
+            rows="3"
+          />
+        </div>
+
+        <button
+          type="button"
+          className="public-service-send-button"
+          onClick={onSubmit}
+          disabled={saving}
+        >
+          {saving ? 'Sending...' : 'Send Request'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function PublicServiceRequestSuccessModal({ request, onClose }) {
+  return (
+    <div className="public-modal-overlay" onClick={onClose}>
+      <div
+        className="public-service-success-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="public-service-success-icon">✓</div>
+        <p className="public-menu-label">Request Sent</p>
+        <h2>{request.code}</h2>
+        <p>
+          Your service request was sent to the restaurant team. Please stay near{' '}
+          {request.tableName || 'your table'}.
+        </p>
+        <button type="button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function PublicReservationModal({
+  restaurant,
+  form,
+  saving,
+  phoneCountryOptions,
+  onClose,
+  onUpdate,
+  onSubmit,
+}) {
+  const minGuests = Number(restaurant?.reservation_min_guests || 1)
+  const maxGuests = Number(restaurant?.reservation_max_guests || 30)
+
+  return (
+    <div className="public-modal-overlay" onClick={onClose}>
+      <div
+        className="public-reservation-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="public-cart-head public-reservation-head">
+          <div>
+            <p className="public-menu-label">Table Booking</p>
+            <h2>Reserve a table</h2>
+            <span>{restaurant?.name || 'Restaurant'} will confirm your booking.</span>
+          </div>
+
+          <button type="button" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="public-reservation-grid">
+          <label className="public-reservation-field full">
+            <span>Your name</span>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(event) => onUpdate('name', event.target.value)}
+              placeholder="Full name"
+            />
+          </label>
+
+          <label className="public-reservation-field full">
+            <span>Phone number</span>
+            <div className="public-phone-row reservation-phone-row">
+              <select
+                value={form.countryCode}
+                onChange={(event) => onUpdate('countryCode', event.target.value)}
+              >
+                {phoneCountryOptions.map((country) => (
+                  <option value={country.code} key={country.code}>
+                    {country.label} {country.code}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(event) => onUpdate('phone', event.target.value)}
+                placeholder="Phone for confirmation"
+              />
+            </div>
+          </label>
+
+          <label className="public-reservation-field full">
+            <span>Email optional</span>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(event) => onUpdate('email', event.target.value)}
+              placeholder="email@example.com"
+            />
+          </label>
+
+          <label className="public-reservation-field">
+            <span>Guests</span>
+            <input
+              type="number"
+              min={minGuests}
+              max={maxGuests}
+              value={form.guestCount}
+              onChange={(event) => onUpdate('guestCount', event.target.value)}
+            />
+            <small>{minGuests} to {maxGuests} guests</small>
+          </label>
+
+          <label className="public-reservation-field">
+            <span>Date</span>
+            <input
+              type="date"
+              value={form.date}
+              min={getTodayDateInput()}
+              onChange={(event) => onUpdate('date', event.target.value)}
+            />
+          </label>
+
+          <label className="public-reservation-field">
+            <span>Time</span>
+            <input
+              type="time"
+              value={form.time}
+              step="900"
+              onChange={(event) => onUpdate('time', event.target.value)}
+            />
+          </label>
+
+          <label className="public-reservation-field">
+            <span>Duration</span>
+            <select
+              value={form.duration}
+              onChange={(event) => onUpdate('duration', event.target.value)}
+            >
+              <option value="60">1 hour</option>
+              <option value="90">1 hour 30 minutes</option>
+              <option value="120">2 hours</option>
+              <option value="150">2 hours 30 minutes</option>
+              <option value="180">3 hours</option>
+            </select>
+          </label>
+
+          <label className="public-reservation-field full">
+            <span>Table preference</span>
+            <input
+              type="text"
+              value={form.tablePreference}
+              onChange={(event) => onUpdate('tablePreference', event.target.value)}
+              placeholder="Family area, outdoor, window side..."
+            />
+          </label>
+
+          <label className="public-reservation-field full">
+            <span>Occasion optional</span>
+            <input
+              type="text"
+              value={form.occasion}
+              onChange={(event) => onUpdate('occasion', event.target.value)}
+              placeholder="Birthday, anniversary, meeting..."
+            />
+          </label>
+
+          <label className="public-reservation-field full">
+            <span>Special notes</span>
+            <textarea
+              value={form.notes}
+              onChange={(event) => onUpdate('notes', event.target.value)}
+              placeholder="Any special request for the restaurant"
+              rows="3"
+            />
+          </label>
+        </div>
+
+        <div className="public-reservation-actions">
+          <button type="button" className="ghost" onClick={onClose}>
+            Cancel
+          </button>
+
+          <button type="button" onClick={onSubmit} disabled={saving}>
+            {saving ? 'Sending booking...' : 'Request Booking'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PublicReservationSuccessModal({ reservation, restaurantName, onClose }) {
+  return (
+    <div className="public-modal-overlay" onClick={onClose}>
+      <div
+        className="public-reservation-success-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="success-icon">✓</div>
+        <p className="public-menu-label">Booking Request Sent</p>
+        <h2>{reservation.code}</h2>
+        <p>
+          {restaurantName} received your table booking request. The restaurant
+          can confirm it from their reservation dashboard.
+        </p>
+
+        <div className="public-reservation-success-details">
+          <span>{formatPublicReservationDate(reservation.date)}</span>
+          <span>{formatPublicReservationTime(reservation.time)}</span>
+          <span>{reservation.guests} guest{Number(reservation.guests) === 1 ? '' : 's'}</span>
+          <span>{formatPublicReservationStatus(reservation.status)}</span>
+        </div>
+
+        <button type="button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function PublicMobileBottomBar({
   cartCount,
   onHome,
@@ -1527,6 +2227,11 @@ function PublicCartSheet({
               <div>
                 <strong>{item.name}</strong>
                 {item.variationName && <span>{item.variationName}</span>}
+                {item.modifierSummary && (
+                  <span className="public-cart-modifier-summary">
+                    Add-ons: {item.modifierSummary}
+                  </span>
+                )}
                 <small>
                   {currency} {item.unitPrice.toFixed(2)}
                 </small>
@@ -1791,19 +2496,96 @@ function PublicCartSheet({
   )
 }
 
-function PublicVariationModal({ product, currency, onClose, onChoose }) {
+function PublicCustomizeItemModal({ product, currency, onClose, onAdd }) {
   const variations = getAvailableVariations(product)
+  const modifierGroups = getAvailableModifierGroups(product)
+  const [selectedVariationId, setSelectedVariationId] = useState(
+    variations[0]?.id || null,
+  )
+  const [selectedModifiers, setSelectedModifiers] = useState(() =>
+    buildDefaultModifierSelection(modifierGroups),
+  )
+
+  const selectedVariation = variations.find(
+    (variation) => variation.id === selectedVariationId,
+  )
+  const baseUnitPrice = Number(selectedVariation?.price ?? product.price ?? 0)
+  const selectedModifierOptions = getSelectedModifierOptions(
+    modifierGroups,
+    selectedModifiers,
+  )
+  const modifierTotal = selectedModifierOptions.reduce(
+    (total, option) => total + Number(option.priceDelta || 0),
+    0,
+  )
+  const finalUnitPrice = roundPublicMoney(baseUnitPrice + modifierTotal)
+
+  const toggleModifierOption = (group, option) => {
+    setSelectedModifiers((current) => {
+      if (group.selectionType === 'single') {
+        return {
+          ...current,
+          [group.id]: current[group.id] === option.id ? '' : option.id,
+        }
+      }
+
+      const currentValues = Array.isArray(current[group.id])
+        ? current[group.id]
+        : []
+      const alreadySelected = currentValues.includes(option.id)
+
+      if (alreadySelected) {
+        return {
+          ...current,
+          [group.id]: currentValues.filter((optionId) => optionId !== option.id),
+        }
+      }
+
+      const maxSelect = Number(group.maxSelect || 0)
+
+      if (maxSelect > 0 && currentValues.length >= maxSelect) {
+        showPublicMessage(`You can choose only ${maxSelect} option${maxSelect === 1 ? '' : 's'} for ${group.name}.`)
+        return current
+      }
+
+      return {
+        ...current,
+        [group.id]: [...currentValues, option.id],
+      }
+    })
+  }
+
+  const handleAddCustomizedItem = () => {
+    const validationMessage = validateModifierSelection(
+      modifierGroups,
+      selectedModifiers,
+    )
+
+    if (validationMessage) {
+      showPublicMessage(validationMessage)
+      return
+    }
+
+    onAdd({
+      variation: selectedVariation || null,
+      unitPrice: baseUnitPrice,
+      modifiers: selectedModifierOptions,
+    })
+  }
 
   return (
     <div className="public-modal-overlay" onClick={onClose}>
       <div
-        className="public-variation-modal"
+        className="public-variation-modal public-customize-modal"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="public-cart-head">
           <div>
-            <p className="public-menu-label">Choose Option</p>
+            <p className="public-menu-label">Customize Item</p>
             <h2>{product.name}</h2>
+            <span>
+              Choose size, spice level, sauces or extra toppings before adding.
+            </span>
           </div>
 
           <button type="button" onClick={onClose}>
@@ -1811,19 +2593,113 @@ function PublicVariationModal({ product, currency, onClose, onChoose }) {
           </button>
         </div>
 
-        <div className="public-variation-list">
-          {variations.map((variation) => (
-            <button
-              type="button"
-              key={variation.id}
-              onClick={() => onChoose(variation)}
-            >
-              <span>{variation.name}</span>
-              <strong>
-                {currency} {Number(variation.price || 0).toFixed(2)}
-              </strong>
-            </button>
-          ))}
+        {variations.length > 0 && (
+          <section className="public-customize-section">
+            <div className="public-customize-section-head">
+              <div>
+                <strong>Choose option</strong>
+                <span>Select one</span>
+              </div>
+            </div>
+
+            <div className="public-variation-list public-option-choice-list">
+              {variations.map((variation) => (
+                <button
+                  type="button"
+                  key={variation.id}
+                  className={
+                    selectedVariationId === variation.id ? 'selected' : ''
+                  }
+                  onClick={() => setSelectedVariationId(variation.id)}
+                >
+                  <span>{variation.name}</span>
+                  <strong>
+                    {currency} {Number(variation.price || 0).toFixed(2)}
+                  </strong>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {modifierGroups.map((group) => {
+          const selectedValue = selectedModifiers[group.id]
+          const selectedCount = Array.isArray(selectedValue)
+            ? selectedValue.length
+            : selectedValue
+              ? 1
+              : 0
+          const minSelect = getModifierMinSelect(group)
+          const maxSelect = Number(group.maxSelect || 0)
+
+          return (
+            <section className="public-customize-section" key={group.id}>
+              <div className="public-customize-section-head">
+                <div>
+                  <strong>{group.name}</strong>
+                  {group.description && <span>{group.description}</span>}
+                </div>
+
+                <small>
+                  {group.selectionType === 'single'
+                    ? group.isRequired
+                      ? 'Required'
+                      : 'Optional'
+                    : `${selectedCount}/${maxSelect || '∞'} selected`}
+                </small>
+              </div>
+
+              <div className="public-modifier-option-list">
+                {(group.options || []).map((option) => {
+                  const isSelected =
+                    group.selectionType === 'single'
+                      ? selectedValue === option.id
+                      : Array.isArray(selectedValue) && selectedValue.includes(option.id)
+
+                  return (
+                    <button
+                      type="button"
+                      key={option.id}
+                      className={isSelected ? 'selected' : ''}
+                      onClick={() => toggleModifierOption(group, option)}
+                    >
+                      <span>
+                        <strong>{option.name}</strong>
+                        {option.priceDelta > 0 ? (
+                          <small>
+                            +{currency} {Number(option.priceDelta || 0).toFixed(2)}
+                          </small>
+                        ) : (
+                          <small>Included</small>
+                        )}
+                      </span>
+
+                      <i>{isSelected ? '✓' : group.selectionType === 'single' ? '○' : '+'}</i>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {minSelect > 0 && selectedCount < minSelect && (
+                <p className="public-modifier-hint">
+                  Choose at least {minSelect} option{minSelect === 1 ? '' : 's'}.
+                </p>
+              )}
+            </section>
+          )
+        })}
+
+        <div className="public-customize-footer">
+          <div>
+            <span>Total per item</span>
+            <strong>
+              {currency} {Number(finalUnitPrice || 0).toFixed(2)}
+            </strong>
+          </div>
+
+          <button type="button" onClick={handleAddCustomizedItem}>
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
@@ -2666,12 +3542,188 @@ function showPublicMessage(message) {
   )
 }
 
+async function loadPublicModifierGroupsByItem(restaurantId) {
+  if (!restaurantId) return {}
+
+  const { data: linkData, error: linkError } = await supabase
+    .from('restaurant_item_modifier_groups')
+    .select('item_id, group_id, sort_order')
+    .eq('restaurant_id', restaurantId)
+    .order('sort_order', { ascending: true })
+
+  if (linkError || !Array.isArray(linkData) || linkData.length === 0) {
+    return {}
+  }
+
+  const groupIds = [...new Set(linkData.map((link) => link.group_id).filter(Boolean))]
+
+  if (groupIds.length === 0) return {}
+
+  const { data: groupData } = await supabase
+    .from('restaurant_modifier_groups')
+    .select(
+      'id, name, description, selection_type, is_required, min_select, max_select, sort_order',
+    )
+    .eq('restaurant_id', restaurantId)
+    .eq('is_deleted', false)
+    .eq('is_active', true)
+    .in('id', groupIds)
+    .order('sort_order', { ascending: true })
+
+  const { data: optionData } = await supabase
+    .from('restaurant_modifier_options')
+    .select('id, group_id, name, price_delta, is_default, is_available, sort_order')
+    .eq('restaurant_id', restaurantId)
+    .eq('is_deleted', false)
+    .eq('is_available', true)
+    .in('group_id', groupIds)
+    .order('sort_order', { ascending: true })
+
+  const optionsByGroup = (optionData || []).reduce((map, option) => {
+    const optionGroupId = option.group_id
+
+    if (!map[optionGroupId]) map[optionGroupId] = []
+
+    map[optionGroupId].push({
+      id: option.id,
+      name: option.name,
+      priceDelta: Number(option.price_delta || 0),
+      isDefault: Boolean(option.is_default),
+      sortOrder: Number(option.sort_order || 0),
+    })
+
+    return map
+  }, {})
+
+  const groupsById = (groupData || []).reduce((map, group) => {
+    map[group.id] = {
+      id: group.id,
+      name: group.name,
+      description: group.description || '',
+      selectionType: group.selection_type || 'single',
+      isRequired: Boolean(group.is_required),
+      minSelect: Number(group.min_select || 0),
+      maxSelect: Number(group.max_select || 1),
+      sortOrder: Number(group.sort_order || 0),
+      options: optionsByGroup[group.id] || [],
+    }
+
+    return map
+  }, {})
+
+  return linkData.reduce((map, link) => {
+    const group = groupsById[link.group_id]
+
+    if (!group || group.options.length === 0) return map
+
+    if (!map[link.item_id]) map[link.item_id] = []
+
+    map[link.item_id].push({
+      ...group,
+      itemSortOrder: Number(link.sort_order || 0),
+    })
+
+    map[link.item_id].sort(
+      (first, second) =>
+        Number(first.itemSortOrder || 0) - Number(second.itemSortOrder || 0),
+    )
+
+    return map
+  }, {})
+}
+
 function getAvailableVariations(product) {
   if (!Array.isArray(product.variations)) return []
 
   return [...product.variations]
     .filter((variation) => variation.is_available !== false)
     .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0))
+}
+
+function getAvailableModifierGroups(product) {
+  if (!Array.isArray(product.modifierGroups)) return []
+
+  return [...product.modifierGroups]
+    .filter((group) => Array.isArray(group.options) && group.options.length > 0)
+    .sort(
+      (first, second) =>
+        Number(first.itemSortOrder ?? first.sortOrder ?? 0) -
+        Number(second.itemSortOrder ?? second.sortOrder ?? 0),
+    )
+}
+
+function buildDefaultModifierSelection(groups) {
+  return groups.reduce((selection, group) => {
+    const defaultOptions = (group.options || []).filter((option) => option.isDefault)
+
+    if (group.selectionType === 'single') {
+      selection[group.id] = defaultOptions[0]?.id || ''
+      return selection
+    }
+
+    const maxSelect = Number(group.maxSelect || 0)
+    const selectedDefaults = defaultOptions.map((option) => option.id)
+
+    selection[group.id] = maxSelect > 0
+      ? selectedDefaults.slice(0, maxSelect)
+      : selectedDefaults
+
+    return selection
+  }, {})
+}
+
+function getSelectedModifierOptions(groups, selection) {
+  return groups.flatMap((group) => {
+    const selectedValue = selection[group.id]
+
+    if (group.selectionType === 'single') {
+      const selectedOption = (group.options || []).find(
+        (option) => option.id === selectedValue,
+      )
+
+      return selectedOption ? [selectedOption] : []
+    }
+
+    const selectedIds = Array.isArray(selectedValue) ? selectedValue : []
+
+    return (group.options || []).filter((option) => selectedIds.includes(option.id))
+  })
+}
+
+function getModifierMinSelect(group) {
+  return Math.max(
+    group.isRequired ? 1 : 0,
+    Number(group.minSelect || 0),
+  )
+}
+
+function validateModifierSelection(groups, selection) {
+  for (const group of groups) {
+    const selectedValue = selection[group.id]
+    const selectedCount = Array.isArray(selectedValue)
+      ? selectedValue.length
+      : selectedValue
+        ? 1
+        : 0
+    const minSelect = getModifierMinSelect(group)
+    const maxSelect = Number(group.maxSelect || 0)
+
+    if (selectedCount < minSelect) {
+      return `Please choose ${group.name}.`
+    }
+
+    if (maxSelect > 0 && selectedCount > maxSelect) {
+      return `Choose only ${maxSelect} option${maxSelect === 1 ? '' : 's'} for ${group.name}.`
+    }
+  }
+
+  return ''
+}
+
+function buildOrderVariationName(item) {
+  return [item.variationName, item.modifierSummary]
+    .filter(Boolean)
+    .join(' • ')
 }
 
 function buildCustomerNotes(customerForm, isTableOrder) {
@@ -2828,6 +3880,69 @@ function formatRewardNumber(value) {
   if (Number.isInteger(numberValue)) return String(numberValue)
 
   return numberValue.toFixed(2)
+}
+
+function getTodayDateInput() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function getDefaultReservationDate() {
+  const nextDate = new Date()
+  nextDate.setDate(nextDate.getDate() + 1)
+
+  return nextDate.toISOString().slice(0, 10)
+}
+
+function getDefaultReservationTime() {
+  const date = new Date()
+  date.setHours(date.getHours() + 2)
+  const minutes = date.getMinutes()
+  const roundedMinutes = Math.ceil(minutes / 15) * 15
+  date.setMinutes(roundedMinutes === 60 ? 0 : roundedMinutes)
+
+  if (roundedMinutes === 60) {
+    date.setHours(date.getHours() + 1)
+  }
+
+  return `${String(date.getHours()).padStart(2, '0')}:${String(
+    date.getMinutes(),
+  ).padStart(2, '0')}`
+}
+
+function formatPublicReservationDate(value) {
+  if (!value) return 'Selected date'
+
+  try {
+    return new Intl.DateTimeFormat('en-AE', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(`${value}T00:00:00`))
+  } catch {
+    return value
+  }
+}
+
+function formatPublicReservationTime(value) {
+  if (!value) return 'Selected time'
+
+  try {
+    return new Intl.DateTimeFormat('en-AE', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(`2026-01-01T${String(value).slice(0, 5)}:00`))
+  } catch {
+    return String(value).slice(0, 5)
+  }
+}
+
+function formatPublicReservationStatus(status) {
+  if (status === 'confirmed') return 'Confirmation pending'
+  if (status === 'seated') return 'Seated'
+  if (status === 'completed') return 'Completed'
+  if (status === 'cancelled') return 'Cancelled'
+  if (status === 'no_show') return 'No-show'
+  return 'Pending confirmation'
 }
 
 function formatRewardExpiry(rewards) {

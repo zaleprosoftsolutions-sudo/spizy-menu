@@ -6,9 +6,15 @@ import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
 import OrdersManagement from '../../restaurant/OrdersManagement'
+import TableFloorManagement from '../../restaurant/TableFloorManagement'
+import NotificationsCenter from '../../restaurant/NotificationsCenter'
 import KitchenDisplay from '../../restaurant/KitchenDisplay'
 import DeliveryManagement from '../../restaurant/DeliveryManagement'
+import ReservationsManagement from '../../restaurant/ReservationsManagement'
+import ServiceRequestsManagement from '../../restaurant/ServiceRequestsManagement'
 import InventoryManagement from '../../restaurant/InventoryManagement'
+import RecipesManagement from '../../restaurant/RecipesManagement'
+import ModifierGroupsManagement from '../../restaurant/ModifierGroupsManagement'
 import PurchasesManagement from '../../restaurant/PurchasesManagement'
 import ExpensesManagement from '../../restaurant/ExpensesManagement'
 import FinanceManagement from '../../restaurant/FinanceManagement'
@@ -19,19 +25,28 @@ import CampaignsManagement from '../../restaurant/CampaignsManagement'
 import ReviewsManagement from '../../restaurant/ReviewsManagement'
 import ReportsManagement from '../../restaurant/ReportsManagement'
 import StaffManagement from '../../restaurant/StaffManagement'
+import StaffAttendanceManagement from '../../restaurant/StaffAttendanceManagement'
+import PayrollManagement from '../../restaurant/PayrollManagement'
 import SettingsManagement from '../../restaurant/SettingsManagement'
+import PrintSettingsManagement from '../../restaurant/PrintSettingsManagement'
 
 const restaurantSections = [
   'overview',
   'pos',
+  'alerts',
   'orders',
+  'floor',
   'kitchen',
   'delivery',
+  'reservations',
+  'service-requests',
   'products',
   'menu',
   'categories',
   'qr',
   'inventory',
+  'recipes',
+  'modifiers',
   'purchases',
   'expenses',
   'finance',
@@ -39,8 +54,11 @@ const restaurantSections = [
   'discounts',
   'campaigns',
   'staff',
+  'attendance',
+  'payroll',
   'reviews',
   'reports',
+  'printers',
   'settings',
 ]
 
@@ -94,6 +112,13 @@ function RestaurantDashboard({ profile, restaurant }) {
 
         {activeSection === 'pos' && <NewOrderPOS restaurant={restaurant} />}
 
+        {activeSection === 'alerts' && (
+          <NotificationsCenter
+            restaurant={restaurant}
+            onOpenSection={handleSectionChange}
+          />
+        )}
+
         {(activeSection === 'products' ||
           activeSection === 'menu' ||
           activeSection === 'categories') && (
@@ -108,8 +133,20 @@ function RestaurantDashboard({ profile, restaurant }) {
           <OrdersManagement restaurant={restaurant} />
         )}
 
+        {activeSection === 'floor' && (
+          <TableFloorManagement restaurant={restaurant} onOpenSection={handleSectionChange} />
+        )}
+
         {activeSection === 'inventory' && (
           <InventoryManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'recipes' && (
+          <RecipesManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'modifiers' && (
+          <ModifierGroupsManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'purchases' && (
@@ -132,6 +169,14 @@ function RestaurantDashboard({ profile, restaurant }) {
           <DeliveryManagement restaurant={restaurant} />
         )}
 
+        {activeSection === 'reservations' && (
+          <ReservationsManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'service-requests' && (
+          <ServiceRequestsManagement restaurant={restaurant} />
+        )}
+
         {activeSection === 'customers' && (
           <CustomersManagement restaurant={restaurant} />
         )}
@@ -146,12 +191,24 @@ function RestaurantDashboard({ profile, restaurant }) {
 
         {activeSection === 'staff' && <StaffManagement restaurant={restaurant} />}
 
+        {activeSection === 'attendance' && (
+          <StaffAttendanceManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'payroll' && (
+          <PayrollManagement restaurant={restaurant} />
+        )}
+
         {activeSection === 'reviews' && (
           <ReviewsManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'reports' && (
           <ReportsManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'printers' && (
+          <PrintSettingsManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'settings' && (
