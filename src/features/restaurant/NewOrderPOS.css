@@ -1,0 +1,207 @@
+/* POS receipt summary + bill improvements */
+
+.pos-bill-adjustments.with-received {
+  grid-template-columns: 1fr 1fr;
+}
+
+.pos-adjust-field {
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background: rgba(6, 6, 6, 0.4);
+}
+
+.pos-adjust-field input {
+  margin-top: 8px;
+}
+
+.discount-field {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.18);
+}
+
+.extra-field {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
+.received-field {
+  grid-column: 1 / -1;
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.change-due strong {
+  color: #86efac !important;
+}
+
+.balance-due strong {
+  color: #fca5a5 !important;
+}
+
+.order-summary-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+.order-summary-modal {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  border-radius: 32px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 18rem),
+    linear-gradient(180deg, rgba(32, 32, 32, 0.98), rgba(14, 14, 14, 0.98));
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.62);
+}
+
+.order-summary-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.order-summary-head h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 30px;
+  letter-spacing: -0.05em;
+}
+
+.order-summary-head span {
+  display: block;
+  margin-top: 6px;
+  color: #d6d6d6;
+}
+
+.payment-status-pill {
+  min-width: 112px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-weight: 1000;
+}
+
+.payment-status-pill.paid {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.24);
+}
+
+.payment-status-pill.unpaid {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.24);
+}
+
+.receipt-preview {
+  width: min(360px, 100%);
+  margin: 22px auto 0;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f8f2e8;
+  color: #1a1a1a;
+  font-family: 'Courier New', monospace;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.36),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.receipt-center {
+  text-align: center;
+}
+
+.receipt-center strong {
+  display: block;
+  color: #000000;
+  font-size: 18px;
+}
+
+.receipt-center span {
+  color: #333333;
+  font-size: 12px;
+}
+
+.receipt-dashed-line {
+  border-top: 1px dashed #1a1a1a;
+  margin: 12px 0;
+}
+
+.receipt-row,
+.receipt-item,
+.receipt-total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.receipt-row span,
+.receipt-item span,
+.receipt-item small {
+  color: #333333;
+}
+
+.receipt-row strong,
+.receipt-item strong,
+.receipt-total-row strong {
+  color: #000000;
+}
+
+.receipt-item div {
+  min-width: 0;
+}
+
+.receipt-item span,
+.receipt-item small {
+  display: block;
+  margin-top: 3px;
+}
+
+.receipt-total-row {
+  padding-top: 10px;
+  border-top: 1px solid #1a1a1a;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.change-row strong {
+  color: #047857;
+}
+
+.order-summary-actions {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 12px;
+}
+
+.order-summary-actions button {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .order-summary-head {
+    flex-direction: column;
+  }
+
+  .order-summary-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .receipt-preview {
+    padding: 16px;
+  }
+}

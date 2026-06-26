@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  CheckCircle2,
   CreditCard,
   Minus,
   Plus,
+  Printer,
+  ReceiptText,
   RefreshCw,
   Search,
-  ShoppingCart,
   Trash2,
   X,
 } from 'lucide-react'
 import { useAppFeedback } from '../../components/AppFeedback'
 import { supabase } from '../../lib/supabaseClient'
+import './NewOrderPOS.css'
 
 function NewOrderPOS({ restaurant }) {
   const { confirmAction, showToast } = useAppFeedback()
@@ -29,7 +32,9 @@ function NewOrderPOS({ restaurant }) {
   const [tableName, setTableName] = useState('')
   const [discountAmount, setDiscountAmount] = useState('')
   const [extraAmount, setExtraAmount] = useState('')
+  const [receivedAmount, setReceivedAmount] = useState('')
   const [notes, setNotes] = useState('')
+  const [lastOrderSummary, setLastOrderSummary] = useState(null)
 
   const loadPOSData = useCallback(async () => {
     if (!restaurant?.id) return
@@ -140,6 +145,18 @@ function NewOrderPOS({ restaurant }) {
     }
   }, [cart, discountAmount, extraAmount])
 
+  const cashSummary = useMemo(() => {
+    const received = Number(receivedAmount || 0)
+    const change = Math.max(received - cartTotals.total, 0)
+    const balance = Math.max(cartTotals.total - received, 0)
+
+    return {
+      received,
+      change,
+      balance,
+    }
+  }, [cartTotals.total, receivedAmount])
+
   const handleProductClick = (product) => {
     const variations = getAvailableVariations(product)
 
@@ -236,6 +253,7 @@ function NewOrderPOS({ restaurant }) {
     setTableName('')
     setDiscountAmount('')
     setExtraAmount('')
+    setReceivedAmount('')
     setNotes('')
   }
 
@@ -320,6 +338,29 @@ function NewOrderPOS({ restaurant }) {
       })
       return
     }
+
+    setLastOrderSummary({
+      id: orderData.id,
+      orderCode: orderData.order_code,
+      restaurantName: restaurant.name,
+      currency: restaurant.currency || 'AED',
+      orderType,
+      paymentMethod,
+      paymentStatus: paymentMethod === 'cod' ? 'unpaid' : 'paid',
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      tableName: tableName.trim(),
+      notes: notes.trim(),
+      items: cart.map((item) => ({ ...item })),
+      subtotal: cartTotals.subtotal,
+      discount: cartTotals.discount,
+      extra: cartTotals.extra,
+      total: cartTotals.total,
+      received: Number(receivedAmount || 0),
+      change: Math.max(Number(receivedAmount || 0) - cartTotals.total, 0),
+      balance: Math.max(cartTotals.total - Number(receivedAmount || 0), 0),
+      createdAt: new Date().toISOString(),
+    })
 
     showToast({
       type: 'success',
@@ -464,13 +505,19 @@ function NewOrderPOS({ restaurant }) {
         </div>
 
         <div className="pos-order-fields">
-          <select value={orderType} onChange={(event) => setOrderType(event.target.value)}>
+          <select
+            value={orderType}
+            onChange={(event) => setOrderType(event.target.value)}
+          >
             <option value="counter">Counter</option>
             <option value="dine_in">Dine-in</option>
             <option value="delivery">Delivery</option>
           </select>
 
-          <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)}>
+          <select
+            value={paymentMethod}
+            onChange={(event) => setPaymentMethod(event.target.value)}
+          >
             <option value="cash">Cash</option>
             <option value="card">Card</option>
             <option value="cod">COD</option>
@@ -494,6 +541,7 @@ function NewOrderPOS({ restaurant }) {
                 onChange={(event) => setCustomerName(event.target.value)}
                 placeholder="Customer name"
               />
+
               <input
                 type="tel"
                 value={customerPhone}
@@ -544,8 +592,12 @@ function NewOrderPOS({ restaurant }) {
           )}
         </div>
 
-        <div className="pos-bill-adjustments">
-          <label>
+        <div
+          className={`pos-bill-adjustments ${
+            paymentMethod === 'cash' ? 'with-received' : ''
+          }`}
+        >
+          <label className="pos-adjust-field discount-field">
             Discount
             <input
               type="number"
@@ -557,7 +609,7 @@ function NewOrderPOS({ restaurant }) {
             />
           </label>
 
-          <label>
+          <label className="pos-adjust-field extra-field">
             Extra amount
             <input
               type="number"
@@ -568,6 +620,20 @@ function NewOrderPOS({ restaurant }) {
               placeholder="0.00"
             />
           </label>
+
+          {paymentMethod === 'cash' && (
+            <label className="pos-adjust-field received-field">
+              Cash received
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={receivedAmount}
+                onChange={(event) => setReceivedAmount(event.target.value)}
+                placeholder="Example: 100.00"
+              />
+            </label>
+          )}
         </div>
 
         <textarea
@@ -595,6 +661,30 @@ function NewOrderPOS({ restaurant }) {
             <span>Extra</span>
             <strong>+ {cartTotals.extra.toFixed(2)}</strong>
           </div>
+
+          {paymentMethod === 'cash' && cashSummary.received > 0 && (
+            <>
+              <div>
+                <span>Cash received</span>
+                <strong>
+                  {restaurant.currency || 'AED'} {cashSummary.received.toFixed(2)}
+                </strong>
+              </div>
+
+              <div
+                className={cashSummary.balance > 0 ? 'balance-due' : 'change-due'}
+              >
+                <span>{cashSummary.balance > 0 ? 'Balance due' : 'Change'}</span>
+                <strong>
+                  {restaurant.currency || 'AED'}{' '}
+                  {(cashSummary.balance > 0
+                    ? cashSummary.balance
+                    : cashSummary.change
+                  ).toFixed(2)}
+                </strong>
+              </div>
+            </>
+          )}
 
           <div className="grand-total">
             <span>Total</span>
@@ -629,6 +719,14 @@ function NewOrderPOS({ restaurant }) {
           }
         />
       )}
+
+      {lastOrderSummary && (
+        <OrderSummaryModal
+          order={lastOrderSummary}
+          onClose={() => setLastOrderSummary(null)}
+          onNewOrder={() => setLastOrderSummary(null)}
+        />
+      )}
     </section>
   )
 }
@@ -646,7 +744,10 @@ function VariationModal({ product, currency, onClose, onChoose }) {
 
   return (
     <div className="pos-modal-overlay" onClick={onClose}>
-      <div className="pos-variation-modal" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="pos-variation-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="pos-modal-head">
           <div>
             <p className="pricing-label">Choose Variation</p>
@@ -677,6 +778,387 @@ function VariationModal({ product, currency, onClose, onChoose }) {
       </div>
     </div>
   )
+}
+
+function OrderSummaryModal({ order, onClose, onNewOrder }) {
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank', 'width=420,height=720')
+
+    if (!printWindow) return
+
+    printWindow.document.write(buildReceiptHtml(order))
+    printWindow.document.close()
+    printWindow.focus()
+
+    setTimeout(() => {
+      printWindow.print()
+    }, 250)
+  }
+
+  return (
+    <div className="order-summary-overlay" onClick={onClose}>
+      <div
+        className="order-summary-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="order-summary-head">
+          <div>
+            <p className="pricing-label">Order Summary</p>
+            <h3>{order.orderCode}</h3>
+            <span>
+              {formatOrderType(order.orderType)} •{' '}
+              {formatPaymentMethod(order.paymentMethod)}
+            </span>
+          </div>
+
+          <div
+            className={`payment-status-pill ${
+              order.paymentStatus === 'paid' ? 'paid' : 'unpaid'
+            }`}
+          >
+            <CheckCircle2 size={18} />
+            {order.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+          </div>
+        </div>
+
+        <div className="receipt-preview">
+          <div className="receipt-center">
+            <strong>{order.restaurantName || 'Spizy Restaurant'}</strong>
+            <span>Thermal Receipt Preview</span>
+          </div>
+
+          <div className="receipt-dashed-line" />
+
+          <div className="receipt-row">
+            <span>Order</span>
+            <strong>{order.orderCode}</strong>
+          </div>
+
+          <div className="receipt-row">
+            <span>Date</span>
+            <strong>{formatDateTime(order.createdAt)}</strong>
+          </div>
+
+          <div className="receipt-row">
+            <span>Payment</span>
+            <strong>{formatPaymentMethod(order.paymentMethod)}</strong>
+          </div>
+
+          {order.tableName && (
+            <div className="receipt-row">
+              <span>Table</span>
+              <strong>{order.tableName}</strong>
+            </div>
+          )}
+
+          {order.customerName && (
+            <div className="receipt-row">
+              <span>Customer</span>
+              <strong>{order.customerName}</strong>
+            </div>
+          )}
+
+          <div className="receipt-dashed-line" />
+
+          <div className="receipt-items">
+            {order.items.map((item) => (
+              <div className="receipt-item" key={item.lineKey}>
+                <div>
+                  <strong>{item.name}</strong>
+                  {item.variationName && <span>{item.variationName}</span>}
+                  <small>
+                    {item.quantity} × {formatMoney(order.currency, item.unitPrice)}
+                  </small>
+                </div>
+
+                <strong>{formatMoney(order.currency, item.totalPrice)}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="receipt-dashed-line" />
+
+          <div className="receipt-row">
+            <span>Subtotal</span>
+            <strong>{formatMoney(order.currency, order.subtotal)}</strong>
+          </div>
+
+          <div className="receipt-row">
+            <span>Discount</span>
+            <strong>- {formatMoney(order.currency, order.discount)}</strong>
+          </div>
+
+          <div className="receipt-row">
+            <span>Extra</span>
+            <strong>+ {formatMoney(order.currency, order.extra)}</strong>
+          </div>
+
+          <div className="receipt-total-row">
+            <span>Total</span>
+            <strong>{formatMoney(order.currency, order.total)}</strong>
+          </div>
+
+          {order.paymentMethod === 'cash' && order.received > 0 && (
+            <>
+              <div className="receipt-row">
+                <span>Cash received</span>
+                <strong>{formatMoney(order.currency, order.received)}</strong>
+              </div>
+
+              <div className="receipt-row change-row">
+                <span>{order.balance > 0 ? 'Balance due' : 'Change'}</span>
+                <strong>
+                  {formatMoney(
+                    order.currency,
+                    order.balance > 0 ? order.balance : order.change,
+                  )}
+                </strong>
+              </div>
+            </>
+          )}
+
+          <div className="receipt-dashed-line" />
+
+          <div className="receipt-center">
+            <span>Thank you. Powered by Spizy Menu.</span>
+          </div>
+        </div>
+
+        <div className="order-summary-actions">
+          <button type="button" className="secondary-button" onClick={onClose}>
+            <X size={18} />
+            Close
+          </button>
+
+          <button type="button" className="secondary-button" onClick={handlePrint}>
+            <Printer size={18} />
+            Print
+          </button>
+
+          <button type="button" className="primary-button" onClick={onNewOrder}>
+            <ReceiptText size={18} />
+            New Order
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function formatMoney(currency, amount) {
+  return `${currency || 'AED'} ${Number(amount || 0).toFixed(2)}`
+}
+
+function formatDateTime(value) {
+  return new Intl.DateTimeFormat('en-AE', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
+function formatOrderType(value) {
+  if (value === 'dine_in') return 'Dine-in'
+  if (value === 'delivery') return 'Delivery'
+  return 'Counter'
+}
+
+function formatPaymentMethod(value) {
+  if (value === 'cod') return 'COD'
+  return String(value || 'cash').toUpperCase()
+}
+
+function buildReceiptHtml(order) {
+  const itemsHtml = order.items
+    .map(
+      (item) => `
+        <div class="item">
+          <div>
+            <strong>${escapeHtml(item.name)}</strong>
+            ${
+              item.variationName
+                ? `<span>${escapeHtml(item.variationName)}</span>`
+                : ''
+            }
+            <small>${item.quantity} x ${formatMoney(
+              order.currency,
+              item.unitPrice,
+            )}</small>
+          </div>
+          <strong>${formatMoney(order.currency, item.totalPrice)}</strong>
+        </div>
+      `,
+    )
+    .join('')
+
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <title>${escapeHtml(order.orderCode)}</title>
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            margin: 0;
+            padding: 12px;
+            background: #ffffff;
+            color: #000000;
+            font-family: Arial, sans-serif;
+          }
+
+          .receipt {
+            width: 80mm;
+            max-width: 100%;
+            margin: 0 auto;
+            font-size: 12px;
+          }
+
+          .center {
+            text-align: center;
+          }
+
+          .center strong {
+            display: block;
+            font-size: 16px;
+          }
+
+          .line {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+          }
+
+          .row,
+          .item,
+          .total {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 6px 0;
+          }
+
+          .item span,
+          .item small {
+            display: block;
+            margin-top: 2px;
+          }
+
+          .total {
+            border-top: 1px solid #000;
+            padding-top: 8px;
+            font-size: 16px;
+            font-weight: 800;
+          }
+
+          @media print {
+            body {
+              padding: 0;
+            }
+
+            .receipt {
+              width: 80mm;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="receipt">
+          <div class="center">
+            <strong>${escapeHtml(order.restaurantName || 'Spizy Restaurant')}</strong>
+            <span>${escapeHtml(order.orderCode)}</span>
+          </div>
+
+          <div class="line"></div>
+
+          <div class="row">
+            <span>Date</span>
+            <strong>${formatDateTime(order.createdAt)}</strong>
+          </div>
+
+          <div class="row">
+            <span>Type</span>
+            <strong>${formatOrderType(order.orderType)}</strong>
+          </div>
+
+          <div class="row">
+            <span>Payment</span>
+            <strong>${formatPaymentMethod(order.paymentMethod)}</strong>
+          </div>
+
+          <div class="row">
+            <span>Status</span>
+            <strong>${order.paymentStatus === 'paid' ? 'PAID' : 'UNPAID'}</strong>
+          </div>
+
+          <div class="line"></div>
+
+          ${itemsHtml}
+
+          <div class="line"></div>
+
+          <div class="row">
+            <span>Subtotal</span>
+            <strong>${formatMoney(order.currency, order.subtotal)}</strong>
+          </div>
+
+          <div class="row">
+            <span>Discount</span>
+            <strong>- ${formatMoney(order.currency, order.discount)}</strong>
+          </div>
+
+          <div class="row">
+            <span>Extra</span>
+            <strong>+ ${formatMoney(order.currency, order.extra)}</strong>
+          </div>
+
+          <div class="total">
+            <span>Total</span>
+            <strong>${formatMoney(order.currency, order.total)}</strong>
+          </div>
+
+          ${
+            order.paymentMethod === 'cash' && order.received > 0
+              ? `
+                <div class="row">
+                  <span>Cash received</span>
+                  <strong>${formatMoney(order.currency, order.received)}</strong>
+                </div>
+
+                <div class="row">
+                  <span>${order.balance > 0 ? 'Balance due' : 'Change'}</span>
+                  <strong>${formatMoney(
+                    order.currency,
+                    order.balance > 0 ? order.balance : order.change,
+                  )}</strong>
+                </div>
+              `
+              : ''
+          }
+
+          <div class="line"></div>
+
+          <div class="center">
+            <span>Thank you</span><br />
+            <span>Powered by Spizy Menu</span>
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
 }
 
 export default NewOrderPOS
