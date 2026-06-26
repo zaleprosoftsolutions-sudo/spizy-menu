@@ -1,0 +1,239 @@
+.tables-qr-screen {
+  min-width: 0;
+  padding: 22px;
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(18, 18, 18, 0.96));
+  border: 1px solid rgba(255, 191, 77, 0.1);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.tables-qr-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.tables-qr-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 34px;
+  letter-spacing: -0.04em;
+}
+
+.tables-qr-header span {
+  display: block;
+  margin-top: 8px;
+  color: #d6d6d6;
+  line-height: 1.6;
+}
+
+.qr-top-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.qr-code-card,
+.table-create-card,
+.table-qr-card,
+.table-list-head {
+  border-radius: 26px;
+  background: rgba(20, 20, 20, 0.82);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.qr-code-card,
+.table-create-card {
+  padding: 18px;
+}
+
+.qr-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.qr-badge {
+  width: fit-content;
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: var(--gold);
+  background: rgba(255, 122, 24, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.qr-code-card h3,
+.table-create-head h3 {
+  margin: 12px 0 6px;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.qr-code-card p,
+.table-create-head p {
+  margin: 0;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.qr-preview-box {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 22px;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+}
+
+.qr-preview-box img {
+  width: 100%;
+  max-width: 260px;
+  display: block;
+}
+
+.qr-code-card.compact .qr-preview-box img {
+  max-width: 220px;
+}
+
+.qr-link-box {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(6, 6, 6, 0.56);
+  border: 1px solid rgba(255, 191, 77, 0.1);
+}
+
+.qr-link-box span {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.45;
+  word-break: break-all;
+}
+
+.qr-action-row,
+.table-qr-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.table-create-card {
+  display: grid;
+  gap: 14px;
+}
+
+.table-create-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.table-create-card label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.table-create-card input {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background: rgba(6, 6, 6, 0.66);
+  color: #ffffff;
+  padding: 0 14px;
+  outline: none;
+  font: inherit;
+}
+
+.table-create-card input:focus {
+  border-color: rgba(255, 122, 24, 0.64);
+  box-shadow: 0 0 0 4px rgba(255, 122, 24, 0.12);
+}
+
+.table-list-head {
+  margin-top: 20px;
+  padding: 16px;
+}
+
+.table-list-head strong {
+  display: block;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.table-list-head span {
+  display: block;
+  margin-top: 4px;
+  color: #d6d6d6;
+  font-size: 13px;
+}
+
+.table-qr-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.table-qr-card {
+  padding: 14px;
+}
+
+.table-qr-card .qr-code-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+@media (max-width: 1180px) {
+  .qr-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-code-card {
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .tables-qr-screen {
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  .tables-qr-header {
+    flex-direction: column;
+  }
+
+  .tables-qr-header h2 {
+    font-size: 28px;
+  }
+
+  .qr-code-card {
+    max-width: 100%;
+  }
+
+  .qr-action-row,
+  .table-qr-actions {
+    flex-direction: column;
+  }
+
+  .qr-action-row .tiny-button,
+  .table-qr-actions .tiny-button {
+    width: 100%;
+  }
+}

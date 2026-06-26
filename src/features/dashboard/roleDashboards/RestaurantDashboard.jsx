@@ -6,6 +6,7 @@ import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
 import OrdersManagement from '../../restaurant/OrdersManagement'
+import TablesQRManagement from '../../restaurant/TablesQRManagement'
 
 const restaurantSections = [
   'overview',
@@ -81,12 +82,8 @@ function RestaurantDashboard({ profile, restaurant }) {
         )}
 
         {activeSection === 'qr' && (
-          <RestaurantPlaceholder
-            label="Tables & QR"
-            title="Live site QR and table QR"
-            text="Manage restaurant public menu link, live QR download and unlimited table-wise QR codes."
-          />
-        )}
+            <TablesQRManagement restaurant={restaurant} />
+            )}
 
         {activeSection === 'orders' && (
             <OrdersManagement restaurant={restaurant} />
