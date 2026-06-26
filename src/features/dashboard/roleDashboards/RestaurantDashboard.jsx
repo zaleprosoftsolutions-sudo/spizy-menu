@@ -5,6 +5,7 @@ import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
+import OrdersManagement from '../../restaurant/OrdersManagement'
 
 const restaurantSections = [
   'overview',
@@ -88,12 +89,8 @@ function RestaurantDashboard({ profile, restaurant }) {
         )}
 
         {activeSection === 'orders' && (
-          <RestaurantPlaceholder
-            label="Orders"
-            title="Table and delivery orders"
-            text="Manage order received, preparing, processed, served, out for delivery and completed statuses."
-          />
-        )}
+            <OrdersManagement restaurant={restaurant} />
+            )}
 
         {activeSection === 'customers' && (
           <RestaurantPlaceholder

@@ -32,7 +32,6 @@ function NewOrderPOS({ restaurant }) {
   const [tableName, setTableName] = useState('')
   const [discountAmount, setDiscountAmount] = useState('')
   const [extraAmount, setExtraAmount] = useState('')
-  const [receivedAmount, setReceivedAmount] = useState('')
   const [notes, setNotes] = useState('')
   const [lastOrderSummary, setLastOrderSummary] = useState(null)
 
@@ -145,17 +144,6 @@ function NewOrderPOS({ restaurant }) {
     }
   }, [cart, discountAmount, extraAmount])
 
-  const cashSummary = useMemo(() => {
-    const received = Number(receivedAmount || 0)
-    const change = Math.max(received - cartTotals.total, 0)
-    const balance = Math.max(cartTotals.total - received, 0)
-
-    return {
-      received,
-      change,
-      balance,
-    }
-  }, [cartTotals.total, receivedAmount])
 
   const handleProductClick = (product) => {
     const variations = getAvailableVariations(product)
@@ -253,7 +241,6 @@ function NewOrderPOS({ restaurant }) {
     setTableName('')
     setDiscountAmount('')
     setExtraAmount('')
-    setReceivedAmount('')
     setNotes('')
   }
 
@@ -356,9 +343,9 @@ function NewOrderPOS({ restaurant }) {
       discount: cartTotals.discount,
       extra: cartTotals.extra,
       total: cartTotals.total,
-      received: Number(receivedAmount || 0),
-      change: Math.max(Number(receivedAmount || 0) - cartTotals.total, 0),
-      balance: Math.max(cartTotals.total - Number(receivedAmount || 0), 0),
+      received: 0,
+      change: 0,
+      balance: 0,
       createdAt: new Date().toISOString(),
     })
 
@@ -592,49 +579,31 @@ function NewOrderPOS({ restaurant }) {
           )}
         </div>
 
-        <div
-          className={`pos-bill-adjustments ${
-            paymentMethod === 'cash' ? 'with-received' : ''
-          }`}
-        >
-          <label className="pos-adjust-field discount-field">
-            Discount
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={discountAmount}
-              onChange={(event) => setDiscountAmount(event.target.value)}
-              placeholder="0.00"
-            />
-          </label>
+        <div className="pos-bill-adjustments">
+  <label className="pos-adjust-field discount-field">
+    Discount
+    <input
+      type="number"
+      min="0"
+      step="0.01"
+      value={discountAmount}
+      onChange={(event) => setDiscountAmount(event.target.value)}
+      placeholder="0.00"
+    />
+  </label>
 
-          <label className="pos-adjust-field extra-field">
-            Extra amount
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={extraAmount}
-              onChange={(event) => setExtraAmount(event.target.value)}
-              placeholder="0.00"
-            />
-          </label>
-
-          {paymentMethod === 'cash' && (
-            <label className="pos-adjust-field received-field">
-              Cash received
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={receivedAmount}
-                onChange={(event) => setReceivedAmount(event.target.value)}
-                placeholder="Example: 100.00"
-              />
-            </label>
-          )}
-        </div>
+  <label className="pos-adjust-field extra-field">
+    Extra amount
+    <input
+      type="number"
+      min="0"
+      step="0.01"
+      value={extraAmount}
+      onChange={(event) => setExtraAmount(event.target.value)}
+      placeholder="0.00"
+    />
+  </label>
+</div>
 
         <textarea
           className="pos-notes"
@@ -662,29 +631,6 @@ function NewOrderPOS({ restaurant }) {
             <strong>+ {cartTotals.extra.toFixed(2)}</strong>
           </div>
 
-          {paymentMethod === 'cash' && cashSummary.received > 0 && (
-            <>
-              <div>
-                <span>Cash received</span>
-                <strong>
-                  {restaurant.currency || 'AED'} {cashSummary.received.toFixed(2)}
-                </strong>
-              </div>
-
-              <div
-                className={cashSummary.balance > 0 ? 'balance-due' : 'change-due'}
-              >
-                <span>{cashSummary.balance > 0 ? 'Balance due' : 'Change'}</span>
-                <strong>
-                  {restaurant.currency || 'AED'}{' '}
-                  {(cashSummary.balance > 0
-                    ? cashSummary.balance
-                    : cashSummary.change
-                  ).toFixed(2)}
-                </strong>
-              </div>
-            </>
-          )}
 
           <div className="grand-total">
             <span>Total</span>
@@ -781,6 +727,20 @@ function VariationModal({ product, currency, onClose, onChoose }) {
 }
 
 function OrderSummaryModal({ order, onClose, onNewOrder }) {
+  const [summaryReceivedAmount, setSummaryReceivedAmount] = useState('')
+
+  const summaryCash = useMemo(() => {
+    const received = Number(summaryReceivedAmount || 0)
+    const change = Math.max(received - Number(order.total || 0), 0)
+    const balance = Math.max(Number(order.total || 0) - received, 0)
+
+    return {
+      received,
+      change,
+      balance,
+    }
+  }, [order.total, summaryReceivedAmount])
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank', 'width=420,height=720')
 
@@ -898,31 +858,56 @@ function OrderSummaryModal({ order, onClose, onNewOrder }) {
             <strong>{formatMoney(order.currency, order.total)}</strong>
           </div>
 
-          {order.paymentMethod === 'cash' && order.received > 0 && (
-            <>
-              <div className="receipt-row">
-                <span>Cash received</span>
-                <strong>{formatMoney(order.currency, order.received)}</strong>
-              </div>
-
-              <div className="receipt-row change-row">
-                <span>{order.balance > 0 ? 'Balance due' : 'Change'}</span>
-                <strong>
-                  {formatMoney(
-                    order.currency,
-                    order.balance > 0 ? order.balance : order.change,
-                  )}
-                </strong>
-              </div>
-            </>
-          )}
-
           <div className="receipt-dashed-line" />
 
           <div className="receipt-center">
             <span>Thank you. Powered by Spizy Menu.</span>
           </div>
         </div>
+
+        {order.paymentMethod === 'cash' && (
+          <div className="cash-helper-card">
+            <div>
+              <p className="pricing-label">Cashier Helper</p>
+              <h4>Balance calculation</h4>
+              <span>
+                This is only for staff calculation. It will not print on the customer bill.
+              </span>
+            </div>
+
+            <label>
+              Cash received
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={summaryReceivedAmount}
+                onChange={(event) => setSummaryReceivedAmount(event.target.value)}
+                placeholder="Example: 100.00"
+              />
+            </label>
+
+            {summaryCash.received > 0 && (
+              <div
+                className={`cash-helper-result ${
+                  summaryCash.balance > 0 ? 'balance' : 'change'
+                }`}
+              >
+                <span>
+                  {summaryCash.balance > 0 ? 'Balance due' : 'Change to give'}
+                </span>
+                <strong>
+                  {formatMoney(
+                    order.currency,
+                    summaryCash.balance > 0
+                      ? summaryCash.balance
+                      : summaryCash.change,
+                  )}
+                </strong>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="order-summary-actions">
           <button type="button" className="secondary-button" onClick={onClose}>
@@ -1121,24 +1106,6 @@ function buildReceiptHtml(order) {
             <strong>${formatMoney(order.currency, order.total)}</strong>
           </div>
 
-          ${
-            order.paymentMethod === 'cash' && order.received > 0
-              ? `
-                <div class="row">
-                  <span>Cash received</span>
-                  <strong>${formatMoney(order.currency, order.received)}</strong>
-                </div>
-
-                <div class="row">
-                  <span>${order.balance > 0 ? 'Balance due' : 'Change'}</span>
-                  <strong>${formatMoney(
-                    order.currency,
-                    order.balance > 0 ? order.balance : order.change,
-                  )}</strong>
-                </div>
-              `
-              : ''
-          }
 
           <div class="line"></div>
 
