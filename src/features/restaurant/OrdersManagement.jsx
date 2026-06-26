@@ -48,6 +48,10 @@ const paymentMethodOptions = [
 ]
 
 function OrdersManagement({ restaurant }) {
+  const soundEnabledRef = useRef(false)
+  const lastKnownStatusRef = useRef(new Map())
+  const notificationTimerRef = useRef(null)
+
   const [orders, setOrders] = useState([])
   const [menuProducts, setMenuProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -59,6 +63,8 @@ function OrdersManagement({ restaurant }) {
   const [completePaymentMethod, setCompletePaymentMethod] = useState('cash')
   const [completingOrder, setCompletingOrder] = useState(false)
   const [addingItem, setAddingItem] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(false)
+  const [adminPopup, setAdminPopup] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -69,15 +75,33 @@ function OrdersManagement({ restaurant }) {
     quantity: 1,
     isComplimentary: false,
   })
-  const soundEnabledRef = useRef(false)
-  const lastKnownStatusRef = useRef(new Map())
-  const [soundEnabled, setSoundEnabled] = useState(false)
-  const [realtimeNotice, setRealtimeNotice] = useState(null)
 
-  const enableAdminSound = useCallback(() => {
-  soundEnabledRef.current = true
-  setSoundEnabled(true)
-}, [])
+  const enableAdminSound = useCallback(async () => {
+    soundEnabledRef.current = true
+    setSoundEnabled(true)
+
+    await unlockAdminNotificationSound()
+    playAdminNotificationSound()
+  }, [])
+
+  const showAdminOrderPopup = useCallback((popupData) => {
+    if (notificationTimerRef.current) {
+      window.clearTimeout(notificationTimerRef.current)
+    }
+
+    if (soundEnabledRef.current) {
+      playAdminNotificationSound()
+    }
+
+    setAdminPopup({
+      ...popupData,
+      createdAt: Date.now(),
+    })
+
+    notificationTimerRef.current = window.setTimeout(() => {
+      setAdminPopup(null)
+    }, 10000)
+  }, [])
 
   const loadOrders = useCallback(async () => {
     if (!restaurant?.id) return
@@ -118,8 +142,8 @@ function OrdersManagement({ restaurant }) {
     setOrders(ordersWithItems)
 
     lastKnownStatusRef.current = new Map(
-  ordersWithItems.map((order) => [order.id, order.status]),
-)
+      ordersWithItems.map((order) => [order.id, order.status]),
+    )
 
     setSelectedOrder((current) => {
       if (!current?.id) return current
@@ -176,6 +200,83 @@ function OrdersManagement({ restaurant }) {
     loadMenuProducts()
   }, [loadOrders, loadMenuProducts])
 
+  useEffect(() => {
+    return () => {
+      if (notificationTimerRef.current) {
+        window.clearTimeout(notificationTimerRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!restaurant?.id) return undefined
+
+    const channel = supabase
+      .channel(`restaurant-orders-live-${restaurant.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'restaurant_orders',
+          filter: `restaurant_id=eq.${restaurant.id}`,
+        },
+        (payload) => {
+          const order = payload.new
+
+          lastKnownStatusRef.current.set(order.id, order.status)
+
+          showAdminOrderPopup({
+            type: 'new_order',
+            title: 'New order received',
+            message: `${order.order_code || 'Order'} • ${formatMoney(
+              order.total_amount,
+              order.currency || restaurant?.currency,
+            )}`,
+            orderId: order.id,
+          })
+
+          loadOrders()
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'restaurant_orders',
+          filter: `restaurant_id=eq.${restaurant.id}`,
+        },
+        (payload) => {
+          const order = payload.new
+          const previousStatus = lastKnownStatusRef.current.get(order.id)
+
+          lastKnownStatusRef.current.set(order.id, order.status)
+
+          if (
+            order.status === 'bill_requested' &&
+            previousStatus !== 'bill_requested'
+          ) {
+            showAdminOrderPopup({
+              type: 'bill_requested',
+              title: 'Customer requested bill',
+              message: `${order.order_code || 'Order'} • ${
+                order.table_name || 'Table order'
+              }`,
+              orderId: order.id,
+            })
+          }
+
+          loadOrders()
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [loadOrders, restaurant?.currency, restaurant?.id, showAdminOrderPopup])
+
   const filteredOrders = useMemo(() => {
     const keyword = search.trim().toLowerCase()
 
@@ -210,81 +311,6 @@ function OrdersManagement({ restaurant }) {
     })
   }, [orders, paymentFilter, search, statusFilter, typeFilter])
 
-  useEffect(() => {
-  if (!restaurant?.id) return undefined
-
-  const channel = supabase
-    .channel(`restaurant-orders-live-${restaurant.id}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'restaurant_orders',
-        filter: `restaurant_id=eq.${restaurant.id}`,
-      },
-      (payload) => {
-        const order = payload.new
-
-        lastKnownStatusRef.current.set(order.id, order.status)
-
-        if (soundEnabledRef.current) {
-          playAdminNotificationSound()
-        }
-
-        setRealtimeNotice({
-          type: 'new_order',
-          title: 'New order received',
-          message: `${order.order_code || 'Order'} • ${formatMoney(
-            order.total_amount,
-            order.currency || restaurant?.currency,
-          )}`,
-        })
-
-        loadOrders()
-      },
-    )
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'restaurant_orders',
-        filter: `restaurant_id=eq.${restaurant.id}`,
-      },
-      (payload) => {
-        const order = payload.new
-        const previousStatus = lastKnownStatusRef.current.get(order.id)
-
-        lastKnownStatusRef.current.set(order.id, order.status)
-
-        if (
-          order.status === 'bill_requested' &&
-          previousStatus !== 'bill_requested'
-        ) {
-          if (soundEnabledRef.current) {
-            playAdminNotificationSound()
-          }
-
-          setRealtimeNotice({
-            type: 'bill_requested',
-            title: 'Customer requested bill',
-            message: `${order.order_code || 'Order'} • ${
-              order.table_name || 'Table order'
-            }`,
-          })
-        }
-
-        loadOrders()
-      },
-    )
-    .subscribe()
-
-  return () => {
-    supabase.removeChannel(channel)
-  }
-}, [loadOrders, restaurant?.currency, restaurant?.id])
-
   const stats = useMemo(() => {
     const paidRevenue = orders
       .filter((order) => order.payment_status === 'paid')
@@ -312,11 +338,17 @@ function OrdersManagement({ restaurant }) {
   }, [orders])
 
   const replaceOrderInState = (updatedOrder) => {
-    setOrders((current) =>
-      current.map((order) =>
+    setOrders((current) => {
+      const exists = current.some((order) => order.id === updatedOrder.id)
+
+      if (!exists) {
+        return [updatedOrder, ...current]
+      }
+
+      return current.map((order) =>
         order.id === updatedOrder.id ? updatedOrder : order,
-      ),
-    )
+      )
+    })
 
     setSelectedOrder((current) =>
       current?.id === updatedOrder.id ? updatedOrder : current,
@@ -329,6 +361,35 @@ function OrdersManagement({ restaurant }) {
     setCompleteOrder((current) =>
       current?.id === updatedOrder.id ? updatedOrder : current,
     )
+  }
+
+  const openAdminPopupOrder = async () => {
+    if (!adminPopup?.orderId) return
+
+    const orderId = adminPopup.orderId
+    setAdminPopup(null)
+
+    const { data: orderData, error: orderError } = await supabase
+      .from('restaurant_orders')
+      .select('*')
+      .eq('id', orderId)
+      .maybeSingle()
+
+    if (orderError || !orderData) return
+
+    const { data: itemData } = await supabase
+      .from('restaurant_order_items')
+      .select('*')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true })
+
+    const orderWithItems = {
+      ...orderData,
+      items: itemData || [],
+    }
+
+    replaceOrderInState(orderWithItems)
+    setSelectedOrder(orderWithItems)
   }
 
   const updateOrderFields = async (order, updates) => {
@@ -529,36 +590,21 @@ function OrdersManagement({ restaurant }) {
         </div>
 
         <div className="orders-header-actions">
-  <button
-    type="button"
-    className={`orders-sound-toggle ${soundEnabled ? 'ready' : ''}`}
-    onClick={enableAdminSound}
-  >
-    <BellRing size={16} />
-    {soundEnabled ? 'Sound ready' : 'Enable sound'}
-  </button>
+          <button
+            type="button"
+            className={`orders-sound-toggle ${soundEnabled ? 'ready' : ''}`}
+            onClick={enableAdminSound}
+          >
+            <BellRing size={16} />
+            {soundEnabled ? 'Sound ready' : 'Enable sound'}
+          </button>
 
-  <button type="button" className="orders-refresh" onClick={loadOrders}>
-    <RefreshCcw size={16} />
-    Refresh
-  </button>
-</div>
+          <button type="button" className="orders-refresh" onClick={loadOrders}>
+            <RefreshCcw size={16} />
+            Refresh
+          </button>
+        </div>
       </header>
-
-      {realtimeNotice && (
-  <div className={`orders-live-alert ${realtimeNotice.type}`}>
-    <BellRing size={18} />
-
-    <div>
-      <strong>{realtimeNotice.title}</strong>
-      <span>{realtimeNotice.message}</span>
-    </div>
-
-    <button type="button" onClick={() => setRealtimeNotice(null)}>
-      <X size={16} />
-    </button>
-  </div>
-)}
 
       <div className="orders-stats-grid">
         <MiniOrderStat label="Total orders" value={stats.totalOrders} />
@@ -735,6 +781,7 @@ function OrdersManagement({ restaurant }) {
       {selectedOrder && (
         <OrderDetailsModal
           order={selectedOrder}
+          restaurantName={restaurant?.name || 'Restaurant'}
           updatingOrderId={updatingOrderId}
           onClose={() => setSelectedOrder(null)}
           onUpdateField={updateOrderField}
@@ -771,6 +818,7 @@ function OrdersManagement({ restaurant }) {
       {completeOrder && (
         <CompleteOrderModal
           order={completeOrder}
+          restaurantName={restaurant?.name || 'Restaurant'}
           paymentMethod={completePaymentMethod}
           completing={completingOrder}
           onPaymentMethodChange={setCompletePaymentMethod}
@@ -783,6 +831,15 @@ function OrdersManagement({ restaurant }) {
             })
           }
           onComplete={confirmCompleteOrder}
+        />
+      )}
+
+      {adminPopup && (
+        <AdminOrderPopup
+          popup={adminPopup}
+          soundEnabled={soundEnabled}
+          onClose={() => setAdminPopup(null)}
+          onView={openAdminPopupOrder}
         />
       )}
     </section>
@@ -820,6 +877,7 @@ function OrderItemsPreview({ items }) {
 
 function OrderDetailsModal({
   order,
+  restaurantName,
   updatingOrderId,
   onClose,
   onUpdateField,
@@ -944,7 +1002,7 @@ function OrderDetailsModal({
               printOrderReceipt({
                 order,
                 paymentMethod: order.payment_method || 'cash',
-                restaurantName: 'Restaurant',
+                restaurantName,
               })
             }
           >
@@ -1162,6 +1220,7 @@ function AddItemToOrderModal({
 
 function CompleteOrderModal({
   order,
+  restaurantName,
   paymentMethod,
   completing,
   onPaymentMethodChange,
@@ -1211,7 +1270,7 @@ function CompleteOrderModal({
         <div className="completion-receipt">
           <div className="receipt-title">
             <ReceiptText size={18} />
-            Bill Summary
+            {restaurantName} Bill Summary
           </div>
 
           <div className="receipt-line">
@@ -1281,6 +1340,38 @@ function CompleteOrderModal({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function AdminOrderPopup({ popup, soundEnabled, onClose, onView }) {
+  return (
+    <div className={`admin-order-popup ${popup.type}`}>
+      <div className="admin-order-popup-icon">
+        <BellRing size={30} />
+      </div>
+
+      <div className="admin-order-popup-body">
+        <p>{popup.type === 'bill_requested' ? 'Bill Alert' : 'Order Alert'}</p>
+        <h2>{popup.title}</h2>
+        <span>{popup.message}</span>
+
+        {!soundEnabled && (
+          <small>Tip: click “Enable sound” to hear future alerts.</small>
+        )}
+
+        <div className="admin-order-popup-actions">
+          <button type="button" onClick={onView}>
+            View Order
+          </button>
+
+          <button type="button" className="ghost" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-order-popup-timer" />
     </div>
   )
 }
@@ -1466,32 +1557,69 @@ function printOrderReceipt({ order, paymentMethod, restaurantName }) {
   receiptWindow.focus()
 }
 
+let adminAudioContext = null
+
+function getAdminAudioContext() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext
+
+  if (!AudioContext) return null
+
+  if (!adminAudioContext) {
+    adminAudioContext = new AudioContext()
+  }
+
+  return adminAudioContext
+}
+
+async function unlockAdminNotificationSound() {
+  try {
+    const audioContext = getAdminAudioContext()
+
+    if (!audioContext) return
+
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume()
+    }
+  } catch {
+    // Audio unlock failed or browser blocked sound.
+  }
+}
+
 function playAdminNotificationSound() {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext
-    const audioContext = new AudioContext()
-    const oscillator = audioContext.createOscillator()
-    const gain = audioContext.createGain()
+    const audioContext = getAdminAudioContext()
 
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime)
+    if (!audioContext) return
 
-    gain.gain.setValueAtTime(0.001, audioContext.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.18, audioContext.currentTime + 0.03)
-    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.24)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
 
-    oscillator.connect(gain)
-    gain.connect(audioContext.destination)
+    const now = audioContext.currentTime
 
-    oscillator.start()
-    oscillator.stop(audioContext.currentTime + 0.25)
-
-    window.setTimeout(() => {
-      audioContext.close()
-    }, 350)
+    playBeep(audioContext, now, 880)
+    playBeep(audioContext, now + 0.18, 1180)
   } catch {
-    // Browser blocked sound or audio context is unavailable.
+    // Browser blocked sound or audio context unavailable.
   }
+}
+
+function playBeep(audioContext, startTime, frequency) {
+  const oscillator = audioContext.createOscillator()
+  const gain = audioContext.createGain()
+
+  oscillator.type = 'sine'
+  oscillator.frequency.setValueAtTime(frequency, startTime)
+
+  gain.gain.setValueAtTime(0.001, startTime)
+  gain.gain.exponentialRampToValueAtTime(0.22, startTime + 0.03)
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18)
+
+  oscillator.connect(gain)
+  gain.connect(audioContext.destination)
+
+  oscillator.start(startTime)
+  oscillator.stop(startTime + 0.2)
 }
 
 export default OrdersManagement

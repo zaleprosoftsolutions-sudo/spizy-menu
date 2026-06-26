@@ -1171,3 +1171,819 @@
   font-weight: 900;
   line-height: 1.5;
 }
+
+/* Customer Orders polish */
+.polished-orders-modal {
+  width: min(720px, 100%);
+}
+
+.public-orders-head > div > span {
+  display: block;
+  margin-top: 6px;
+  color: #d6d6d6;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.public-orders-summary-row {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.public-orders-summary-card {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(6, 6, 6, 0.52);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.public-orders-summary-card.live {
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.public-orders-summary-card span {
+  display: block;
+  color: #d6d6d6;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.public-orders-summary-card strong {
+  display: block;
+  margin-top: 5px;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.public-refresh-orders-button.compact {
+  width: auto;
+  min-width: 112px;
+  min-height: auto;
+  margin-top: 0;
+  padding: 0 16px;
+}
+
+.public-orders-loading-stack {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.public-orders-skeleton {
+  height: 150px;
+  border-radius: 22px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.05)),
+    rgba(6, 6, 6, 0.54);
+  background-size: 220% 100%;
+  border: 1px solid rgba(255, 191, 77, 0.08);
+  animation: spizy-skeleton 1.4s infinite linear;
+}
+
+.public-orders-skeleton.small {
+  height: 95px;
+}
+
+@keyframes spizy-skeleton {
+  from {
+    background-position: 220% 0;
+  }
+
+  to {
+    background-position: -220% 0;
+  }
+}
+
+.public-orders-polished-list {
+  margin-top: 18px;
+  display: grid;
+  gap: 18px;
+}
+
+.public-orders-section {
+  display: grid;
+  gap: 12px;
+}
+
+.public-orders-section.past {
+  padding-top: 2px;
+}
+
+.public-orders-section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.public-orders-section-title h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.public-orders-section-title p {
+  margin: 4px 0 0;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.public-orders-section-title > span {
+  min-width: 34px;
+  height: 30px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.public-order-card.polished {
+  position: relative;
+  overflow: hidden;
+}
+
+.public-order-card.polished.live {
+  border-color: rgba(34, 197, 94, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 16rem),
+    rgba(6, 6, 6, 0.56);
+}
+
+.public-order-card.polished.bill-requested {
+  border-color: rgba(245, 158, 11, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 16rem),
+    rgba(6, 6, 6, 0.56);
+}
+
+.public-order-card.polished.past {
+  opacity: 0.92;
+}
+
+.public-order-finished-note {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 16px;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.09);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.public-orders-empty.polished {
+  padding: 28px 18px;
+}
+
+.public-orders-empty-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+}
+
+.public-orders-empty.polished h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.public-orders-empty.polished p {
+  width: min(360px, 100%);
+  margin: 8px auto 0;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .polished-orders-modal {
+    max-height: 88vh;
+  }
+
+  .public-orders-summary-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .public-refresh-orders-button.compact {
+    grid-column: 1 / -1;
+    min-height: 48px;
+  }
+
+  .public-orders-section-title {
+    align-items: flex-start;
+  }
+
+  .public-order-card.polished {
+    padding: 13px;
+  }
+}
+
+/* Customer Rewards Tab */
+.public-rewards-modal {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 18rem),
+    linear-gradient(180deg, rgba(32, 32, 32, 0.98), rgba(14, 14, 14, 0.98));
+  border: 1px solid rgba(255, 191, 77, 0.18);
+}
+
+.public-rewards-head span {
+  display: block;
+  margin-top: 6px;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.public-rewards-loading {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.public-rewards-loading div {
+  min-height: 92px;
+  border-radius: 24px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 191, 77, 0.12),
+    rgba(255, 255, 255, 0.06)
+  );
+  background-size: 220% 100%;
+  animation: public-reward-loading 1.35s infinite linear;
+}
+
+.public-rewards-loading div:nth-child(2) {
+  min-height: 68px;
+}
+
+.public-rewards-loading div:nth-child(3) {
+  min-height: 52px;
+}
+
+@keyframes public-reward-loading {
+  from {
+    background-position: 220% 0;
+  }
+
+  to {
+    background-position: -220% 0;
+  }
+}
+
+.public-rewards-coming-soon,
+.public-rewards-profile-needed {
+  margin-top: 18px;
+  padding: 24px;
+  border-radius: 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 122, 24, 0.13), transparent 16rem),
+    rgba(6, 6, 6, 0.58);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.public-rewards-coming-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+}
+
+.public-rewards-coming-icon.active {
+  background: linear-gradient(135deg, #86efac, #22c55e);
+}
+
+.public-rewards-coming-soon h3,
+.public-rewards-profile-needed h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 27px;
+  letter-spacing: -0.04em;
+}
+
+.public-rewards-coming-soon p,
+.public-rewards-profile-needed p {
+  margin: 10px auto 0;
+  max-width: 420px;
+  color: #d6d6d6;
+  line-height: 1.6;
+}
+
+.rewards-profile-fields {
+  margin-top: 18px;
+  text-align: left;
+}
+
+.public-rewards-primary-button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 999px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.public-rewards-active-view {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.public-rewards-points-card {
+  padding: 20px;
+  border-radius: 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 16rem),
+    rgba(6, 6, 6, 0.62);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.public-rewards-points-card span {
+  display: block;
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.public-rewards-points-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #ffffff;
+  font-size: clamp(44px, 12vw, 70px);
+  line-height: 0.95;
+  letter-spacing: -0.07em;
+}
+
+.public-rewards-points-card small {
+  display: block;
+  margin-top: 10px;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.public-rewards-medal {
+  width: 78px;
+  height: 78px;
+  border-radius: 26px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  box-shadow: 0 18px 46px rgba(255, 122, 24, 0.22);
+}
+
+.public-rewards-rule-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.public-reward-rule-card {
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(6, 6, 6, 0.56);
+  border: 1px solid rgba(255, 191, 77, 0.1);
+  min-width: 0;
+}
+
+.public-reward-rule-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+}
+
+.public-reward-rule-card span {
+  display: block;
+  margin-top: 12px;
+  color: #d6d6d6;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.public-reward-rule-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.public-reward-rule-card p {
+  margin: 8px 0 0;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.public-rewards-redeem-note {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 122, 24, 0.09);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.public-rewards-redeem-note strong {
+  display: block;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.public-rewards-redeem-note span {
+  display: block;
+  margin-top: 5px;
+  color: #d6d6d6;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.rewards-refresh {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .public-rewards-modal {
+    max-height: 86vh;
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .public-rewards-points-card {
+    align-items: flex-start;
+  }
+
+  .public-rewards-medal {
+    width: 58px;
+    height: 58px;
+    border-radius: 20px;
+  }
+
+  .public-rewards-rule-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Rewards coupon checkout */
+.public-cart-reward-area {
+  margin-top: 16px;
+}
+
+.public-cart-reward-link {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  border-radius: 999px;
+  color: var(--gold);
+  background: rgba(255, 122, 24, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.public-cart-reward-discount {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(34, 197, 94, 0.11);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.public-cart-reward-discount span,
+.public-cart-reward-discount small {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.public-cart-reward-discount strong {
+  display: block;
+  margin: 4px 0;
+  color: #86efac;
+  font-size: 20px;
+}
+
+.public-cart-reward-discount button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 12px;
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.public-cart-total.public-cart-total-split {
+  display: grid;
+  gap: 9px;
+}
+
+.public-cart-total.public-cart-total-split > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.public-cart-total.public-cart-total-split .discount strong {
+  color: #86efac;
+  font-size: 18px;
+}
+
+.public-cart-total.public-cart-total-split .grand {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 191, 77, 0.18);
+}
+
+.public-cart-total.public-cart-total-split .grand strong {
+  font-size: 26px;
+}
+
+.public-rewards-redeem-note.active {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.09);
+}
+
+.public-rewards-primary-button.redeem {
+  width: 100%;
+  min-height: 52px;
+}
+
+.public-rewards-primary-button.redeem:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.public-reward-applied-pill {
+  width: fit-content;
+  padding: 10px 12px;
+  border-radius: 999px;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.public-success-reward {
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 18px;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.5;
+}
+
+.public-rewards-activity {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(5, 5, 5, 0.52);
+  border: 1px solid rgba(255, 191, 77, 0.1);
+}
+
+.public-rewards-activity-head strong,
+.public-rewards-activity-head span {
+  display: block;
+}
+
+.public-rewards-activity-head strong {
+  color: #ffffff;
+  font-size: 17px;
+}
+
+.public-rewards-activity-head span {
+  margin-top: 3px;
+  color: #d6d6d6;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.public-rewards-activity-empty {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  color: #d6d6d6;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 191, 77, 0.08);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.public-rewards-activity-list {
+  margin-top: 12px;
+  display: grid;
+  gap: 9px;
+}
+
+.public-rewards-activity-row {
+  padding: 12px;
+  border-radius: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 191, 77, 0.08);
+}
+
+.public-rewards-activity-row.positive {
+  border-color: rgba(34, 197, 94, 0.16);
+}
+
+.public-rewards-activity-row.negative {
+  border-color: rgba(248, 113, 113, 0.16);
+}
+
+.public-rewards-activity-row.expired {
+  opacity: 0.7;
+}
+
+.public-rewards-activity-row strong {
+  color: #ffffff;
+}
+
+.public-rewards-activity-row > strong {
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.public-rewards-activity-row span,
+.public-rewards-activity-row small {
+  display: block;
+  margin-top: 4px;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.public-rewards-activity-row small.expired-text {
+  color: #fca5a5;
+}
+
+@media (max-width: 520px) {
+  .public-rewards-activity-row {
+    display: grid;
+  }
+
+  .public-rewards-activity-row > strong {
+    white-space: normal;
+  }
+}
+
+/* Public discount coupon checkout */
+.public-cart-coupon-area {
+  margin-top: 16px;
+}
+
+.public-cart-coupon-form {
+  padding: 12px;
+  border-radius: 20px;
+  background: rgba(255, 122, 24, 0.07);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.public-cart-coupon-form input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 999px;
+  padding: 0 14px;
+  color: #ffffff;
+  background: rgba(5, 5, 5, 0.68);
+  outline: 0;
+  font: inherit;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.public-cart-coupon-form input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.public-cart-coupon-form button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  font-weight: 1000;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.public-cart-coupon-form button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.public-cart-coupon-applied {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.11);
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.public-cart-coupon-applied span,
+.public-cart-coupon-applied small {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.public-cart-coupon-applied strong {
+  display: block;
+  margin: 4px 0;
+  color: #fde68a;
+  font-size: 20px;
+}
+
+.public-cart-coupon-applied button {
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 12px;
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.public-success-reward.coupon {
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
+@media (max-width: 430px) {
+  .public-cart-coupon-form {
+    grid-template-columns: 1fr;
+  }
+
+  .public-cart-coupon-form button {
+    width: 100%;
+  }
+}

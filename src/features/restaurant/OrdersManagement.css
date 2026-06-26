@@ -745,3 +745,192 @@
     flex: 1;
   }
 }
+
+.orders-search {
+  min-height: 58px;
+  padding: 0 18px;
+  border-radius: 22px;
+  background: rgba(5, 5, 5, 0.72);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+}
+
+.orders-search svg {
+  flex: 0 0 auto;
+  color: #ffffff;
+}
+
+.orders-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #ffffff;
+  font: inherit;
+}
+
+.orders-search input::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.orders-refresh {
+  min-height: 46px;
+  border-radius: 999px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 191, 77, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-order-popup {
+  position: fixed;
+  right: 26px;
+  top: 90px;
+  width: min(420px, calc(100vw - 32px));
+  z-index: 9999;
+  padding: 20px;
+  border-radius: 28px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.2), transparent 16rem),
+    linear-gradient(180deg, rgba(32, 32, 32, 0.98), rgba(12, 12, 12, 0.98));
+  border: 1px solid rgba(255, 191, 77, 0.24);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  animation: admin-popup-in 0.22s ease-out;
+}
+
+.admin-order-popup.new_order {
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.admin-order-popup.bill_requested {
+  border-color: rgba(245, 158, 11, 0.32);
+}
+
+.admin-order-popup-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+}
+
+.admin-order-popup-body p {
+  margin: 0 0 5px;
+  color: var(--gold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.admin-order-popup-body h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.admin-order-popup-body span {
+  display: block;
+  margin-top: 8px;
+  color: #d6d6d6;
+  font-weight: 800;
+}
+
+.admin-order-popup-body small {
+  display: block;
+  margin-top: 8px;
+  color: #fbbf24;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.admin-order-popup-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.admin-order-popup-actions button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.admin-order-popup-actions button.ghost {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+}
+
+.admin-order-popup-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--orange));
+  animation: admin-popup-timer 10s linear forwards;
+}
+
+@keyframes admin-popup-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes admin-popup-timer {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-order-popup {
+    right: 16px;
+    left: 16px;
+    top: 82px;
+    width: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-order-popup-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .admin-order-popup-actions {
+    display: grid;
+  }
+}

@@ -1,0 +1,536 @@
+.delivery-screen {
+  position: relative;
+  color: #101827;
+}
+
+.delivery-toast {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 80;
+  max-width: 360px;
+  border-radius: 16px;
+  background: #111827;
+  color: #fff;
+  padding: 12px 15px;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.28);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.delivery-head {
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.delivery-head h2 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.delivery-head span,
+.delivery-empty-state p,
+.delivery-empty-state span {
+  color: #64748b;
+}
+
+.delivery-refresh-button {
+  border: 0;
+  border-radius: 14px;
+  background: #111827;
+  color: #fff;
+  padding: 11px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+}
+
+.delivery-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.delivery-stat-card {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff, #fff7ed);
+  padding: 16px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.delivery-stat-card div {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.12);
+  color: #ea580c;
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+}
+
+.delivery-stat-card span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.delivery-stat-card strong {
+  display: block;
+  color: #0f172a;
+  font-size: 28px;
+  margin-top: 4px;
+}
+
+.delivery-toolbar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.delivery-search-box {
+  min-height: 48px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  color: #64748b;
+}
+
+.delivery-search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  font-size: 14px;
+  color: #0f172a;
+  background: transparent;
+}
+
+.delivery-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.delivery-filter-strip button {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.delivery-filter-strip button.active {
+  border-color: rgba(249, 115, 22, 0.75);
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.delivery-order-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.delivery-order-card {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 24px;
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 12px;
+}
+
+.delivery-order-card.status-out_for_delivery {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: linear-gradient(135deg, #fff, #eff6ff);
+}
+
+.delivery-order-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.delivery-order-card-head span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.delivery-order-card-head strong {
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.delivery-badge-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.delivery-status-pill,
+.delivery-payment-pill {
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.delivery-status-pill.order_received {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.delivery-status-pill.preparing {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.delivery-status-pill.ready {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.delivery-status-pill.out_for_delivery {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.delivery-payment-pill {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.delivery-payment-pill.card_machine {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.delivery-payment-pill.cash {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.delivery-customer-box,
+.delivery-address-box,
+.delivery-rider-box,
+.delivery-payment-reminder {
+  border-radius: 16px;
+  background: #f8fafc;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.delivery-customer-box {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.delivery-customer-box div,
+.delivery-customer-box a,
+.delivery-rider-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.delivery-address-box {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.delivery-address-box svg {
+  margin-top: 2px;
+  color: #f97316;
+}
+
+.delivery-address-box p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.45;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.delivery-address-box a {
+  color: #ea580c;
+  font-size: 12px;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.delivery-note-box {
+  border-radius: 14px;
+  background: #fffbeb;
+  border: 1px dashed rgba(245, 158, 11, 0.35);
+  color: #92400e;
+  padding: 10px 12px;
+  white-space: pre-line;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.delivery-items-list {
+  display: grid;
+  gap: 8px;
+}
+
+.delivery-item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.28);
+  padding-bottom: 8px;
+}
+
+.delivery-item-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.delivery-item-row strong {
+  display: block;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.delivery-item-row span,
+.delivery-item-row small {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.delivery-card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.delivery-card-actions button,
+.delivery-modal-actions button {
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+  padding: 10px 13px;
+  font-weight: 950;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delivery-card-actions button.complete {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.delivery-card-actions button:disabled,
+.delivery-modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delivery-empty-state {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 10px;
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 26px;
+  background: #fff;
+  color: #f97316;
+  padding: 26px;
+}
+
+.delivery-empty-state.compact {
+  min-height: 220px;
+}
+
+.delivery-empty-state h2,
+.delivery-empty-state h3,
+.delivery-empty-state p {
+  margin: 0;
+}
+
+.delivery-empty-state h2,
+.delivery-empty-state h3 {
+  color: #0f172a;
+}
+
+.delivery-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.delivery-dispatch-modal {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  border-radius: 26px;
+  background: #fff;
+  padding: 18px;
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.36);
+  display: grid;
+  gap: 14px;
+}
+
+.delivery-modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.delivery-modal-head h3,
+.delivery-modal-head p {
+  margin: 0;
+}
+
+.delivery-modal-head span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.delivery-modal-head > button {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 0;
+  background: #f1f5f9;
+  color: #0f172a;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.delivery-payment-reminder {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #fff7ed;
+}
+
+.delivery-payment-reminder svg {
+  color: #ea580c;
+}
+
+.delivery-payment-reminder strong,
+.delivery-payment-reminder small {
+  display: block;
+}
+
+.delivery-payment-reminder small {
+  color: #9a3412;
+  font-weight: 700;
+}
+
+.delivery-dispatch-modal label {
+  display: grid;
+  gap: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.delivery-dispatch-modal input,
+.delivery-dispatch-modal textarea {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 14px;
+  padding: 11px 12px;
+  outline: 0;
+  font: inherit;
+  color: #0f172a;
+  background: #fff;
+  resize: vertical;
+}
+
+.delivery-dispatch-modal input:focus,
+.delivery-dispatch-modal textarea:focus {
+  border-color: rgba(249, 115, 22, 0.7);
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+}
+
+.delivery-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.delivery-modal-actions .ghost {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+@media (max-width: 980px) {
+  .delivery-stat-grid,
+  .delivery-order-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .delivery-stat-grid,
+  .delivery-order-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-head,
+  .delivery-order-card-head,
+  .delivery-customer-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .delivery-badge-stack {
+    align-items: flex-start;
+  }
+
+  .delivery-address-box {
+    grid-template-columns: auto 1fr;
+  }
+
+  .delivery-address-box a {
+    grid-column: 2;
+  }
+}

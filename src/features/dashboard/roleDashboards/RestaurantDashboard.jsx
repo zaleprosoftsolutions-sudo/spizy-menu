@@ -6,16 +6,35 @@ import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
 import OrdersManagement from '../../restaurant/OrdersManagement'
+import KitchenDisplay from '../../restaurant/KitchenDisplay'
+import DeliveryManagement from '../../restaurant/DeliveryManagement'
+import InventoryManagement from '../../restaurant/InventoryManagement'
+import PurchasesManagement from '../../restaurant/PurchasesManagement'
+import ExpensesManagement from '../../restaurant/ExpensesManagement'
+import FinanceManagement from '../../restaurant/FinanceManagement'
 import TablesQRManagement from '../../restaurant/TablesQRManagement'
+import CustomersManagement from '../../restaurant/CustomersManagement'
+import DiscountsManagement from '../../restaurant/DiscountsManagement'
+import CampaignsManagement from '../../restaurant/CampaignsManagement'
+import ReviewsManagement from '../../restaurant/ReviewsManagement'
+import ReportsManagement from '../../restaurant/ReportsManagement'
+import StaffManagement from '../../restaurant/StaffManagement'
+import SettingsManagement from '../../restaurant/SettingsManagement'
 
 const restaurantSections = [
   'overview',
   'pos',
   'orders',
+  'kitchen',
+  'delivery',
   'products',
   'menu',
   'categories',
   'qr',
+  'inventory',
+  'purchases',
+  'expenses',
+  'finance',
   'customers',
   'discounts',
   'campaigns',
@@ -82,67 +101,61 @@ function RestaurantDashboard({ profile, restaurant }) {
         )}
 
         {activeSection === 'qr' && (
-            <TablesQRManagement restaurant={restaurant} />
-            )}
+          <TablesQRManagement restaurant={restaurant} />
+        )}
 
         {activeSection === 'orders' && (
-            <OrdersManagement restaurant={restaurant} />
-            )}
+          <OrdersManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'inventory' && (
+          <InventoryManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'purchases' && (
+          <PurchasesManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'expenses' && (
+          <ExpensesManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'finance' && (
+          <FinanceManagement restaurant={restaurant} />
+        )}
+
+        {activeSection === 'kitchen' && (
+          <KitchenDisplay restaurant={restaurant} />
+        )}
+
+        {activeSection === 'delivery' && (
+          <DeliveryManagement restaurant={restaurant} />
+        )}
 
         {activeSection === 'customers' && (
-          <RestaurantPlaceholder
-            label="Customers"
-            title="Customer list and rewards"
-            text="Track customers, repeat orders, rewards, points and customer activity."
-          />
+          <CustomersManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'discounts' && (
-          <RestaurantPlaceholder
-            label="Discounts"
-            title="Coupons and offers"
-            text="Create restaurant discounts with validity, minimum order amount, usage limit and customer limit."
-          />
+          <DiscountsManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'campaigns' && (
-          <RestaurantPlaceholder
-            label="Campaigns"
-            title="Banner and countdown campaigns"
-            text="Upload promotional banners and show countdown offers on the customer QR menu."
-          />
+          <CampaignsManagement restaurant={restaurant} />
         )}
 
-        {activeSection === 'staff' && (
-          <RestaurantPlaceholder
-            label="Staff"
-            title="Staff access and permissions"
-            text="Manage staff users, table assignment and permission-based dashboard access."
-          />
-        )}
+        {activeSection === 'staff' && <StaffManagement restaurant={restaurant} />}
 
         {activeSection === 'reviews' && (
-          <RestaurantPlaceholder
-            label="Reviews"
-            title="Customer reviews and replies"
-            text="View customer reviews, ratings and reply from restaurant dashboard."
-          />
+          <ReviewsManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'reports' && (
-          <RestaurantPlaceholder
-            label="Reports"
-            title="Sales analytics"
-            text="Track sales, best-selling items, orders, customers, discounts and net performance."
-          />
+          <ReportsManagement restaurant={restaurant} />
         )}
 
         {activeSection === 'settings' && (
-          <RestaurantPlaceholder
-            label="Settings"
-            title="Restaurant settings"
-            text="Manage restaurant profile, logo, delivery fee, currency, outside orders, payment options and schedule."
-          />
+          <SettingsManagement restaurant={restaurant} />
         )}
       </div>
     </div>

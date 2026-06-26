@@ -1,15 +1,21 @@
 import {
+  Archive,
+  PackageCheck,
   BadgePercent,
   BarChart3,
+  Calculator,
+  ChefHat,
   LayoutDashboard,
   Megaphone,
   QrCode,
   ReceiptText,
   Settings,
+  WalletCards,
   ShoppingCart,
   Star,
   Store,
   Tags,
+  Truck,
   UserCog,
   Users,
   Utensils,
@@ -37,6 +43,18 @@ const restaurantNavGroups = [
         description: 'Table and delivery orders',
         icon: ReceiptText,
       },
+      {
+        id: 'kitchen',
+        label: 'Kitchen Display',
+        description: 'Live preparation board',
+        icon: ChefHat,
+      },
+      {
+        id: 'delivery',
+        label: 'Delivery',
+        description: 'Dispatch and COD tracking',
+        icon: Truck,
+      },
     ],
   },
   {
@@ -54,6 +72,30 @@ const restaurantNavGroups = [
         description: 'Live QR menus',
         icon: QrCode,
       },
+      {
+        id: 'inventory',
+        label: 'Inventory',
+        description: 'Stock, low stock and wastage',
+        icon: Archive,
+      },
+      {
+        id: 'purchases',
+        label: 'Purchases',
+        description: 'Suppliers, bills and stock-in',
+        icon: PackageCheck,
+      },
+      {
+        id: 'expenses',
+        label: 'Expenses',
+        description: 'Bills, petty cash and costs',
+        icon: WalletCards,
+      },
+      {
+        id: 'finance',
+        label: 'Finance',
+        description: 'Profit, dues and cash flow',
+        icon: Calculator,
+      },
     ],
   },
   {
@@ -61,8 +103,8 @@ const restaurantNavGroups = [
     items: [
       {
         id: 'customers',
-        label: 'Customers',
-        description: 'Customer list and rewards',
+        label: 'Customers & Rewards',
+        description: 'Customers, points, repeat orders',
         icon: Users,
       },
       {
