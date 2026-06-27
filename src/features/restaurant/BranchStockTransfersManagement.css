@@ -1,0 +1,480 @@
+.branch-stock-page {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 28px;
+}
+
+.branch-stock-hero,
+.branch-stock-card,
+.branch-stock-stat,
+.branch-stock-filter-row {
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(30, 30, 30, 0.96), rgba(13, 13, 13, 0.96));
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+}
+
+.branch-stock-hero {
+  padding: 24px;
+  border-radius: 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.branch-stock-hero h2,
+.branch-stock-card h3 {
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.05em;
+}
+
+.branch-stock-hero h2 {
+  font-size: clamp(28px, 4vw, 44px);
+}
+
+.branch-stock-hero span,
+.branch-stock-card-head span,
+.branch-stock-empty,
+.branch-stock-card label,
+.branch-stock-row small,
+.branch-transfer-card span,
+.branch-transfer-card p,
+.branch-movement-row span,
+.branch-movement-row small {
+  color: #d7d7d7;
+}
+
+.branch-stock-refresh,
+.branch-stock-primary,
+.branch-transfer-actions button {
+  min-height: 46px;
+  border-radius: 999px;
+  border: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-weight: 1000;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.branch-stock-refresh {
+  padding: 0 16px;
+  color: #fff4db;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+}
+
+.branch-stock-primary,
+.branch-transfer-actions button {
+  width: 100%;
+  color: #17110a;
+  background: linear-gradient(135deg, #ffb84d, #ff7a18);
+  box-shadow: 0 14px 30px rgba(255, 122, 24, 0.22);
+}
+
+.branch-transfer-actions button.danger {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  box-shadow: none;
+}
+
+.branch-stock-refresh:hover,
+.branch-stock-primary:hover,
+.branch-transfer-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.branch-stock-refresh:disabled,
+.branch-stock-primary:disabled,
+.branch-transfer-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.branch-stock-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.branch-stock-stat {
+  padding: 18px;
+  border-radius: 24px;
+  display: grid;
+  gap: 8px;
+}
+
+.branch-stock-stat div {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #ffcf70;
+  background: rgba(255, 191, 77, 0.12);
+}
+
+.branch-stock-stat.danger div {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.branch-stock-stat span {
+  color: #d7d7d7;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.branch-stock-stat strong {
+  color: #ffffff;
+  font-size: 28px;
+}
+
+.branch-stock-actions-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.branch-stock-card {
+  padding: 20px;
+  border-radius: 28px;
+  display: grid;
+  gap: 18px;
+}
+
+.branch-stock-card.transfer {
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(30, 30, 30, 0.96), rgba(13, 13, 13, 0.96));
+}
+
+.branch-stock-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.branch-stock-card-head h3 {
+  font-size: 24px;
+}
+
+.branch-stock-card-head > svg {
+  color: #ffcf70;
+}
+
+.branch-stock-card-head.compact {
+  align-items: center;
+}
+
+.branch-stock-card-head.compact span {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #ffcf70;
+  background: rgba(255, 191, 77, 0.1);
+  font-weight: 1000;
+}
+
+.branch-stock-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.branch-stock-form-grid label,
+.branch-source-stock-chip {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 900;
+}
+
+.branch-stock-form-grid label.wide {
+  grid-column: 1 / -1;
+}
+
+.branch-stock-form-grid input,
+.branch-stock-form-grid select,
+.branch-stock-filter-row select,
+.branch-stock-search input {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(7, 7, 7, 0.72);
+  color: #ffffff;
+  padding: 0 12px;
+  outline: none;
+  font: inherit;
+}
+
+.branch-stock-form-grid input::placeholder,
+.branch-stock-search input::placeholder {
+  color: #9f9f9f;
+}
+
+.branch-stock-form-grid input:focus,
+.branch-stock-form-grid select:focus,
+.branch-stock-filter-row select:focus,
+.branch-stock-search input:focus {
+  border-color: rgba(255, 184, 77, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 184, 77, 0.12);
+}
+
+.branch-source-stock-chip {
+  align-content: center;
+  color: #d7d7d7;
+}
+
+.branch-source-stock-chip strong {
+  color: #86efac;
+  font-size: 20px;
+}
+
+.branch-stock-filter-row {
+  padding: 14px;
+  border-radius: 24px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 220px 220px;
+  gap: 12px;
+}
+
+.branch-stock-search {
+  position: relative;
+}
+
+.branch-stock-search svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffcf70;
+}
+
+.branch-stock-search input {
+  padding-left: 42px;
+}
+
+.branch-stock-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(380px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.branch-stock-table,
+.branch-transfer-list,
+.branch-movement-list {
+  display: grid;
+  gap: 10px;
+}
+
+.branch-stock-table-head,
+.branch-stock-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1.1fr 0.9fr 110px;
+  gap: 12px;
+  align-items: center;
+}
+
+.branch-stock-table-head {
+  padding: 0 12px;
+  color: #a3a3a3;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.branch-stock-row,
+.branch-movement-row {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.branch-stock-row strong,
+.branch-transfer-card strong,
+.branch-movement-row strong {
+  color: #ffffff;
+}
+
+.branch-stock-row small,
+.branch-transfer-card span,
+.branch-movement-row span,
+.branch-movement-row small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.branch-status-pill {
+  min-height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  width: fit-content;
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.branch-status-pill.ok,
+.branch-status-pill.received {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.branch-status-pill.low,
+.branch-status-pill.cancelled {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.22);
+}
+
+.branch-status-pill.in_transit {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
+.branch-transfer-card {
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 12px;
+}
+
+.branch-transfer-card.in_transit {
+  border-color: rgba(59, 130, 246, 0.28);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.branch-transfer-head,
+.branch-transfer-route,
+.branch-transfer-item-line,
+.branch-transfer-actions,
+.branch-movement-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.branch-transfer-route {
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.branch-transfer-route div {
+  min-width: 0;
+}
+
+.branch-transfer-route svg {
+  color: #ffcf70;
+  flex: 0 0 auto;
+}
+
+.branch-transfer-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.branch-movement-row .plus {
+  color: #86efac;
+}
+
+.branch-movement-row .minus {
+  color: #fca5a5;
+}
+
+.branch-stock-empty {
+  min-height: 120px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  text-align: center;
+  border: 1px dashed rgba(255, 191, 77, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 900;
+}
+
+.branch-stock-empty.small {
+  min-height: 86px;
+}
+
+.branch-stock-empty.strong {
+  color: #ffcf70;
+}
+
+.spin {
+  animation: branch-spin 0.9s linear infinite;
+}
+
+@keyframes branch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1180px) {
+  .branch-stock-stats,
+  .branch-stock-actions-grid,
+  .branch-stock-content-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .branch-stock-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .branch-stock-hero,
+  .branch-transfer-head,
+  .branch-transfer-item-line,
+  .branch-movement-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .branch-stock-stats,
+  .branch-stock-actions-grid,
+  .branch-stock-filter-row,
+  .branch-stock-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .branch-stock-form-grid label.wide {
+    grid-column: auto;
+  }
+
+  .branch-stock-table-head {
+    display: none;
+  }
+
+  .branch-stock-row {
+    grid-template-columns: 1fr;
+  }
+}

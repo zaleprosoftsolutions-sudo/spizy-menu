@@ -1,0 +1,476 @@
+.branches-section {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 32px;
+}
+
+.branches-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 24px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 24, 0.16), transparent 20rem),
+    linear-gradient(135deg, rgba(28, 28, 28, 0.96), rgba(10, 10, 10, 0.98));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.branches-hero h2,
+.branches-form-head h3,
+.branches-card h3 {
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.branches-hero h2 {
+  font-size: clamp(26px, 4vw, 42px);
+}
+
+.branches-hero span,
+.branches-form-head span,
+.branches-card p {
+  display: block;
+  margin-top: 8px;
+  color: #d8d8d8;
+  line-height: 1.55;
+}
+
+.branches-hero-actions,
+.branches-form-actions,
+.branches-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.branches-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.branches-summary-card {
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(12, 12, 12, 0.78);
+}
+
+.branches-summary-card span,
+.branches-info-chip span,
+.branches-card-address span {
+  color: #cfcfcf;
+}
+
+.branches-summary-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #ffffff;
+  font-size: 30px;
+  letter-spacing: -0.05em;
+}
+
+.branches-summary-card.green strong {
+  color: #86efac;
+}
+
+.branches-summary-card.orange strong {
+  color: #fbbf24;
+}
+
+.branches-summary-card.blue strong {
+  color: #93c5fd;
+}
+
+.branches-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.branches-search-box {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-radius: 18px;
+  background: rgba(7, 7, 7, 0.74);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  color: #ffffff;
+}
+
+.branches-search-box input,
+.branches-form-card input,
+.branches-form-card select,
+.branches-form-card textarea,
+.branches-notes-label textarea {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+}
+
+.branches-search-box input::placeholder,
+.branches-form-card input::placeholder,
+.branches-form-card textarea::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.branches-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.branches-filter-chips button,
+.branches-card-actions button,
+.branches-card-actions a {
+  border: 1px solid rgba(255, 191, 77, 0.13);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5f5f5;
+  border-radius: 999px;
+  padding: 10px 13px;
+  font-weight: 900;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+}
+
+.branches-filter-chips button.active {
+  color: #1a1005;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18);
+  border-color: transparent;
+}
+
+.branches-form-card,
+.branches-card,
+.branches-empty-state {
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.08), transparent 16rem),
+    rgba(12, 12, 12, 0.84);
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.branches-form-card {
+  padding: 22px;
+  display: grid;
+  gap: 18px;
+}
+
+.branches-form-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.branches-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.branches-form-grid label,
+.branches-notes-label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.branches-form-grid label.wide,
+.branches-notes-label {
+  grid-column: 1 / -1;
+}
+
+.branches-form-card input,
+.branches-form-card select,
+.branches-form-card textarea,
+.branches-notes-label textarea {
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 17px;
+  background: rgba(5, 5, 5, 0.68);
+  border: 1px solid rgba(255, 191, 77, 0.13);
+}
+
+.branches-form-card textarea,
+.branches-notes-label textarea {
+  min-height: 92px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.branches-form-card select option {
+  background: #151515;
+  color: #ffffff;
+}
+
+.branches-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.branches-toggle-tile {
+  text-align: left;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.branches-toggle-tile strong,
+.branches-toggle-tile small {
+  display: block;
+}
+
+.branches-toggle-tile small {
+  margin-top: 5px;
+  color: #bbbbbb;
+  line-height: 1.4;
+}
+
+.branches-toggle-tile i {
+  min-width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 1000;
+  font-style: normal;
+  background: rgba(248, 113, 113, 0.14);
+  color: #fca5a5;
+}
+
+.branches-toggle-tile.active {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.24);
+}
+
+.branches-toggle-tile.active i {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.branches-map-preview {
+  min-height: 54px;
+  padding: 0 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  background: rgba(59, 130, 246, 0.09);
+  color: #bfdbfe;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-weight: 1000;
+}
+
+.branches-form-actions {
+  justify-content: flex-end;
+}
+
+.branches-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.branches-card {
+  padding: 18px;
+  display: grid;
+  gap: 15px;
+}
+
+.branches-card.inactive {
+  opacity: 0.68;
+}
+
+.branches-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.branches-card-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+}
+
+.branches-title-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.branches-default-pill,
+.branches-status-pill,
+.branches-info-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.branches-default-pill {
+  padding: 6px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #fbbf24;
+  font-weight: 1000;
+  font-size: 12px;
+}
+
+.branches-card-address {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 13px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.branches-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.branches-info-chip {
+  border-radius: 16px;
+  padding: 11px;
+}
+
+.branches-info-chip span,
+.branches-info-chip strong {
+  display: block;
+}
+
+.branches-info-chip span {
+  font-size: 12px;
+}
+
+.branches-info-chip strong {
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.branches-service-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.branches-status-pill {
+  padding: 7px 10px;
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.18);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.branches-status-pill.active {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.09);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.branches-card-actions {
+  padding-top: 4px;
+}
+
+.branches-card-actions button.danger {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.22);
+}
+
+.branches-empty-state {
+  min-height: 220px;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.branches-empty-state span {
+  color: #cfcfcf;
+}
+
+@media (max-width: 1180px) {
+  .branches-summary-grid,
+  .branches-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .branches-toggle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .branches-hero,
+  .branches-form-head,
+  .branches-toolbar {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .branches-summary-grid,
+  .branches-form-grid,
+  .branches-toggle-grid,
+  .branches-grid,
+  .branches-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .branches-hero-actions,
+  .branches-form-actions,
+  .branches-card-actions {
+    flex-direction: column;
+  }
+
+  .branches-hero-actions button,
+  .branches-form-actions button,
+  .branches-card-actions button,
+  .branches-card-actions a {
+    width: 100%;
+  }
+}

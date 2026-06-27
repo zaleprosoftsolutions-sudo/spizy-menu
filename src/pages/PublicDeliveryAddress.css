@@ -1,0 +1,162 @@
+.public-delivery-address-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 24, 0.12), transparent 16rem),
+    rgba(255, 255, 255, 0.045);
+}
+
+.public-delivery-address-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.public-delivery-address-head span,
+.public-delivery-address-head small {
+  display: block;
+  color: #b8b8b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.public-delivery-address-head strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.public-delivery-address-actions {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.public-delivery-address-actions button,
+.public-delivery-location-row button,
+.public-delivery-location-row a {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  background: rgba(255, 191, 77, 0.1);
+  color: #ffd28a;
+  font-size: 12px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.public-delivery-address-actions button.muted,
+.public-delivery-location-row a {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f5f5;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.public-delivery-address-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.public-delivery-address-grid.two {
+  grid-template-columns: 1fr 1.25fr;
+}
+
+.public-delivery-address-card input,
+.public-delivery-address-card textarea {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(5, 5, 5, 0.58);
+  color: #ffffff;
+  padding: 0 13px;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.public-delivery-address-card textarea {
+  min-height: 86px;
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+.public-delivery-address-card input::placeholder,
+.public-delivery-address-card textarea::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.public-delivery-address-card input:focus,
+.public-delivery-address-card textarea:focus {
+  border-color: rgba(255, 191, 77, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.1);
+}
+
+.public-delivery-location-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.public-save-address-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #dfdfdf;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.public-save-address-toggle input {
+  width: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: #ffb84d;
+}
+
+@media (max-width: 640px) {
+  .public-delivery-address-head {
+    flex-direction: column;
+  }
+
+  .public-delivery-address-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .public-delivery-address-grid,
+  .public-delivery-address-grid.two {
+    grid-template-columns: 1fr;
+  }
+
+  .public-delivery-location-row {
+    align-items: stretch;
+  }
+
+  .public-delivery-location-row button,
+  .public-delivery-location-row a {
+    flex: 1;
+  }
+}

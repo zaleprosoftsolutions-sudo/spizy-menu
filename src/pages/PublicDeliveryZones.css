@@ -1,0 +1,124 @@
+.public-delivery-zone-selector {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 12rem),
+    rgba(255, 255, 255, 0.045);
+}
+
+.public-delivery-zone-selector label {
+  display: grid;
+  gap: 8px;
+}
+
+.public-delivery-zone-selector label span {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.public-delivery-zone-selector select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 191, 77, 0.22);
+  border-radius: 15px;
+  background: rgba(8, 8, 8, 0.78);
+  color: #ffffff;
+  padding: 0 12px;
+  outline: none;
+  font: inherit;
+  font-weight: 800;
+}
+
+.public-delivery-zone-selector select:focus {
+  border-color: rgba(255, 191, 77, 0.62);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.1);
+}
+
+.public-delivery-zone-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 191, 77, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+}
+
+.public-delivery-zone-card strong {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.public-delivery-zone-card span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.public-delivery-zone-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.public-delivery-zone-meta small {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #ffdca1;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.public-delivery-zone-hint,
+.public-delivery-minimum-warning {
+  padding: 11px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.public-delivery-zone-hint {
+  color: #f8d8a5;
+  background: rgba(255, 191, 77, 0.08);
+  border: 1px dashed rgba(255, 191, 77, 0.22);
+}
+
+.public-delivery-minimum-warning {
+  margin-top: 12px;
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.22);
+}
+
+.public-success-reward.zone {
+  background: rgba(255, 191, 77, 0.1);
+  border-color: rgba(255, 191, 77, 0.2);
+}
+
+@media (max-width: 640px) {
+  .public-delivery-zone-card {
+    grid-template-columns: 1fr;
+  }
+
+  .public-delivery-zone-meta {
+    justify-content: flex-start;
+  }
+}

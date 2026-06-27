@@ -1,0 +1,87 @@
+
+.public-menu-page {
+  --spizy-public-accent: #ff7a18;
+  --spizy-public-accent-soft: rgba(255, 122, 24, 0.16);
+  --spizy-public-secondary: #ffbf4d;
+}
+
+.public-menu-page .public-menu-label,
+.public-menu-page .public-product-info span,
+.public-menu-page .public-product-price-row strong,
+.public-menu-page .public-order-card-head strong,
+.public-menu-page .public-rewards-points-card strong {
+  color: var(--spizy-public-secondary);
+}
+
+.public-menu-page .public-search-box:focus-within,
+.public-menu-page .public-product-card:hover,
+.public-menu-page .public-cart-sheet,
+.public-menu-page .public-variation-modal,
+.public-menu-page .public-orders-modal,
+.public-menu-page .public-rewards-modal,
+.public-menu-page .public-profile-modal {
+  border-color: color-mix(in srgb, var(--spizy-public-accent) 42%, transparent);
+}
+
+.public-menu-page .public-category-strip button.active,
+.public-menu-page .public-add-button,
+.public-menu-page .public-place-order-button,
+.public-menu-page .floating-cart-button,
+.public-menu-page .public-book-table-button,
+.public-menu-page .public-direction-button,
+.public-menu-page .public-service-call-button {
+  background: linear-gradient(135deg, var(--spizy-public-secondary), var(--spizy-public-accent));
+}
+
+.public-menu-cover-card {
+  width: min(1180px, calc(100% - 28px));
+  margin: 0 auto 14px;
+  border-radius: 30px;
+  overflow: hidden;
+  min-height: 160px;
+  border: 1px solid color-mix(in srgb, var(--spizy-public-accent) 28%, transparent);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  background: rgba(0, 0, 0, 0.36);
+}
+
+.public-menu-cover-card img {
+  width: 100%;
+  height: clamp(170px, 32vw, 360px);
+  display: block;
+  object-fit: cover;
+}
+
+.public-menu-page.theme-compact .public-menu-header {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.public-menu-page.theme-compact .public-restaurant-brand span {
+  display: none;
+}
+
+.public-menu-page.products-comfortable .public-product-card {
+  min-height: 138px;
+}
+
+.public-menu-page.products-comfortable .public-product-image {
+  width: 104px;
+  height: 104px;
+}
+
+@media (max-width: 720px) {
+  .public-menu-cover-card {
+    width: calc(100% - 20px);
+    border-radius: 24px;
+    margin-bottom: 12px;
+  }
+
+  .public-menu-cover-card img {
+    height: 178px;
+  }
+
+  .public-menu-page.products-comfortable .public-product-image {
+    width: 82px;
+    height: 82px;
+  }
+}

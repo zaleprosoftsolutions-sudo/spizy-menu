@@ -1,0 +1,403 @@
+.cash-bank-screen {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 34px;
+}
+
+.cash-bank-hero,
+.cash-bank-card,
+.cash-bank-transfer-card,
+.cash-bank-ledger-card {
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 20rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+  border-radius: 28px;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.26);
+}
+
+.cash-bank-hero {
+  padding: 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.cash-bank-hero h2,
+.cash-bank-card h3,
+.cash-bank-transfer-card h3,
+.cash-bank-ledger-card h3 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-hero h2 {
+  font-size: clamp(26px, 4vw, 40px);
+}
+
+.cash-bank-hero span,
+.cash-bank-transfer-card .cash-bank-card-head span {
+  display: block;
+  margin-top: 8px;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.cash-bank-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cash-bank-metric {
+  min-height: 132px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background: linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(10, 10, 10, 0.96));
+  display: grid;
+  align-content: space-between;
+  gap: 10px;
+}
+
+.cash-bank-metric div {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.cash-bank-metric span,
+.cash-bank-ledger-row span,
+.cash-bank-ledger-row small,
+.cash-bank-account-card span,
+.cash-bank-account-card p {
+  color: #bdbdbd;
+}
+
+.cash-bank-metric strong {
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-main-grid {
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.cash-bank-card,
+.cash-bank-transfer-card,
+.cash-bank-ledger-card {
+  padding: 20px;
+}
+
+.cash-bank-card-head,
+.cash-bank-ledger-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cash-bank-card-head > svg,
+.cash-bank-transfer-card .cash-bank-card-head > svg {
+  color: #ffbf4d;
+}
+
+.cash-bank-form-grid,
+.cash-bank-transfer-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.cash-bank-form-grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cash-bank-transfer-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cash-bank-screen label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.cash-bank-screen input,
+.cash-bank-screen select,
+.cash-bank-screen textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 15px;
+  background: rgba(5, 5, 5, 0.72);
+  color: #ffffff;
+  padding: 0 13px;
+  outline: none;
+  font: inherit;
+}
+
+.cash-bank-screen textarea {
+  padding: 13px;
+  resize: vertical;
+}
+
+.cash-bank-screen input:focus,
+.cash-bank-screen select:focus,
+.cash-bank-screen textarea:focus {
+  border-color: rgba(255, 191, 77, 0.48);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.1);
+}
+
+.cash-bank-screen select option {
+  color: #111111;
+}
+
+.cash-bank-full-label {
+  margin-top: 14px;
+}
+
+.cash-bank-card .primary-button,
+.cash-bank-transfer-card .transfer-submit {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.cash-bank-transfer-card {
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.1), transparent 18rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+}
+
+.cash-bank-account-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cash-bank-account-card {
+  min-height: 150px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background:
+    radial-gradient(circle at bottom right, rgba(255, 122, 24, 0.08), transparent 12rem),
+    rgba(15, 15, 15, 0.96);
+  display: grid;
+  align-content: space-between;
+  gap: 18px;
+}
+
+.cash-bank-account-card h3 {
+  margin: 7px 0 0;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.cash-bank-account-card p {
+  margin: 8px 0 0;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.cash-bank-account-card > strong {
+  color: #86efac;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-ledger-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: min(520px, 100%);
+}
+
+.cash-bank-search {
+  min-width: 240px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 15px;
+  background: rgba(5, 5, 5, 0.68);
+  color: #ffbf4d;
+}
+
+.cash-bank-search input {
+  min-height: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cash-bank-ledger-list {
+  display: grid;
+  gap: 10px;
+}
+
+.cash-bank-ledger-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.cash-bank-ledger-row.money-in {
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.055);
+}
+
+.cash-bank-ledger-row.money-out {
+  border-color: rgba(248, 113, 113, 0.14);
+  background: rgba(248, 113, 113, 0.045);
+}
+
+.cash-bank-ledger-row.voided {
+  opacity: 0.58;
+}
+
+.cash-bank-ledger-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cash-bank-ledger-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.money-in .cash-bank-ledger-icon {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.money-out .cash-bank-ledger-icon {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.cash-bank-ledger-main strong {
+  display: block;
+  color: #ffffff;
+}
+
+.cash-bank-ledger-main span,
+.cash-bank-ledger-main small {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.cash-bank-ledger-side {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.cash-bank-ledger-side strong {
+  color: #ffffff;
+  font-size: 17px;
+}
+
+.money-in .cash-bank-ledger-side strong {
+  color: #86efac;
+}
+
+.money-out .cash-bank-ledger-side strong {
+  color: #fca5a5;
+}
+
+.cash-bank-ledger-side em {
+  color: #fca5a5;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.cash-bank-void-button {
+  min-height: 34px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5;
+  border-radius: 999px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-summary-grid,
+  .cash-bank-account-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cash-bank-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-transfer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-hero,
+  .cash-bank-ledger-head,
+  .cash-bank-ledger-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-summary-grid,
+  .cash-bank-account-grid,
+  .cash-bank-form-grid.two,
+  .cash-bank-transfer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-ledger-tools {
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .cash-bank-search {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .cash-bank-ledger-side {
+    justify-items: start;
+  }
+}

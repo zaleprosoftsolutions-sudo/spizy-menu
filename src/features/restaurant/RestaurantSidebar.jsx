@@ -1,11 +1,22 @@
 import {
   Archive,
+  ArrowLeftRight,
+  Building2,
   BookOpenCheck,
   BellRing,
   CircleAlert,
   CalendarCheck,
+  ClipboardCheck,
+  CircleDollarSign,
+  FileText,
+  Download,
+  Upload,
   Clock,
   PackageCheck,
+  HandCoins,
+  History,
+  Landmark,
+  MapPin,
   Printer,
   BadgePercent,
   BarChart3,
@@ -64,6 +75,18 @@ const restaurantNavGroups = [
         icon: ReceiptText,
       },
       {
+        id: 'customer-payments',
+        label: 'Customer Payments',
+        description: 'COD and unpaid collections',
+        icon: CircleDollarSign,
+      },
+      {
+        id: 'day-closing',
+        label: 'Day Closing',
+        description: 'Cash drawer and Z report',
+        icon: ClipboardCheck,
+      },
+      {
         id: 'kitchen',
         label: 'Kitchen Display',
         description: 'Live preparation board',
@@ -74,6 +97,12 @@ const restaurantNavGroups = [
         label: 'Delivery',
         description: 'Dispatch and COD tracking',
         icon: Truck,
+      },
+      {
+        id: 'delivery-zones',
+        label: 'Delivery Zones',
+        description: 'Area fees and minimum orders',
+        icon: MapPin,
       },
       {
         id: 'reservations',
@@ -123,10 +152,22 @@ const restaurantNavGroups = [
         icon: Archive,
       },
       {
+        id: 'branch-stock',
+        label: 'Branch Stock',
+        description: 'Branch stock and transfers',
+        icon: ArrowLeftRight,
+      },
+      {
         id: 'purchases',
         label: 'Purchases',
         description: 'Suppliers, bills and stock-in',
         icon: PackageCheck,
+      },
+      {
+        id: 'supplier-payments',
+        label: 'Supplier Payments',
+        description: 'Pay supplier dues and advances',
+        icon: HandCoins,
       },
       {
         id: 'expenses',
@@ -139,6 +180,18 @@ const restaurantNavGroups = [
         label: 'Finance',
         description: 'Profit, dues and cash flow',
         icon: Calculator,
+      },
+      {
+        id: 'cash-bank',
+        label: 'Cash & Bank',
+        description: 'Accounts and money ledger',
+        icon: Landmark,
+      },
+      {
+        id: 'tax-invoices',
+        label: 'Tax & Invoices',
+        description: 'VAT/GST and invoice print',
+        icon: FileText,
       },
     ],
   },
@@ -205,6 +258,30 @@ const restaurantNavGroups = [
         icon: Printer,
       },
       {
+        id: 'data-export',
+        label: 'Data Export',
+        description: 'CSV backup center',
+        icon: Download,
+      },
+      {
+        id: 'data-import',
+        label: 'Data Import',
+        description: 'Bulk CSV upload center',
+        icon: Upload,
+      },
+      {
+        id: 'activity-logs',
+        label: 'Activity Logs',
+        description: 'Audit trail and changes',
+        icon: History,
+      },
+      {
+        id: 'branches',
+        label: 'Branches',
+        description: 'Locations and maps',
+        icon: Building2,
+      },
+      {
         id: 'settings',
         label: 'Settings',
         description: 'Restaurant profile',
@@ -214,7 +291,26 @@ const restaurantNavGroups = [
   },
 ]
 
-function RestaurantSidebar({ restaurant, activeSection, onSectionChange }) {
+function RestaurantSidebar({
+  restaurant,
+  activeSection,
+  onSectionChange,
+  allowedSections = [],
+  staffAccess = null,
+}) {
+  const visibleNavGroups = restaurantNavGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        allowedSections.length === 0 ? true : allowedSections.includes(item.id),
+      ),
+    }))
+    .filter((group) => group.items.length > 0)
+
+  const staffLabel = staffAccess?.isLimited
+    ? staffAccess?.staff?.staff_name || 'Staff access'
+    : restaurant?.subscription_status || 'trialing'
+
   return (
     <aside className="restaurant-sidebar">
       <div className="restaurant-sidebar-head">
@@ -224,12 +320,12 @@ function RestaurantSidebar({ restaurant, activeSection, onSectionChange }) {
 
         <div>
           <strong>{restaurant?.name || 'Restaurant'}</strong>
-          <span>{restaurant?.subscription_status || 'trialing'}</span>
+          <span>{staffLabel}</span>
         </div>
       </div>
 
       <nav className="restaurant-nav">
-        {restaurantNavGroups.map((group) => (
+        {visibleNavGroups.map((group) => (
           <div className="restaurant-nav-group" key={group.title}>
             <p className="restaurant-nav-title">{group.title}</p>
 
@@ -257,6 +353,13 @@ function RestaurantSidebar({ restaurant, activeSection, onSectionChange }) {
           </div>
         ))}
       </nav>
+
+      {staffAccess?.isLimited && (
+        <div className="restaurant-staff-mode-box">
+          <strong>{staffAccess.staff?.staff_role || 'Staff mode'}</strong>
+          <span>Only permitted modules are shown.</span>
+        </div>
+      )}
 
       <div className="restaurant-sidebar-foot">
         <Store size={16} />

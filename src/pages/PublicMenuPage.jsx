@@ -31,6 +31,9 @@ import './PublicSettingsAddons.css'
 import './PublicReservations.css'
 import './PublicServiceRequests.css'
 import './PublicModifiers.css'
+import './PublicDeliveryZones.css'
+import './PublicDeliveryAddress.css'
+import './PublicMenuTheme.css'
 
 const phoneCountryOptions = [
   { code: '+971', label: 'UAE' },
@@ -54,6 +57,8 @@ function PublicMenuPage() {
   const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
   const [activeCampaigns, setActiveCampaigns] = useState([])
+  const [deliveryZones, setDeliveryZones] = useState([])
+  const [selectedDeliveryZoneId, setSelectedDeliveryZoneId] = useState('')
   const [customerOrders, setCustomerOrders] = useState([])
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -115,14 +120,29 @@ function PublicMenuPage() {
   const [savedCustomer, setSavedCustomer] = useState(() =>
     getSavedCustomerProfile(),
   )
+  const [savedDeliveryAddress, setSavedDeliveryAddress] = useState(() =>
+    getSavedDeliveryAddress(),
+  )
+  const [saveDeliveryAddress, setSaveDeliveryAddress] = useState(() =>
+    Boolean(getSavedDeliveryAddress()),
+  )
   const [customerForm, setCustomerForm] = useState(() => {
     const savedProfile = getSavedCustomerProfile()
+    const savedAddress = getSavedDeliveryAddress()
 
     return {
       name: savedProfile?.name || '',
       countryCode: savedProfile?.countryCode || '+971',
       phone: savedProfile?.phone || '',
-      address: '',
+      addressLabel: savedAddress?.label || 'Home',
+      address: savedAddress?.address || '',
+      buildingName: savedAddress?.buildingName || '',
+      flatNumber: savedAddress?.flatNumber || '',
+      streetName: savedAddress?.streetName || '',
+      landmark: savedAddress?.landmark || '',
+      mapUrl: savedAddress?.mapUrl || '',
+      deliveryLat: savedAddress?.deliveryLat || '',
+      deliveryLng: savedAddress?.deliveryLng || '',
       notes: '',
     }
   })
@@ -137,6 +157,12 @@ function PublicMenuPage() {
     [restaurant],
   )
   const customerSessionId = useMemo(() => getOrCreateCustomerSessionId(), [])
+
+  const selectedDeliveryZone = useMemo(() => {
+    if (isTableOrder) return null
+
+    return deliveryZones.find((zone) => zone.id === selectedDeliveryZoneId) || null
+  }, [deliveryZones, isTableOrder, selectedDeliveryZoneId])
 
   const customerFullPhone = getFullPhoneNumber({
     countryCode: customerForm.countryCode,
@@ -153,6 +179,8 @@ function PublicMenuPage() {
         name,
         slug,
         logo_url,
+        public_cover_url,
+        public_menu_theme,
         phone,
         address,
         whatsapp_phone,
@@ -289,6 +317,30 @@ function PublicMenuPage() {
       isPublicCampaignLive(campaign),
     )
 
+    const { data: zoneData } = await supabase
+      .from('restaurant_delivery_zones')
+      .select(`
+        id,
+        zone_name,
+        city,
+        area_name,
+        delivery_fee,
+        minimum_order_amount,
+        packaging_fee,
+        free_delivery_above,
+        estimated_delivery_minutes,
+        radius_km,
+        maps_url,
+        is_active
+      `)
+      .eq('restaurant_id', restaurantData.id)
+      .eq('is_deleted', false)
+      .eq('is_active', true)
+      .order('zone_name', { ascending: true })
+      .order('area_name', { ascending: true })
+
+    setDeliveryZones(zoneData || [])
+
     setCategories(categoryData || [])
     setProducts(enrichedProducts)
     setActiveCampaigns(visibleCampaigns.slice(0, 3))
@@ -375,17 +427,37 @@ function PublicMenuPage() {
     )
   }, [cartTotal, rewardDiscountAmount, couponDiscountAmount])
 
+  const deliveryMinimumAmount = useMemo(() => {
+    if (isTableOrder || !selectedDeliveryZone) return 0
+
+    return getSafePublicAmount(selectedDeliveryZone.minimum_order_amount)
+  }, [isTableOrder, selectedDeliveryZone])
+
   const shippingFeeAmount = useMemo(() => {
     if (isTableOrder) return 0
 
+    if (selectedDeliveryZone) {
+      const freeAbove = getSafePublicAmount(selectedDeliveryZone.free_delivery_above)
+
+      if (freeAbove > 0 && Number(discountedCartTotal || 0) >= freeAbove) {
+        return 0
+      }
+
+      return getSafePublicAmount(selectedDeliveryZone.delivery_fee)
+    }
+
     return getSafePublicAmount(restaurant?.shipping_fee ?? restaurant?.delivery_fee)
-  }, [isTableOrder, restaurant?.delivery_fee, restaurant?.shipping_fee])
+  }, [discountedCartTotal, isTableOrder, restaurant?.delivery_fee, restaurant?.shipping_fee, selectedDeliveryZone])
 
   const packagingFeeAmount = useMemo(() => {
     if (isTableOrder) return 0
 
+    if (selectedDeliveryZone) {
+      return getSafePublicAmount(selectedDeliveryZone.packaging_fee)
+    }
+
     return getSafePublicAmount(restaurant?.packaging_fee)
-  }, [isTableOrder, restaurant?.packaging_fee])
+  }, [isTableOrder, restaurant?.packaging_fee, selectedDeliveryZone])
 
   const taxAmount = useMemo(() => {
     const taxRate = getSafePublicAmount(restaurant?.tax_rate)
@@ -417,8 +489,85 @@ function PublicMenuPage() {
     }
   }, [appliedCoupon, appliedReward, cart.length])
 
+  useEffect(() => {
+    if (isTableOrder) {
+      if (selectedDeliveryZoneId) setSelectedDeliveryZoneId('')
+      return
+    }
+
+    if (
+      selectedDeliveryZoneId &&
+      !deliveryZones.some((zone) => zone.id === selectedDeliveryZoneId)
+    ) {
+      setSelectedDeliveryZoneId('')
+    }
+  }, [deliveryZones, isTableOrder, selectedDeliveryZoneId])
+
   const updateCustomerForm = (key, value) => {
     setCustomerForm((current) => ({ ...current, [key]: value }))
+  }
+
+  const applySavedDeliveryAddress = () => {
+    if (!savedDeliveryAddress) {
+      showPublicMessage('No saved delivery address found yet.')
+      return
+    }
+
+    setCustomerForm((current) => ({
+      ...current,
+      addressLabel: savedDeliveryAddress.label || 'Home',
+      address: savedDeliveryAddress.address || '',
+      buildingName: savedDeliveryAddress.buildingName || '',
+      flatNumber: savedDeliveryAddress.flatNumber || '',
+      streetName: savedDeliveryAddress.streetName || '',
+      landmark: savedDeliveryAddress.landmark || '',
+      mapUrl: savedDeliveryAddress.mapUrl || '',
+      deliveryLat: savedDeliveryAddress.deliveryLat || '',
+      deliveryLng: savedDeliveryAddress.deliveryLng || '',
+    }))
+
+    showPublicMessage('Saved address applied.')
+  }
+
+  const clearSavedDeliveryAddress = () => {
+    localStorage.removeItem('spizy_customer_delivery_address')
+    setSavedDeliveryAddress(null)
+    setSaveDeliveryAddress(false)
+    showPublicMessage('Saved delivery address removed.')
+  }
+
+  const handleUseCurrentDeliveryLocation = () => {
+    if (!navigator.geolocation) {
+      showPublicMessage('Location is not supported on this device.')
+      return
+    }
+
+    showPublicMessage('Getting your current location...')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = Number(position.coords.latitude || 0).toFixed(7)
+        const lng = Number(position.coords.longitude || 0).toFixed(7)
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+
+        setCustomerForm((current) => ({
+          ...current,
+          deliveryLat: lat,
+          deliveryLng: lng,
+          mapUrl,
+        }))
+
+        showPublicMessage('Location added to delivery address.')
+      },
+      () => {
+        showPublicMessage('Location permission denied or unavailable.')
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 60000,
+      },
+    )
   }
 
   const getCartProductQuantity = (productId) => {
@@ -637,6 +786,25 @@ function PublicMenuPage() {
       return
     }
 
+    if (!isTableOrder && deliveryZones.length > 0 && !selectedDeliveryZone) {
+      setShowCart(true)
+      showPublicMessage('Choose your delivery area before placing the order.')
+      return
+    }
+
+    if (
+      !isTableOrder &&
+      selectedDeliveryZone &&
+      Number(deliveryMinimumAmount || 0) > 0 &&
+      Number(cartTotal || 0) < Number(deliveryMinimumAmount || 0)
+    ) {
+      setShowCart(true)
+      showPublicMessage(
+        `Minimum order for ${selectedDeliveryZone.zone_name} is ${currency} ${Number(deliveryMinimumAmount || 0).toFixed(2)}.`,
+      )
+      return
+    }
+
     if (!isTableOrder && !deliveryPaymentChoice) {
       setShowCodChoiceModal(true)
       return
@@ -662,6 +830,24 @@ function PublicMenuPage() {
       return
     }
 
+    if (!isTableOrder && !hasCustomerDeliveryAddress(customerForm)) {
+      setShowCart(true)
+      showPublicMessage('Add your delivery address before placing the order.')
+      return
+    }
+
+    if (!isTableOrder && saveDeliveryAddress) {
+      const addressPayload = buildDeliveryAddressPayload(customerForm)
+
+      if (addressPayload) {
+        localStorage.setItem(
+          'spizy_customer_delivery_address',
+          JSON.stringify(addressPayload),
+        )
+        setSavedDeliveryAddress(addressPayload)
+      }
+    }
+
     setSavingOrder(true)
 
     const { data, error } = await supabase.rpc(
@@ -675,7 +861,7 @@ function PublicMenuPage() {
         p_customer_name: activeCustomerName || null,
         p_customer_phone: activeCustomerPhone || null,
         p_currency: currency,
-        p_notes: buildCustomerNotes(customerForm, isTableOrder),
+        p_notes: buildCustomerNotes(customerForm, isTableOrder, selectedDeliveryZone),
         p_reward_points_to_redeem: appliedReward
           ? Number(appliedReward.points || 0)
           : 0,
@@ -730,6 +916,7 @@ function PublicMenuPage() {
       packagingFee: packagingFeeAmount,
       taxAmount,
       deliveryPaymentChoice: selectedDeliveryPayment || deliveryPaymentChoice || '',
+      deliveryZoneName: selectedDeliveryZone?.zone_name || '',
     })
 
     setCart([])
@@ -741,7 +928,6 @@ function PublicMenuPage() {
     setShowCodChoiceModal(false)
     setCustomerForm((current) => ({
       ...current,
-      address: '',
       notes: '',
     }))
 
@@ -1229,12 +1415,18 @@ function PublicMenuPage() {
     )
   }
 
+  const publicTheme = normalizePublicMenuTheme(restaurant.public_menu_theme)
+
   return (
-    <main className="public-menu-page">
+    <main
+      className={`public-menu-page theme-${publicTheme.header_style} products-${publicTheme.product_card_style}`}
+      style={getPublicThemeStyle(publicTheme)}
+    >
       <PublicWarningListener />
 
       <header className="public-menu-header">
         <div className="public-restaurant-brand">
+          {publicTheme.show_logo && (
           <div className="public-menu-logo">
             {restaurant.logo_url ? (
               <img src={restaurant.logo_url} alt={restaurant.name} />
@@ -1242,6 +1434,7 @@ function PublicMenuPage() {
               restaurant.name.slice(0, 2).toUpperCase()
             )}
           </div>
+          )}
 
           <div>
             <p className="public-menu-label">Spizy Menu</p>
@@ -1273,7 +1466,7 @@ function PublicMenuPage() {
             </button>
           )}
 
-          {restaurantDirectionUrl && (
+          {publicTheme.show_directions && restaurantDirectionUrl && (
             <a
               className="public-direction-button"
               href={restaurantDirectionUrl}
@@ -1299,7 +1492,13 @@ function PublicMenuPage() {
         </div>
       </header>
 
-      <PublicSocialLinks restaurant={restaurant} />
+      {publicTheme.show_cover_image && restaurant.public_cover_url && (
+        <section className="public-menu-cover-card">
+          <img src={restaurant.public_cover_url} alt={`${restaurant.name} cover`} />
+        </section>
+      )}
+
+      {publicTheme.show_social_links && <PublicSocialLinks restaurant={restaurant} />}
 
       {isTableOrder && (
         <section className="public-service-quick-card">
@@ -1338,7 +1537,7 @@ function PublicMenuPage() {
         </section>
       )}
 
-      {activeCampaigns.length > 0 && (
+      {publicTheme.show_campaigns && activeCampaigns.length > 0 && (
         <PublicCampaignStrip
           campaigns={activeCampaigns}
           currency={currency}
@@ -1564,6 +1763,12 @@ function PublicMenuPage() {
           packagingFeeAmount={packagingFeeAmount}
           taxAmount={taxAmount}
           deliveryPaymentChoice={deliveryPaymentChoice}
+          deliveryZones={deliveryZones}
+          selectedDeliveryZoneId={selectedDeliveryZoneId}
+          selectedDeliveryZone={selectedDeliveryZone}
+          deliveryMinimumAmount={deliveryMinimumAmount}
+          savedDeliveryAddress={savedDeliveryAddress}
+          saveDeliveryAddress={saveDeliveryAddress}
           rewardDiscountAmount={rewardDiscountAmount}
           couponDiscountAmount={couponDiscountAmount}
           couponCode={couponCode}
@@ -1585,7 +1790,12 @@ function PublicMenuPage() {
           onRemoveCoupon={handleRemoveCouponCode}
           onOpenRewards={() => loadCustomerRewards()}
           onRemoveReward={() => setAppliedReward(null)}
+          onDeliveryZoneChange={setSelectedDeliveryZoneId}
           onDeliveryPaymentChoiceChange={setDeliveryPaymentChoice}
+          onSaveDeliveryAddressChange={setSaveDeliveryAddress}
+          onUseSavedDeliveryAddress={applySavedDeliveryAddress}
+          onClearSavedDeliveryAddress={clearSavedDeliveryAddress}
+          onUseCurrentLocation={handleUseCurrentDeliveryLocation}
           onPlaceOrder={handlePlaceOrder}
         />
       )}
@@ -1635,11 +1845,11 @@ function PublicMenuPage() {
           onClose={() => setShowOrdersModal(false)}
           onRefresh={loadCustomerOrders}
           onRequestBill={handleCustomerRequestBill}
-          onReviewOrder={handleOpenReview}
+          onReviewOrder={publicTheme.show_reviews ? handleOpenReview : null}
         />
       )}
 
-      {reviewOrder && (
+      {publicTheme.show_reviews && reviewOrder && (
         <PublicReviewModal
           order={reviewOrder}
           currency={currency}
@@ -2180,6 +2390,12 @@ function PublicCartSheet({
   packagingFeeAmount,
   taxAmount,
   deliveryPaymentChoice,
+  deliveryZones,
+  selectedDeliveryZoneId,
+  selectedDeliveryZone,
+  deliveryMinimumAmount,
+  savedDeliveryAddress,
+  saveDeliveryAddress,
   rewardDiscountAmount,
   couponDiscountAmount,
   couponCode,
@@ -2201,7 +2417,12 @@ function PublicCartSheet({
   onRemoveCoupon,
   onOpenRewards,
   onRemoveReward,
+  onDeliveryZoneChange,
   onDeliveryPaymentChoiceChange,
+  onSaveDeliveryAddressChange,
+  onUseSavedDeliveryAddress,
+  onClearSavedDeliveryAddress,
+  onUseCurrentLocation,
   onPlaceOrder,
 }) {
   return (
@@ -2304,14 +2525,66 @@ function PublicCartSheet({
             </>
           )}
 
+          {!isTableOrder && deliveryZones.length > 0 && (
+            <div className="public-delivery-zone-selector">
+              <label>
+                <span>Delivery area</span>
+                <select
+                  value={selectedDeliveryZoneId}
+                  onChange={(event) => onDeliveryZoneChange(event.target.value)}
+                >
+                  <option value="">Choose your area</option>
+                  {deliveryZones.map((zone) => (
+                    <option value={zone.id} key={zone.id}>
+                      {formatDeliveryZoneOption(zone, currency)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {selectedDeliveryZone ? (
+                <div className="public-delivery-zone-card">
+                  <div>
+                    <strong>{selectedDeliveryZone.zone_name}</strong>
+                    <span>
+                      {[selectedDeliveryZone.area_name, selectedDeliveryZone.city]
+                        .filter(Boolean)
+                        .join(' • ') || 'Selected delivery area'}
+                    </span>
+                  </div>
+
+                  <div className="public-delivery-zone-meta">
+                    {Number(deliveryMinimumAmount || 0) > 0 && (
+                      <small>
+                        Minimum: {currency} {Number(deliveryMinimumAmount || 0).toFixed(2)}
+                      </small>
+                    )}
+                    <small>
+                      Delivery: {currency} {Number(shippingFeeAmount || 0).toFixed(2)}
+                    </small>
+                    {Number(selectedDeliveryZone.estimated_delivery_minutes || 0) > 0 && (
+                      <small>{selectedDeliveryZone.estimated_delivery_minutes} mins approx.</small>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="public-delivery-zone-hint">
+                  Select your area to calculate delivery fee and minimum order.
+                </div>
+              )}
+            </div>
+          )}
+
           {!isTableOrder && (
-            <textarea
-              value={customerForm.address}
-              onChange={(event) =>
-                onUpdateCustomerForm('address', event.target.value)
-              }
-              placeholder="Delivery address"
-              rows="3"
+            <PublicDeliveryAddressFields
+              customerForm={customerForm}
+              savedDeliveryAddress={savedDeliveryAddress}
+              saveDeliveryAddress={saveDeliveryAddress}
+              onUpdateCustomerForm={onUpdateCustomerForm}
+              onSaveDeliveryAddressChange={onSaveDeliveryAddressChange}
+              onUseSavedDeliveryAddress={onUseSavedDeliveryAddress}
+              onClearSavedDeliveryAddress={onClearSavedDeliveryAddress}
+              onUseCurrentLocation={onUseCurrentLocation}
             />
           )}
 
@@ -2422,6 +2695,12 @@ function PublicCartSheet({
           )}
         </div>
 
+        {!isTableOrder && selectedDeliveryZone && Number(deliveryMinimumAmount || 0) > 0 && Number(cartTotal || 0) < Number(deliveryMinimumAmount || 0) && (
+          <div className="public-delivery-minimum-warning">
+            Add {currency} {Number(deliveryMinimumAmount - cartTotal).toFixed(2)} more to place order in this area.
+          </div>
+        )}
+
         <div className="public-cart-total public-cart-total-split">
           <div>
             <span>Subtotal</span>
@@ -2492,6 +2771,130 @@ function PublicCartSheet({
           {!acceptsOrders ? 'View-only menu' : savingOrder ? 'Placing order...' : 'Place Order'}
         </button>
       </aside>
+    </div>
+  )
+}
+
+function PublicDeliveryAddressFields({
+  customerForm,
+  savedDeliveryAddress,
+  saveDeliveryAddress,
+  onUpdateCustomerForm,
+  onSaveDeliveryAddressChange,
+  onUseSavedDeliveryAddress,
+  onClearSavedDeliveryAddress,
+  onUseCurrentLocation,
+}) {
+  const hasMapLocation = Boolean(customerForm.mapUrl || (customerForm.deliveryLat && customerForm.deliveryLng))
+
+  return (
+    <div className="public-delivery-address-card">
+      <div className="public-delivery-address-head">
+        <div>
+          <span>Delivery address</span>
+          <strong>Where should we deliver?</strong>
+        </div>
+
+        {savedDeliveryAddress ? (
+          <div className="public-delivery-address-actions">
+            <button type="button" onClick={onUseSavedDeliveryAddress}>
+              Use saved
+            </button>
+            <button type="button" className="muted" onClick={onClearSavedDeliveryAddress}>
+              Clear
+            </button>
+          </div>
+        ) : (
+          <small>No saved address yet</small>
+        )}
+      </div>
+
+      <div className="public-delivery-address-grid">
+        <input
+          type="text"
+          value={customerForm.addressLabel}
+          onChange={(event) =>
+            onUpdateCustomerForm('addressLabel', event.target.value)
+          }
+          placeholder="Label: Home, Office, Villa..."
+        />
+
+        <input
+          type="text"
+          value={customerForm.buildingName}
+          onChange={(event) =>
+            onUpdateCustomerForm('buildingName', event.target.value)
+          }
+          placeholder="Building / villa name"
+        />
+
+        <input
+          type="text"
+          value={customerForm.flatNumber}
+          onChange={(event) =>
+            onUpdateCustomerForm('flatNumber', event.target.value)
+          }
+          placeholder="Flat / floor / villa no."
+        />
+
+        <input
+          type="text"
+          value={customerForm.streetName}
+          onChange={(event) =>
+            onUpdateCustomerForm('streetName', event.target.value)
+          }
+          placeholder="Street / community"
+        />
+      </div>
+
+      <textarea
+        value={customerForm.address}
+        onChange={(event) => onUpdateCustomerForm('address', event.target.value)}
+        placeholder="Full delivery address"
+        rows="3"
+      />
+
+      <div className="public-delivery-address-grid two">
+        <input
+          type="text"
+          value={customerForm.landmark}
+          onChange={(event) => onUpdateCustomerForm('landmark', event.target.value)}
+          placeholder="Nearby landmark"
+        />
+
+        <input
+          type="url"
+          value={customerForm.mapUrl}
+          onChange={(event) => onUpdateCustomerForm('mapUrl', event.target.value)}
+          placeholder="Google Maps link optional"
+        />
+      </div>
+
+      <div className="public-delivery-location-row">
+        <button type="button" onClick={onUseCurrentLocation}>
+          <MapPin size={15} />
+          Use current location
+        </button>
+
+        {hasMapLocation && (
+          <a
+            href={getDeliveryMapUrl(customerForm)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View pin
+          </a>
+        )}
+      </div>
+
+      <label className="public-save-address-toggle">
+        <input
+          type="checkbox"
+          checked={saveDeliveryAddress}
+          onChange={(event) => onSaveDeliveryAddressChange(event.target.checked)}
+        />
+        <span>Save this address on this device for faster checkout next time</span>
+      </label>
     </div>
   )
 }
@@ -2935,7 +3338,7 @@ function PublicOrderCard({
         </div>
       )}
 
-      {['completed', 'delivered'].includes(order.status) && (
+      {onReviewOrder && ['completed', 'delivered'].includes(order.status) && (
         <button
           type="button"
           className="public-review-order-button"
@@ -3476,6 +3879,12 @@ function OrderSuccessModal({ order, currency, onClose }) {
           </div>
         )}
 
+        {order.deliveryZoneName && (
+          <div className="public-success-reward zone">
+            Delivery area: {order.deliveryZoneName}
+          </div>
+        )}
+
         {order.deliveryPaymentChoice && (
           <div className="public-success-reward payment">
             Delivery payment: COD - {order.deliveryPaymentChoice === 'card' ? 'Card machine' : 'Cash'}
@@ -3726,11 +4135,30 @@ function buildOrderVariationName(item) {
     .join(' • ')
 }
 
-function buildCustomerNotes(customerForm, isTableOrder) {
+function buildCustomerNotes(customerForm, isTableOrder, deliveryZone) {
   const notes = []
 
-  if (!isTableOrder && customerForm.address.trim()) {
-    notes.push(`Address: ${customerForm.address.trim()}`)
+  if (!isTableOrder && deliveryZone) {
+    notes.push(`Delivery Zone: ${deliveryZone.zone_name}`)
+
+    const zoneArea = [deliveryZone.area_name, deliveryZone.city]
+      .filter(Boolean)
+      .join(' / ')
+
+    if (zoneArea) notes.push(`Delivery Area: ${zoneArea}`)
+
+    if (deliveryZone.estimated_delivery_minutes) {
+      notes.push(`Estimated Delivery: ${deliveryZone.estimated_delivery_minutes} minutes`)
+    }
+  }
+
+  if (!isTableOrder) {
+    const addressLines = buildDeliveryAddressLines(customerForm)
+
+    if (addressLines.length > 0) {
+      notes.push('--- Delivery Address ---')
+      notes.push(...addressLines)
+    }
   }
 
   if (customerForm.notes.trim()) {
@@ -3770,6 +4198,74 @@ function getSavedCustomerProfile() {
   } catch {
     return null
   }
+}
+
+function getSavedDeliveryAddress() {
+  try {
+    const storedValue = localStorage.getItem('spizy_customer_delivery_address')
+
+    if (!storedValue) return null
+
+    return JSON.parse(storedValue)
+  } catch {
+    return null
+  }
+}
+
+function buildDeliveryAddressPayload(customerForm) {
+  const payload = {
+    label: String(customerForm.addressLabel || '').trim() || 'Saved address',
+    address: String(customerForm.address || '').trim(),
+    buildingName: String(customerForm.buildingName || '').trim(),
+    flatNumber: String(customerForm.flatNumber || '').trim(),
+    streetName: String(customerForm.streetName || '').trim(),
+    landmark: String(customerForm.landmark || '').trim(),
+    mapUrl: normalizePublicExternalUrl(customerForm.mapUrl),
+    deliveryLat: String(customerForm.deliveryLat || '').trim(),
+    deliveryLng: String(customerForm.deliveryLng || '').trim(),
+  }
+
+  if (!payload.address && !payload.buildingName && !payload.streetName && !payload.mapUrl) {
+    return null
+  }
+
+  return payload
+}
+
+function hasCustomerDeliveryAddress(customerForm) {
+  return Boolean(buildDeliveryAddressPayload(customerForm))
+}
+
+function buildDeliveryAddressLines(customerForm) {
+  const address = buildDeliveryAddressPayload(customerForm)
+
+  if (!address) return []
+
+  const lines = []
+
+  if (address.label) lines.push(`Address Label: ${address.label}`)
+  if (address.address) lines.push(`Address: ${address.address}`)
+  if (address.buildingName) lines.push(`Building/Villa: ${address.buildingName}`)
+  if (address.flatNumber) lines.push(`Flat/Floor/Villa No: ${address.flatNumber}`)
+  if (address.streetName) lines.push(`Street/Community: ${address.streetName}`)
+  if (address.landmark) lines.push(`Landmark: ${address.landmark}`)
+
+  const mapUrl = getDeliveryMapUrl(address)
+  if (mapUrl) lines.push(`Map: ${mapUrl}`)
+
+  return lines
+}
+
+function getDeliveryMapUrl(value) {
+  const cleanMapUrl = normalizePublicExternalUrl(value?.mapUrl)
+
+  if (cleanMapUrl) return cleanMapUrl
+
+  if (value?.deliveryLat && value?.deliveryLng) {
+    return `https://www.google.com/maps/search/?api=1&query=${value.deliveryLat},${value.deliveryLng}`
+  }
+
+  return ''
 }
 
 function cleanPhoneNumber(value) {
@@ -3873,6 +4369,33 @@ function formatPublicDate(value) {
   }
 }
 
+
+function normalizePublicMenuTheme(value) {
+  const incoming = value && typeof value === 'object' ? value : {}
+
+  return {
+    accent_color: incoming.accent_color || '#ff7a18',
+    secondary_color: incoming.secondary_color || '#ffbf4d',
+    header_style: incoming.header_style || 'premium',
+    product_card_style: incoming.product_card_style || 'compact',
+    show_cover_image: incoming.show_cover_image !== false,
+    show_logo: incoming.show_logo !== false,
+    show_social_links: incoming.show_social_links !== false,
+    show_directions: incoming.show_directions !== false,
+    show_campaigns: incoming.show_campaigns !== false,
+    show_reviews: incoming.show_reviews !== false,
+  }
+}
+
+function getPublicThemeStyle(theme) {
+  const publicTheme = normalizePublicMenuTheme(theme)
+
+  return {
+    '--spizy-public-accent': publicTheme.accent_color,
+    '--spizy-public-accent-soft': `${publicTheme.accent_color}24`,
+    '--spizy-public-secondary': publicTheme.secondary_color || '#ffbf4d',
+  }
+}
 
 function formatRewardNumber(value) {
   const numberValue = Number(value || 0)
@@ -3992,6 +4515,19 @@ function getCampaignDefaultButton(campaign) {
   if (campaign.button_target === 'link') return 'View offer'
   if (campaign.coupon_code) return 'Use coupon'
   return 'View offer'
+}
+
+
+function formatDeliveryZoneOption(zone, currency) {
+  const parts = [zone.zone_name, zone.area_name, zone.city]
+    .filter(Boolean)
+    .join(' • ')
+  const fee = getSafePublicAmount(zone.delivery_fee)
+  const minimum = getSafePublicAmount(zone.minimum_order_amount)
+  const feeLabel = fee > 0 ? `${currency} ${fee.toFixed(2)} delivery` : 'Free delivery'
+  const minimumLabel = minimum > 0 ? `min ${currency} ${minimum.toFixed(2)}` : 'no minimum'
+
+  return `${parts} — ${feeLabel}, ${minimumLabel}`
 }
 
 function getSafePublicAmount(value) {

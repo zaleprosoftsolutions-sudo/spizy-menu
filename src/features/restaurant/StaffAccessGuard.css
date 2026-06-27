@@ -1,0 +1,78 @@
+.staff-access-guard {
+  width: min(760px, 100%);
+  margin: 26px auto;
+  padding: 26px;
+  border-radius: 28px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 24, 0.16), transparent 18rem),
+    linear-gradient(135deg, rgba(29, 29, 29, 0.96), rgba(10, 10, 10, 0.98));
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.staff-access-guard.compact {
+  margin: 0 0 18px;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+.staff-access-lock {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 191, 77, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  font-size: 24px;
+  flex: 0 0 auto;
+}
+
+.staff-access-guard h2 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: clamp(22px, 3vw, 32px);
+  letter-spacing: -0.04em;
+}
+
+.staff-access-guard span {
+  display: block;
+  color: #d7d7d7;
+  line-height: 1.55;
+}
+
+.restaurant-staff-mode-box {
+  margin: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 191, 77, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.restaurant-staff-mode-box strong,
+.restaurant-staff-mode-box span {
+  display: block;
+}
+
+.restaurant-staff-mode-box strong {
+  color: #ffffff;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.restaurant-staff-mode-box span {
+  margin-top: 4px;
+  color: #cfcfcf;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 720px) {
+  .staff-access-guard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

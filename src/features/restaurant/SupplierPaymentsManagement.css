@@ -1,0 +1,331 @@
+.supplier-payments-screen {
+  display: grid;
+  gap: 22px;
+  padding-bottom: 32px;
+}
+
+.supplier-payments-head,
+.supplier-payments-list-card,
+.supplier-payment-form,
+.supplier-due-panel {
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(31, 31, 31, 0.96), rgba(13, 13, 13, 0.96));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+}
+
+.supplier-payments-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 28px;
+}
+
+.supplier-payments-head h2,
+.supplier-payment-form h3,
+.supplier-due-panel h3,
+.supplier-payments-list-card h3 {
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.supplier-payments-head h2 {
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.supplier-payments-head span,
+.supplier-payment-form p,
+.supplier-due-panel p,
+.supplier-payments-list-card p {
+  display: block;
+  margin-top: 7px;
+  color: #cfcfcf;
+  line-height: 1.5;
+}
+
+.supplier-payments-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.supplier-payment-stat {
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.1);
+  background: rgba(10, 10, 10, 0.62);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.supplier-payment-stat.danger {
+  border-color: rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.supplier-stat-icon,
+.supplier-form-icon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+}
+
+.supplier-payment-stat span,
+.supplier-payment-stat small {
+  display: block;
+  color: #bdbdbd;
+}
+
+.supplier-payment-stat strong {
+  display: block;
+  margin: 6px 0 5px;
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.supplier-payments-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.supplier-payment-form,
+.supplier-due-panel,
+.supplier-payments-list-card {
+  padding: 20px;
+  border-radius: 28px;
+}
+
+.supplier-payment-form {
+  display: grid;
+  gap: 14px;
+}
+
+.supplier-payment-form-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 2px;
+}
+
+.supplier-payment-form label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.supplier-payment-form input,
+.supplier-payment-form select,
+.supplier-payment-form textarea,
+.supplier-payment-filters select {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(5, 5, 5, 0.7);
+  color: #ffffff;
+  padding: 0 14px;
+  font: inherit;
+  outline: none;
+}
+
+.supplier-payment-form textarea {
+  padding-top: 12px;
+  resize: vertical;
+}
+
+.supplier-payment-form input:focus,
+.supplier-payment-form select:focus,
+.supplier-payment-form textarea:focus,
+.supplier-payment-filters select:focus {
+  border-color: rgba(255, 191, 77, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.11);
+}
+
+.supplier-payment-form select option,
+.supplier-payment-filters select option {
+  color: #111111;
+}
+
+.supplier-payment-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.supplier-save-button {
+  width: 100%;
+  min-height: 52px;
+}
+
+.supplier-due-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.supplier-due-list {
+  display: grid;
+  gap: 10px;
+}
+
+.supplier-due-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.supplier-due-card strong {
+  color: #ffffff;
+}
+
+.supplier-due-card > strong {
+  color: #fca5a5;
+  white-space: nowrap;
+}
+
+.supplier-due-card span,
+.supplier-due-card small {
+  display: block;
+  margin-top: 4px;
+  color: #c7c7c7;
+  font-size: 12px;
+}
+
+.supplier-empty-box {
+  padding: 22px;
+  border-radius: 20px;
+  border: 1px dashed rgba(255, 191, 77, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cfcfcf;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.supplier-payments-list-card {
+  display: grid;
+  gap: 16px;
+}
+
+.supplier-payments-list-head {
+  display: grid;
+  gap: 14px;
+}
+
+.supplier-payment-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 180px 150px;
+  gap: 12px;
+  align-items: center;
+}
+
+.supplier-search-box {
+  min-height: 48px;
+}
+
+.supplier-payment-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.supplier-payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.supplier-payment-table th,
+.supplier-payment-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  text-align: left;
+  vertical-align: top;
+}
+
+.supplier-payment-table th {
+  color: #9f9f9f;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.supplier-payment-table td strong {
+  display: block;
+  color: #ffffff;
+}
+
+.supplier-payment-table td span {
+  display: block;
+  margin-top: 5px;
+  color: #bdbdbd;
+  font-size: 12px;
+}
+
+.supplier-payment-table .right {
+  text-align: right;
+}
+
+.supplier-payment-table .strong {
+  color: #86efac;
+  font-weight: 1000;
+}
+
+.supplier-method-pill {
+  display: inline-flex !important;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 191, 77, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  color: #ffdd9b !important;
+  font-weight: 900;
+}
+
+@media (max-width: 1180px) {
+  .supplier-payments-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .supplier-payments-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 740px) {
+  .supplier-payments-head {
+    flex-direction: column;
+  }
+
+  .supplier-payments-stats,
+  .supplier-payment-form-grid,
+  .supplier-payment-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .supplier-due-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

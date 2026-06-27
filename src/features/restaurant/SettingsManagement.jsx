@@ -5,6 +5,7 @@ import {
   CreditCard,
   Globe2,
   ImagePlus,
+  Palette,
   Link2,
   LocateFixed,
   MapPin,
@@ -118,6 +119,29 @@ const defaultPaymentGatewaySettings = {
   phonepe: { enabled: false, test_mode: true },
 }
 
+const defaultPublicMenuTheme = {
+  accent_color: '#ff7a18',
+  secondary_color: '#ffbf4d',
+  background_style: 'dark',
+  header_style: 'premium',
+  product_card_style: 'compact',
+  show_cover_image: true,
+  show_logo: true,
+  show_social_links: true,
+  show_directions: true,
+  show_campaigns: true,
+  show_reviews: true,
+}
+
+const themeAccentOptions = [
+  { value: '#ff7a18', label: 'Spizy Orange' },
+  { value: '#f59e0b', label: 'Gold' },
+  { value: '#22c55e', label: 'Fresh Green' },
+  { value: '#38bdf8', label: 'Sky Blue' },
+  { value: '#a855f7', label: 'Royal Purple' },
+  { value: '#ef4444', label: 'Hot Red' },
+]
+
 const defaultSettings = {
   name: '',
   slug: '',
@@ -132,6 +156,8 @@ const defaultSettings = {
   x_url: '',
   custom_social_links: [],
   logo_url: '',
+  public_cover_url: '',
+  public_menu_theme: defaultPublicMenuTheme,
   map_latitude: '',
   map_longitude: '',
   map_url: '',
@@ -162,6 +188,7 @@ function SettingsManagement({ restaurant }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
   const [locating, setLocating] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -188,6 +215,8 @@ function SettingsManagement({ restaurant }) {
           x_url,
           custom_social_links,
           logo_url,
+          public_cover_url,
+          public_menu_theme,
           map_latitude,
           map_longitude,
           map_url,
@@ -232,6 +261,7 @@ function SettingsManagement({ restaurant }) {
           data.payment_gateway_settings,
         ),
         currency: data.currency || restaurant.currency || 'AED',
+        public_menu_theme: normalizePublicMenuTheme(data.public_menu_theme),
         shipping_fee: Number(data.shipping_fee ?? data.delivery_fee ?? 0),
       })
     }
@@ -256,6 +286,32 @@ function SettingsManagement({ restaurant }) {
 
   const updateField = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }))
+    setMessage('')
+  }
+
+  const updateTheme = (key, value) => {
+    setForm((current) => ({
+      ...current,
+      public_menu_theme: {
+        ...normalizePublicMenuTheme(current.public_menu_theme),
+        [key]: value,
+      },
+    }))
+    setMessage('')
+  }
+
+  const toggleTheme = (key) => {
+    setForm((current) => {
+      const currentTheme = normalizePublicMenuTheme(current.public_menu_theme)
+
+      return {
+        ...current,
+        public_menu_theme: {
+          ...currentTheme,
+          [key]: !currentTheme[key],
+        },
+      }
+    })
     setMessage('')
   }
 
@@ -371,6 +427,47 @@ function SettingsManagement({ restaurant }) {
     }
   }
 
+
+  const handleCoverUpload = async (file) => {
+    if (!restaurant?.id || !file) return
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please upload a valid cover image file.')
+      return
+    }
+
+    if (file.size > 6 * 1024 * 1024) {
+      setMessage('Cover source image should be below 6 MB.')
+      return
+    }
+
+    try {
+      setUploadingCover(true)
+      setMessage('')
+
+      const coverDataUrl = await cropImageToDataUrl({
+        file,
+        width: 1600,
+        height: 640,
+        quality: 0.84,
+      })
+
+      const imageUrl = await uploadProductImageToR2({
+        restaurantId: restaurant.id,
+        imageDataUrl: coverDataUrl,
+        fileName: `${makeSafeSlug(form.slug || form.name || 'restaurant')}-menu-cover.jpg`,
+      })
+
+      updateField('public_cover_url', imageUrl)
+      updateTheme('show_cover_image', true)
+      setMessage('Public menu cover uploaded and cropped to 1600 × 640 px.')
+    } catch (error) {
+      setMessage(error.message || 'Cover upload failed.')
+    } finally {
+      setUploadingCover(false)
+    }
+  }
+
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
       setMessage('Location picker is not available in this browser.')
@@ -442,6 +539,8 @@ function SettingsManagement({ restaurant }) {
         x_url: nullIfEmpty(form.x_url),
         custom_social_links: cleanCustomSocialLinks(form.custom_social_links),
         logo_url: nullIfEmpty(form.logo_url),
+        public_cover_url: nullIfEmpty(form.public_cover_url),
+        public_menu_theme: normalizePublicMenuTheme(form.public_menu_theme),
         map_latitude: getNullableNumber(form.map_latitude),
         map_longitude: getNullableNumber(form.map_longitude),
         map_url: nullIfEmpty(form.map_url),
@@ -501,6 +600,7 @@ function SettingsManagement({ restaurant }) {
   const editableCustomLinks = normalizeEditableCustomSocialLinks(
     form.custom_social_links,
   )
+  const publicMenuTheme = normalizePublicMenuTheme(form.public_menu_theme)
 
   return (
     <section className="management-section settings-screen">
@@ -510,7 +610,7 @@ function SettingsManagement({ restaurant }) {
           <h2>Restaurant settings</h2>
           <span>
             Manage profile, public menu URL, logo, social links, currency,
-            payments, delivery charges, tax, map location and opening hours.
+            payments, public menu appearance, delivery charges, tax, map location and opening hours.
           </span>
         </div>
 
@@ -524,7 +624,7 @@ function SettingsManagement({ restaurant }) {
             type="button"
             className="settings-save-button"
             onClick={saveSettings}
-            disabled={saving || uploadingLogo}
+            disabled={saving || uploadingLogo || uploadingCover}
           >
             <Save size={16} />
             {saving ? 'Saving...' : 'Save settings'}
@@ -619,6 +719,116 @@ function SettingsManagement({ restaurant }) {
                 />
               </label>
             </div>
+          </div>
+        </SettingsCard>
+
+        <SettingsCard
+          icon={Palette}
+          title="Public menu appearance"
+          text="Customize the customer QR menu branding without touching code."
+          wide
+        >
+          <div className="settings-cover-uploader">
+            <div className="settings-cover-preview">
+              {form.public_cover_url ? (
+                <img src={form.public_cover_url} alt="Public menu cover" />
+              ) : (
+                <div>
+                  <ImagePlus size={30} />
+                  <span>Cover preview</span>
+                </div>
+              )}
+            </div>
+
+            <div className="settings-cover-content">
+              <strong>Recommended public menu cover: 1600 × 640 px</strong>
+              <span>
+                Use a wide food/banner image. Spizy auto-crops wrong sizes and
+                optimizes it for fast loading on mobile and desktop.
+              </span>
+
+              <label className="settings-upload-button">
+                <UploadCloud size={16} />
+                {uploadingCover ? 'Uploading...' : 'Upload menu cover'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingCover}
+                  onChange={(event) => handleCoverUpload(event.target.files?.[0])}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="settings-form-grid three">
+            <label className="settings-field">
+              Accent color
+              <select
+                value={publicMenuTheme.accent_color}
+                onChange={(event) => updateTheme('accent_color', event.target.value)}
+              >
+                {themeAccentOptions.map((option) => (
+                  <option value={option.value} key={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="settings-field">
+              Header style
+              <select
+                value={publicMenuTheme.header_style}
+                onChange={(event) => updateTheme('header_style', event.target.value)}
+              >
+                <option value="premium">Premium banner</option>
+                <option value="compact">Compact</option>
+              </select>
+            </label>
+
+            <label className="settings-field">
+              Product card style
+              <select
+                value={publicMenuTheme.product_card_style}
+                onChange={(event) => updateTheme('product_card_style', event.target.value)}
+              >
+                <option value="compact">Compact list</option>
+                <option value="comfortable">Comfortable</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="settings-toggle-grid appearance-toggle-grid">
+            <SettingsToggle
+              label="Show cover image"
+              active={publicMenuTheme.show_cover_image}
+              onClick={() => toggleTheme('show_cover_image')}
+            />
+            <SettingsToggle
+              label="Show logo"
+              active={publicMenuTheme.show_logo}
+              onClick={() => toggleTheme('show_logo')}
+            />
+            <SettingsToggle
+              label="Show social links"
+              active={publicMenuTheme.show_social_links}
+              onClick={() => toggleTheme('show_social_links')}
+            />
+            <SettingsToggle
+              label="Show directions"
+              active={publicMenuTheme.show_directions}
+              onClick={() => toggleTheme('show_directions')}
+            />
+            <SettingsToggle
+              label="Show campaigns"
+              active={publicMenuTheme.show_campaigns}
+              onClick={() => toggleTheme('show_campaigns')}
+            />
+            <SettingsToggle
+              label="Show reviews"
+              active={publicMenuTheme.show_reviews}
+              onClick={() => toggleTheme('show_reviews')}
+            />
           </div>
         </SettingsCard>
 
@@ -1025,6 +1235,27 @@ function SettingsToggle({ label, active, onClick }) {
       <span>{label}</span>
     </button>
   )
+}
+
+function normalizePublicMenuTheme(value) {
+  const incoming = value && typeof value === 'object' ? value : {}
+
+  return {
+    ...defaultPublicMenuTheme,
+    ...incoming,
+    accent_color: incoming.accent_color || defaultPublicMenuTheme.accent_color,
+    secondary_color: incoming.secondary_color || defaultPublicMenuTheme.secondary_color,
+    background_style: incoming.background_style || defaultPublicMenuTheme.background_style,
+    header_style: incoming.header_style || defaultPublicMenuTheme.header_style,
+    product_card_style:
+      incoming.product_card_style || defaultPublicMenuTheme.product_card_style,
+    show_cover_image: incoming.show_cover_image !== false,
+    show_logo: incoming.show_logo !== false,
+    show_social_links: incoming.show_social_links !== false,
+    show_directions: incoming.show_directions !== false,
+    show_campaigns: incoming.show_campaigns !== false,
+    show_reviews: incoming.show_reviews !== false,
+  }
 }
 
 function normalizePaymentGatewaySettings(value) {
