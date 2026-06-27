@@ -1,0 +1,100 @@
+.public-cart-gift-voucher-area {
+  margin-top: 12px;
+}
+
+.public-cart-gift-voucher-form,
+.public-cart-gift-voucher-applied {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.12), transparent 12rem),
+    rgba(19, 19, 19, 0.86);
+}
+
+.public-cart-gift-voucher-form input {
+  min-width: 0;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  background: rgba(0, 0, 0, 0.42);
+  color: #ffffff;
+  padding: 0 12px;
+  font: inherit;
+  font-weight: 800;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.public-cart-gift-voucher-form input:focus {
+  border-color: rgba(250, 204, 21, 0.55);
+  box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.10);
+}
+
+.public-cart-gift-voucher-form button,
+.public-cart-gift-voucher-applied button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-weight: 1000;
+  color: #2a1600;
+  background: linear-gradient(135deg, #facc15, #fb923c);
+  cursor: pointer;
+}
+
+.public-cart-gift-voucher-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.public-cart-gift-voucher-applied {
+  border-color: rgba(34, 197, 94, 0.25);
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 12rem),
+    rgba(9, 22, 14, 0.9);
+}
+
+.public-cart-gift-voucher-applied div {
+  min-width: 0;
+}
+
+.public-cart-gift-voucher-applied span,
+.public-cart-gift-voucher-applied small {
+  display: block;
+  color: #d1fae5;
+  font-size: 12px;
+}
+
+.public-cart-gift-voucher-applied strong {
+  display: block;
+  margin: 3px 0;
+  color: #ffffff;
+  letter-spacing: 0.08em;
+}
+
+.public-cart-total .discount.gift-voucher strong {
+  color: #fef08a;
+}
+
+.public-success-reward.voucher {
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  color: #fef3c7;
+}
+
+@media (max-width: 520px) {
+  .public-cart-gift-voucher-form,
+  .public-cart-gift-voucher-applied {
+    grid-template-columns: 1fr;
+  }
+
+  .public-cart-gift-voucher-form button,
+  .public-cart-gift-voucher-applied button {
+    width: 100%;
+  }
+}

@@ -41,7 +41,7 @@ const paymentGateways = [
   {
     key: 'ziina',
     label: 'Ziina',
-    text: 'UAE online payments foundation.',
+    text: 'Restaurant-owned Ziina checkout. Customer payments go directly to the restaurant account.',
   },
   {
     key: 'stripe',
@@ -51,27 +51,27 @@ const paymentGateways = [
   {
     key: 'paypal',
     label: 'PayPal',
-    text: 'PayPal checkout foundation.',
+    text: 'PayPal online checkout foundation.',
   },
   {
     key: 'network',
     label: 'Network',
-    text: 'Network International / N-Genius.',
+    text: 'UAE/MENA card gateway foundation.',
   },
   {
     key: 'cashfree',
     label: 'Cashfree',
-    text: 'India payment gateway foundation.',
+    text: 'India card / UPI checkout foundation.',
   },
   {
     key: 'razorpay',
     label: 'Razorpay',
-    text: 'India card / UPI gateway foundation.',
+    text: 'India card / UPI checkout foundation.',
   },
   {
     key: 'phonepe',
     label: 'PhonePe',
-    text: 'India PhonePe gateway foundation.',
+    text: 'India PhonePe checkout foundation.',
   },
 ]
 
@@ -110,13 +110,24 @@ const defaultPaymentGatewaySettings = {
     cash_enabled: true,
     card_enabled: true,
   },
-  ziina: { enabled: false, test_mode: true },
-  stripe: { enabled: false, test_mode: true },
-  paypal: { enabled: false, test_mode: true },
-  network: { enabled: false, test_mode: true },
-  cashfree: { enabled: false, test_mode: true },
-  razorpay: { enabled: false, test_mode: true },
-  phonepe: { enabled: false, test_mode: true },
+  ziina: {
+    enabled: false,
+    test_mode: true,
+    merchant_label: '',
+    public_key: '',
+    checkout_mode: 'redirect',
+    connection_status: 'not_connected',
+    credential_status: 'missing',
+    last_test_status: '',
+    last_test_message: '',
+    last_tested_at: '',
+  },
+  stripe: { enabled: false, test_mode: true, merchant_label: '', public_key: '' },
+  paypal: { enabled: false, test_mode: true, merchant_label: '', public_key: '' },
+  network: { enabled: false, test_mode: true, merchant_label: '', public_key: '' },
+  cashfree: { enabled: false, test_mode: true, merchant_label: '', public_key: '' },
+  razorpay: { enabled: false, test_mode: true, merchant_label: '', public_key: '' },
+  phonepe: { enabled: false, test_mode: true, merchant_label: '', public_key: '' },
 }
 
 const defaultPublicMenuTheme = {
@@ -191,6 +202,11 @@ function SettingsManagement({ restaurant }) {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [locating, setLocating] = useState(false)
   const [message, setMessage] = useState('')
+  const [gatewayTesting, setGatewayTesting] = useState('')
+  const [gatewayTestResult, setGatewayTestResult] = useState(null)
+  const [gatewayCredentialInputs, setGatewayCredentialInputs] = useState({
+    ziina: { accessToken: '', webhookSecret: '' },
+  })
 
   const loadSettings = useCallback(async () => {
     if (!restaurant?.id) return
@@ -332,6 +348,62 @@ function SettingsManagement({ restaurant }) {
       },
     }))
     setMessage('')
+  }
+
+  const updateGatewayCredentialInput = (gatewayKey, key, value) => {
+    setGatewayCredentialInputs((current) => ({
+      ...current,
+      [gatewayKey]: {
+        ...(current[gatewayKey] || {}),
+        [key]: value,
+      },
+    }))
+    setMessage('')
+  }
+
+  const testGatewayConnection = async (gatewayKey) => {
+    if (!restaurant?.id || !gatewayKey) return
+
+    setGatewayTesting(gatewayKey)
+    setGatewayTestResult(null)
+    setMessage('')
+
+    const { data, error } = await supabase.functions.invoke(
+      'test-restaurant-gateway-connection',
+      {
+        body: {
+          restaurant_id: restaurant.id,
+          gateway: gatewayKey,
+        },
+      },
+    )
+
+    setGatewayTesting('')
+
+    if (error || !data?.success) {
+      const result = {
+        gateway: gatewayKey,
+        success: false,
+        message: data?.message || error?.message || 'Gateway connection test failed.',
+      }
+
+      setGatewayTestResult(result)
+      setMessage(result.message)
+      await loadSettings()
+      return
+    }
+
+    const result = {
+      gateway: gatewayKey,
+      success: true,
+      message: data.message || 'Gateway connection test passed.',
+      reference: data.test_reference || '',
+      mode: data.mode || '',
+    }
+
+    setGatewayTestResult(result)
+    setMessage(result.message)
+    await loadSettings()
   }
 
   const updateOpeningHour = (dayKey, field, value) => {
@@ -520,6 +592,21 @@ function SettingsManagement({ restaurant }) {
     const normalizedGatewaySettings = normalizePaymentGatewaySettings(
       form.payment_gateway_settings,
     )
+    const codHasCollectionMethod =
+      Boolean(normalizedGatewaySettings.cod?.enabled) &&
+      (normalizedGatewaySettings.cod?.cash_enabled !== false ||
+        normalizedGatewaySettings.cod?.card_enabled !== false)
+    const sanitizedGatewaySettings = {
+      ...normalizedGatewaySettings,
+      cod: {
+        ...normalizedGatewaySettings.cod,
+        enabled: codHasCollectionMethod,
+      },
+    }
+    const hasOnlinePaymentGateway = Object.entries(sanitizedGatewaySettings).some(
+      ([gatewayKey, gatewayValue]) =>
+        gatewayKey !== 'cod' && Boolean(gatewayValue?.enabled),
+    )
 
     setSaving(true)
 
@@ -553,8 +640,8 @@ function SettingsManagement({ restaurant }) {
         accepts_cash: Boolean(form.accepts_cash),
         accepts_card: Boolean(form.accepts_card),
         accepts_upi: Boolean(form.accepts_upi),
-        accepts_online: Boolean(form.accepts_online),
-        accepts_cod: Boolean(normalizedGatewaySettings.cod?.enabled),
+        accepts_online: Boolean(form.accepts_online || hasOnlinePaymentGateway),
+        accepts_cod: codHasCollectionMethod,
         minimum_order_amount: getSafeNumber(form.minimum_order_amount),
         delivery_fee: getSafeNumber(form.shipping_fee || form.delivery_fee),
         shipping_fee: getSafeNumber(form.shipping_fee),
@@ -566,20 +653,41 @@ function SettingsManagement({ restaurant }) {
         tax_rate: getSafeNumber(form.tax_rate),
         service_charge: getSafeNumber(form.service_charge),
         opening_hours: normalizeOpeningHours(form.opening_hours),
-        payment_gateway_settings: normalizedGatewaySettings,
+        payment_gateway_settings: sanitizedGatewaySettings,
         updated_at: new Date().toISOString(),
       })
       .eq('id', restaurant.id)
 
-    setSaving(false)
-
     if (error) {
+      setSaving(false)
       setMessage(error.message)
       return
     }
 
-    setForm((current) => ({ ...current, slug: cleanSlug }))
-    setMessage('Restaurant settings saved successfully.')
+    const credentialSaveError = await savePendingGatewayCredentials({
+      restaurantId: restaurant.id,
+      gatewaySettings: sanitizedGatewaySettings,
+      credentialInputs: gatewayCredentialInputs,
+      setMessage,
+    })
+
+    setSaving(false)
+
+    if (credentialSaveError) {
+      setMessage(`Restaurant settings saved, but gateway credential was not saved: ${credentialSaveError}`)
+      return
+    }
+
+    setGatewayCredentialInputs({
+      ziina: { accessToken: '', webhookSecret: '' },
+    })
+    setForm((current) => ({
+      ...current,
+      slug: cleanSlug,
+      payment_gateway_settings: sanitizedGatewaySettings,
+    }))
+    setMessage('Restaurant settings saved successfully. Restaurant-owned gateway settings are ready.')
+    await loadSettings()
   }
 
   if (loading) {
@@ -1041,8 +1149,18 @@ function SettingsManagement({ restaurant }) {
                   <strong>{gateway.label}</strong>
                   <p>{gateway.text}</p>
 
+                  <div className={`settings-gateway-status ${gatewayValue.enabled ? 'active' : 'off'}`}>
+                    {getPaymentGatewayStatusText(gateway.key, gatewayValue)}
+                  </div>
+
                   {gateway.key === 'cod' && gatewayValue.enabled && (
                     <div className="settings-cod-options">
+                      <div className="settings-gateway-note">
+                        Customer delivery checkout will show only the active COD
+                        options below. Card means the rider carries a tap/card
+                        machine.
+                      </div>
+
                       <SettingsToggle
                         label="COD cash"
                         active={gatewayValue.cash_enabled !== false}
@@ -1065,14 +1183,126 @@ function SettingsManagement({ restaurant }) {
                   )}
 
                   {gateway.key !== 'cod' && gatewayValue.enabled && (
-                    <div className="settings-gateway-coming">
-                      Gateway credentials and secure connect flow will be handled
-                      gateway-by-gateway in the next integration phase.
+                    <div className="settings-gateway-connection-box">
+                      <SettingsToggle
+                        label={gatewayValue.test_mode === false ? 'Live mode' : 'Test mode'}
+                        active={gatewayValue.test_mode !== false}
+                        onClick={() =>
+                          updateGateway(gateway.key, {
+                            test_mode: gatewayValue.test_mode === false,
+                          })
+                        }
+                      />
+
+                      <label className="settings-field compact">
+                        Merchant / account label
+                        <input
+                          type="text"
+                          value={gatewayValue.merchant_label || ''}
+                          onChange={(event) =>
+                            updateGateway(gateway.key, {
+                              merchant_label: event.target.value,
+                            })
+                          }
+                          placeholder={`${gateway.label} merchant name`}
+                        />
+                      </label>
+
+                      <label className="settings-field compact">
+                        Public key / client ID - optional
+                        <input
+                          type="text"
+                          value={gatewayValue.public_key || ''}
+                          onChange={(event) =>
+                            updateGateway(gateway.key, {
+                              public_key: event.target.value,
+                            })
+                          }
+                          placeholder="Only safe public key. Never secret key."
+                        />
+                      </label>
+
+                      {gateway.key === 'ziina' && (
+                        <div className="settings-gateway-owned-box">
+                          <div className="settings-gateway-live-note">
+                            Connect this restaurant's own Ziina account. Spizy does
+                            not use a shared Ziina profile for restaurant customer
+                            payments. The access token is sent to a protected Edge
+                            Function and stored server-side only.
+                          </div>
+
+                          <label className="settings-field compact settings-secret-field">
+                            Restaurant Ziina access token
+                            <input
+                              type="password"
+                              value={gatewayCredentialInputs.ziina?.accessToken || ''}
+                              onChange={(event) =>
+                                updateGatewayCredentialInput('ziina', 'accessToken', event.target.value)
+                              }
+                              placeholder="Paste this restaurant's Ziina access token"
+                              autoComplete="new-password"
+                            />
+                          </label>
+
+                          <label className="settings-field compact settings-secret-field">
+                            Restaurant Ziina webhook secret - optional
+                            <input
+                              type="password"
+                              value={gatewayCredentialInputs.ziina?.webhookSecret || ''}
+                              onChange={(event) =>
+                                updateGatewayCredentialInput('ziina', 'webhookSecret', event.target.value)
+                              }
+                              placeholder="Paste webhook secret for signature verification"
+                              autoComplete="new-password"
+                            />
+                          </label>
+
+                          <div className="settings-gateway-secret-warning">
+                            These secret values are not saved inside public restaurant
+                            settings and will clear from this screen after saving.
+                          </div>
+
+                          <div className={`settings-gateway-test-panel ${getGatewayConnectionTone(gatewayValue)}`}>
+                            <div>
+                              <strong>{getGatewayConnectionTitle(gatewayValue)}</strong>
+                              <span>{getGatewayConnectionDescription(gatewayValue)}</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => testGatewayConnection('ziina')}
+                              disabled={gatewayTesting === 'ziina' || !gatewayValue.enabled}
+                            >
+                              <RefreshCcw size={15} />
+                              {gatewayTesting === 'ziina' ? 'Testing...' : 'Test Ziina connection'}
+                            </button>
+                          </div>
+
+                          {gatewayTestResult?.gateway === 'ziina' && (
+                            <div className={`settings-gateway-test-result ${gatewayTestResult.success ? 'success' : 'error'}`}>
+                              {gatewayTestResult.message}
+                              {gatewayTestResult.reference ? ` Reference: ${gatewayTestResult.reference}` : ''}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="settings-gateway-coming">
+                        {gateway.key === 'ziina'
+                          ? 'Public menu will redirect customers to this restaurant’s own Ziina checkout after the order is saved. Webhook will update paid/failed automatically when configured.'
+                          : 'Public menu will show this payment option. Each restaurant must connect its own merchant account through backend-secured credentials before real collection.'}
+                      </div>
                     </div>
                   )}
                 </div>
               )
             })}
+          </div>
+
+          <div className="settings-gateway-footer-note">
+            Logo files: public/payment-gateways/cod.png, ziina.png, stripe.png,
+            paypal.png, network.png, cashfree.png, razorpay.png, phonepe.png.
+            Use transparent PNG, 512 × 256 px, below 150 KB. Customer-payment gateways must belong to each restaurant, not Spizy/Zalepro.
           </div>
         </SettingsCard>
 
@@ -1196,6 +1426,44 @@ function SettingsCard({ icon: Icon, title, text, children, wide = false }) {
   )
 }
 
+
+async function savePendingGatewayCredentials({
+  restaurantId,
+  gatewaySettings,
+  credentialInputs,
+}) {
+  const ziinaSettings = gatewaySettings?.ziina || {}
+  const ziinaInputs = credentialInputs?.ziina || {}
+  const hasZiinaSecretInput =
+    String(ziinaInputs.accessToken || '').trim() ||
+    String(ziinaInputs.webhookSecret || '').trim()
+
+  if (!ziinaSettings.enabled || !hasZiinaSecretInput) {
+    return ''
+  }
+
+  const { data, error } = await supabase.functions.invoke(
+    'save-restaurant-gateway-credentials',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        gateway: 'ziina',
+        access_token: String(ziinaInputs.accessToken || '').trim(),
+        webhook_secret: String(ziinaInputs.webhookSecret || '').trim(),
+        public_key: String(ziinaSettings.public_key || '').trim(),
+        merchant_label: String(ziinaSettings.merchant_label || '').trim(),
+        test_mode: ziinaSettings.test_mode !== false,
+        is_enabled: Boolean(ziinaSettings.enabled),
+      },
+    },
+  )
+
+  if (error) return error.message || 'Gateway credential save failed.'
+  if (!data?.success) return data?.message || 'Gateway credential save failed.'
+
+  return ''
+}
+
 function SettingsInput({ label, value, onChange, placeholder = '', type = 'text' }) {
   return (
     <label className="settings-field">
@@ -1256,6 +1524,89 @@ function normalizePublicMenuTheme(value) {
     show_campaigns: incoming.show_campaigns !== false,
     show_reviews: incoming.show_reviews !== false,
   }
+}
+
+function getPaymentGatewayStatusText(gatewayKey, gatewayValue) {
+  if (!gatewayValue?.enabled) return 'Hidden from public checkout.'
+
+  if (gatewayKey === 'cod') {
+    const cashEnabled = gatewayValue.cash_enabled !== false
+    const cardEnabled = gatewayValue.card_enabled !== false
+
+    if (cashEnabled && cardEnabled) {
+      return 'Public checkout shows COD cash and card-machine collection.'
+    }
+
+    if (cashEnabled) return 'Public checkout shows COD cash only.'
+    if (cardEnabled) return 'Public checkout shows card on delivery only.'
+
+    return 'No COD collection method selected. Save will hide COD until one method is enabled.'
+  }
+
+  if (gatewayKey === 'ziina') {
+    const connectionStatus = String(gatewayValue.connection_status || '').toLowerCase()
+    const lastTestStatus = String(gatewayValue.last_test_status || '').toLowerCase()
+
+    if (lastTestStatus === 'success') {
+      return gatewayValue.test_mode === false
+        ? 'Ziina live checkout is enabled and the restaurant connection test passed.'
+        : 'Ziina test checkout is enabled and the restaurant connection test passed.'
+    }
+
+    if (connectionStatus === 'connected') {
+      return 'Restaurant Ziina credentials are saved. Run Test Ziina connection before live launch.'
+    }
+
+    if (connectionStatus === 'test_failed') {
+      return 'Ziina credentials were saved, but the latest connection test failed. Check token/mode and test again.'
+    }
+
+    return 'Ziina is enabled but this restaurant must save its own token before customers can pay online.'
+  }
+
+  return gatewayValue.test_mode === false
+    ? 'Live UI enabled. Use backend secrets, payment sessions and webhooks before real collection.'
+    : 'Test/foundation UI enabled. Orders remain unpaid until webhook integration is connected.'
+}
+
+function getGatewayConnectionTitle(gatewayValue) {
+  const status = String(gatewayValue?.connection_status || '').toLowerCase()
+  const testStatus = String(gatewayValue?.last_test_status || '').toLowerCase()
+
+  if (testStatus === 'success') return 'Connection test passed'
+  if (status === 'test_failed' || testStatus === 'failed') return 'Connection test failed'
+  if (status === 'connected') return 'Credentials saved'
+  return 'Credentials not connected yet'
+}
+
+function getGatewayConnectionDescription(gatewayValue) {
+  const status = String(gatewayValue?.connection_status || '').toLowerCase()
+  const testStatus = String(gatewayValue?.last_test_status || '').toLowerCase()
+  const message = String(gatewayValue?.last_test_message || '').trim()
+
+  if (testStatus === 'success') {
+    return message || 'This restaurant’s Ziina token responded successfully. Customers can use Ziina checkout when enabled.'
+  }
+
+  if (status === 'test_failed' || testStatus === 'failed') {
+    return message || 'The latest Ziina test failed. Check the restaurant token and test/live mode.'
+  }
+
+  if (status === 'connected') {
+    return 'Token is saved in backend-only storage. Run a connection test before accepting real payments.'
+  }
+
+  return 'Paste this restaurant’s own Ziina token and save settings first.'
+}
+
+function getGatewayConnectionTone(gatewayValue) {
+  const status = String(gatewayValue?.connection_status || '').toLowerCase()
+  const testStatus = String(gatewayValue?.last_test_status || '').toLowerCase()
+
+  if (testStatus === 'success') return 'success'
+  if (status === 'test_failed' || testStatus === 'failed') return 'error'
+  if (status === 'connected') return 'warning'
+  return 'neutral'
 }
 
 function normalizePaymentGatewaySettings(value) {

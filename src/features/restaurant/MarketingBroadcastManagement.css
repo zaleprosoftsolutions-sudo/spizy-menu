@@ -1,0 +1,371 @@
+.marketing-screen {
+  display: grid;
+  gap: 20px;
+  color: #ffffff;
+}
+
+.marketing-hero,
+.marketing-card,
+.marketing-stat-card {
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 20rem),
+    linear-gradient(180deg, rgba(32, 32, 32, 0.96), rgba(13, 13, 13, 0.98));
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+}
+
+.marketing-hero {
+  padding: 22px;
+  border-radius: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.marketing-hero h2 {
+  margin: 4px 0 6px;
+  font-size: clamp(26px, 4vw, 40px);
+  letter-spacing: -0.06em;
+  color: #ffffff;
+}
+
+.marketing-hero span,
+.marketing-section-head span,
+.marketing-customer-row span,
+.marketing-send-row span,
+.marketing-selection-row,
+.marketing-stat-card span {
+  color: #cfcfcf;
+}
+
+.marketing-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.marketing-stat-card {
+  min-height: 118px;
+  padding: 18px;
+  border-radius: 24px;
+  display: grid;
+  gap: 8px;
+}
+
+.marketing-stat-card div {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.12);
+}
+
+.marketing-stat-card strong {
+  font-size: 25px;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.marketing-layout-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.2fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.marketing-card {
+  padding: 18px;
+  border-radius: 28px;
+  display: grid;
+  gap: 16px;
+}
+
+.marketing-card.composer {
+  gap: 18px;
+}
+
+.marketing-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.marketing-section-head strong {
+  display: block;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.marketing-section-head span {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.marketing-section-head.small strong {
+  font-size: 16px;
+}
+
+.marketing-section-head button,
+.marketing-selection-row button,
+.marketing-preview-card button,
+.marketing-send-row button {
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  background: rgba(255, 191, 77, 0.1);
+  color: #ffdf99;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.marketing-segment-grid,
+.marketing-template-grid,
+.marketing-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.marketing-segment-grid button,
+.marketing-template-grid button,
+.marketing-offer-pills button {
+  min-height: 62px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #ffffff;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.marketing-segment-grid button.active {
+  border-color: rgba(255, 191, 77, 0.48);
+  background: rgba(255, 191, 77, 0.14);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.08);
+}
+
+.marketing-segment-grid strong {
+  display: block;
+  font-size: 14px;
+}
+
+.marketing-segment-grid span {
+  display: block;
+  margin-top: 5px;
+  color: #bfbfbf;
+  font-size: 12px;
+}
+
+.marketing-search-row {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 18px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(6, 6, 6, 0.54);
+  color: #ffbf4d;
+}
+
+.marketing-search-row input,
+.marketing-field-grid input,
+.marketing-card textarea {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #ffffff;
+  background: transparent;
+  font: inherit;
+}
+
+.marketing-search-row input::placeholder,
+.marketing-field-grid input::placeholder,
+.marketing-card textarea::placeholder {
+  color: #8f8f8f;
+}
+
+.marketing-selection-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.marketing-customer-list,
+.marketing-send-list {
+  display: grid;
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.marketing-customer-row,
+.marketing-send-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.marketing-send-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.marketing-customer-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #ff9f1a;
+}
+
+.marketing-customer-row strong,
+.marketing-send-row strong {
+  display: block;
+  color: #ffffff;
+}
+
+.marketing-customer-row small {
+  color: #ffdf99;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.marketing-empty {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #d6d6d6;
+  text-align: center;
+}
+
+.marketing-template-grid button,
+.marketing-offer-pills button,
+.marketing-send-row button,
+.marketing-actions-row button,
+.marketing-preview-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.marketing-field-grid label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.marketing-field-grid input {
+  min-height: 50px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(6, 6, 6, 0.55);
+  padding: 0 14px;
+}
+
+.marketing-offer-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.marketing-offer-pills button {
+  min-height: 42px;
+  padding: 10px 12px;
+  color: #ffdf99;
+}
+
+.marketing-offer-pills button.campaign {
+  color: #a7f3d0;
+  border-color: rgba(34, 197, 94, 0.18);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.marketing-offer-pills button.muted {
+  opacity: 0.52;
+}
+
+.marketing-card textarea {
+  min-height: 170px;
+  resize: vertical;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background: rgba(6, 6, 6, 0.62);
+  padding: 16px;
+  line-height: 1.55;
+}
+
+.marketing-preview-card {
+  border-radius: 22px;
+  padding: 16px;
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  background: rgba(34, 197, 94, 0.07);
+}
+
+.marketing-preview-card p {
+  margin: 14px 0 0;
+  white-space: pre-wrap;
+  color: #ffffff;
+  line-height: 1.55;
+}
+
+.marketing-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 12px;
+}
+
+.marketing-send-row button {
+  color: #ffffff;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+@media (max-width: 1100px) {
+  .marketing-stats-grid,
+  .marketing-layout-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .marketing-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .marketing-hero,
+  .marketing-section-head {
+    flex-direction: column;
+  }
+
+  .marketing-stats-grid,
+  .marketing-segment-grid,
+  .marketing-template-grid,
+  .marketing-field-grid,
+  .marketing-actions-row {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-customer-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .marketing-customer-row small {
+    grid-column: 2;
+    white-space: normal;
+  }
+}

@@ -1,4 +1,4 @@
-Place payment gateway logo PNG files in this folder using these exact lowercase names:
+Upload payment gateway logos in this folder using these exact filenames:
 
 cod.png
 ziina.png
@@ -9,5 +9,4 @@ cashfree.png
 razorpay.png
 phonepe.png
 
-Recommended size: transparent PNG, 512x256 px or any wide logo with transparent background.
-Keep each file below 150 KB for fast dashboard loading.
+Recommended format: transparent PNG, 512 × 256 px, below 150 KB each.

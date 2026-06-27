@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../../lib/supabaseClient'
 import ProductsManagement from '../../restaurant/ProductsManagement'
+import MenuScheduleManagement from '../../restaurant/MenuScheduleManagement'
+import NutritionLabelsManagement from '../../restaurant/NutritionLabelsManagement'
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
@@ -28,8 +30,13 @@ import CashBankManagement from '../../restaurant/CashBankManagement'
 import TaxInvoicesManagement from '../../restaurant/TaxInvoicesManagement'
 import TablesQRManagement from '../../restaurant/TablesQRManagement'
 import CustomersManagement from '../../restaurant/CustomersManagement'
+import LoyaltyTiersManagement from '../../restaurant/LoyaltyTiersManagement'
+import GiftVouchersManagement from '../../restaurant/GiftVouchersManagement'
+import ComboDealsManagement from '../../restaurant/ComboDealsManagement'
 import DiscountsManagement from '../../restaurant/DiscountsManagement'
 import CampaignsManagement from '../../restaurant/CampaignsManagement'
+import MarketingBroadcastManagement from '../../restaurant/MarketingBroadcastManagement'
+import CustomerCRMManagement from '../../restaurant/CustomerCRMManagement'
 import ReviewsManagement from '../../restaurant/ReviewsManagement'
 import ReportsManagement from '../../restaurant/ReportsManagement'
 import StaffManagement from '../../restaurant/StaffManagement'
@@ -73,6 +80,8 @@ const sectionPermissionMap = {
   reservations: ['orders'],
   'service-requests': ['orders'],
   products: ['menu'],
+  'menu-schedule': ['menu'],
+  'nutrition-labels': ['menu'],
   menu: ['menu'],
   categories: ['menu'],
   qr: ['menu'],
@@ -87,8 +96,13 @@ const sectionPermissionMap = {
   'cash-bank': ['reports'],
   'tax-invoices': ['reports'],
   customers: ['customers'],
+  'loyalty-tiers': ['customers'],
+  'gift-vouchers': ['customers'],
+  'combo-deals': ['customers', 'menu'],
+  crm: ['customers'],
   discounts: ['customers'],
   campaigns: ['customers'],
+  marketing: ['customers'],
   reviews: ['customers'],
   reports: ['reports'],
   staff: ['settings'],
@@ -146,6 +160,8 @@ const restaurantSections = [
   'reservations',
   'service-requests',
   'products',
+  'menu-schedule',
+  'nutrition-labels',
   'menu',
   'categories',
   'qr',
@@ -160,8 +176,13 @@ const restaurantSections = [
   'cash-bank',
   'tax-invoices',
   'customers',
+  'loyalty-tiers',
+  'gift-vouchers',
+  'combo-deals',
+  'crm',
   'discounts',
   'campaigns',
+  'marketing',
   'staff',
   'attendance',
   'payroll',
@@ -393,6 +414,14 @@ function RestaurantDashboard({ profile, restaurant }) {
                     <ProductsManagement restaurant={restaurant} />
                   )}
 
+                  {activeSection === 'menu-schedule' && (
+                    <MenuScheduleManagement restaurant={restaurant} />
+                  )}
+
+                  {activeSection === 'nutrition-labels' && (
+                    <NutritionLabelsManagement restaurant={restaurant} />
+                  )}
+
                   {activeSection === 'qr' && (
                     <TablesQRManagement restaurant={restaurant} />
                   )}
@@ -477,12 +506,32 @@ function RestaurantDashboard({ profile, restaurant }) {
                     <CustomersManagement restaurant={restaurant} />
                   )}
 
+                  {activeSection === 'loyalty-tiers' && (
+                    <LoyaltyTiersManagement restaurant={restaurant} />
+                  )}
+
+                  {activeSection === 'gift-vouchers' && (
+                    <GiftVouchersManagement restaurant={restaurant} />
+                  )}
+
+                  {activeSection === 'combo-deals' && (
+                    <ComboDealsManagement restaurant={restaurant} />
+                  )}
+
+                  {activeSection === 'crm' && (
+                    <CustomerCRMManagement restaurant={restaurant} />
+                  )}
+
                   {activeSection === 'discounts' && (
                     <DiscountsManagement restaurant={restaurant} />
                   )}
 
                   {activeSection === 'campaigns' && (
                     <CampaignsManagement restaurant={restaurant} />
+                  )}
+
+                  {activeSection === 'marketing' && (
+                    <MarketingBroadcastManagement restaurant={restaurant} />
                   )}
 
                   {activeSection === 'staff' && <StaffManagement restaurant={restaurant} />}

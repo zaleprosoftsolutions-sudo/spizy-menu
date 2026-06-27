@@ -1,0 +1,543 @@
+.combo-deals-page {
+  display: grid;
+  gap: 18px;
+  color: #ffffff;
+}
+
+.combo-deals-head,
+.combo-toolbar,
+.combo-modal-head,
+.combo-items-head,
+.combo-form-actions,
+.combo-card-actions,
+.combo-head-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.combo-deals-head {
+  padding: 22px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 18rem),
+    linear-gradient(135deg, rgba(32, 32, 32, 0.95), rgba(12, 12, 12, 0.96));
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.22);
+}
+
+.combo-deals-head h2,
+.combo-modal-head h3 {
+  margin: 2px 0 6px;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.05em;
+}
+
+.combo-deals-head span,
+.combo-modal-head span,
+.combo-items-head span {
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.combo-head-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.combo-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.combo-summary-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(16, 16, 16, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combo-summary-card span {
+  display: block;
+  color: #a3a3a3;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.combo-summary-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.combo-summary-card.green strong {
+  color: #86efac;
+}
+
+.combo-summary-card.blue strong {
+  color: #93c5fd;
+}
+
+.combo-summary-card.red strong {
+  color: #fca5a5;
+}
+
+.combo-toolbar {
+  align-items: center;
+  padding: 14px;
+  border-radius: 24px;
+  background: rgba(17, 17, 17, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combo-search-box {
+  flex: 1;
+  min-width: 240px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffbf4d;
+}
+
+.combo-search-box input,
+.combo-toolbar select,
+.combo-form-grid input,
+.combo-form-grid textarea,
+.combo-date-grid input,
+.combo-item-row input,
+.combo-item-row select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(6, 6, 6, 0.62);
+  color: #ffffff;
+  padding: 0 13px;
+  outline: none;
+  font: inherit;
+}
+
+.combo-form-grid textarea {
+  padding: 13px;
+  resize: vertical;
+}
+
+.combo-search-box input {
+  min-height: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.combo-search-box input:focus,
+.combo-toolbar select:focus,
+.combo-form-grid input:focus,
+.combo-form-grid textarea:focus,
+.combo-date-grid input:focus,
+.combo-item-row input:focus,
+.combo-item-row select:focus {
+  border-color: rgba(255, 191, 77, 0.52);
+  box-shadow: 0 0 0 4px rgba(255, 122, 24, 0.12);
+}
+
+.combo-toolbar select {
+  width: 190px;
+}
+
+.combo-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.combo-deal-card {
+  padding: 18px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.1), transparent 12rem),
+    rgba(17, 17, 17, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.2);
+  display: grid;
+  gap: 14px;
+}
+
+.combo-deal-card.status-inactive,
+.combo-deal-card.status-expired {
+  opacity: 0.78;
+}
+
+.combo-card-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 13px;
+  align-items: flex-start;
+}
+
+.combo-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: #ffbf4d;
+  background: rgba(255, 122, 24, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+}
+
+.combo-card-head h3 {
+  margin: 8px 0 6px;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.combo-card-head p {
+  margin: 0;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.combo-status-pill {
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.combo-status-pill.upcoming {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.24);
+}
+
+.combo-status-pill.expired,
+.combo-status-pill.inactive {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.24);
+}
+
+.combo-code-row {
+  min-height: 48px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px dashed rgba(255, 191, 77, 0.28);
+}
+
+.combo-code-row span {
+  color: #ffdf8a;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+}
+
+.combo-code-row button,
+.combo-card-actions button,
+.combo-form-actions button,
+.combo-head-actions button,
+.combo-items-head button {
+  white-space: nowrap;
+}
+
+.combo-code-row button {
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 191, 77, 0.24);
+  background: rgba(255, 122, 24, 0.12);
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.combo-price-row,
+.combo-value-preview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.combo-price-row div,
+.combo-value-preview div {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combo-price-row span,
+.combo-value-preview span {
+  display: block;
+  color: #a3a3a3;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.combo-price-row strong,
+.combo-value-preview strong {
+  display: block;
+  margin-top: 6px;
+  color: #ffffff;
+}
+
+.combo-price-row .save strong,
+.combo-value-preview .positive strong {
+  color: #86efac;
+}
+
+.combo-item-list-preview {
+  display: grid;
+  gap: 8px;
+}
+
+.combo-item-list-preview div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.combo-item-list-preview span {
+  color: #f5f5f5;
+  font-weight: 900;
+}
+
+.combo-item-list-preview small,
+.combo-date-row span {
+  color: #a3a3a3;
+}
+
+.combo-card-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.combo-empty-state {
+  min-height: 220px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  text-align: center;
+  color: #d6d6d6;
+  background: rgba(17, 17, 17, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combo-empty-state svg {
+  color: #ffbf4d;
+}
+
+.combo-empty-state strong {
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.combo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2600;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(14px);
+}
+
+.combo-modal {
+  width: min(980px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding: 22px;
+  border-radius: 30px;
+  display: grid;
+  gap: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.18), transparent 18rem),
+    linear-gradient(180deg, rgba(30, 30, 30, 0.98), rgba(10, 10, 10, 0.98));
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.combo-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.combo-form-grid label,
+.combo-date-grid label,
+.combo-item-row label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.combo-form-grid .full {
+  grid-column: 1 / -1;
+}
+
+.combo-date-panel,
+.combo-items-panel,
+.combo-switch-card {
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(6, 6, 6, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.combo-date-panel > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.combo-date-panel svg {
+  color: #ffbf4d;
+}
+
+.combo-date-panel span {
+  color: #a3a3a3;
+}
+
+.combo-date-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.combo-switch-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.combo-switch-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.combo-switch-card input {
+  width: 20px;
+  height: 20px;
+  accent-color: #ff7a18;
+  margin-top: 2px;
+}
+
+.combo-switch-card strong,
+.combo-switch-card small {
+  display: block;
+}
+
+.combo-switch-card small {
+  margin-top: 4px;
+  color: #a3a3a3;
+  line-height: 1.4;
+}
+
+.combo-items-head {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.combo-item-row-list {
+  display: grid;
+  gap: 12px;
+}
+
+.combo-item-row {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.2fr) minmax(150px, 1fr) 90px minmax(140px, 0.8fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.combo-value-preview {
+  padding: 12px;
+  border-radius: 22px;
+  background: rgba(255, 122, 24, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.combo-form-actions {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+@media (max-width: 1100px) {
+  .combo-summary-grid,
+  .combo-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .combo-form-grid,
+  .combo-date-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .combo-item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .combo-deals-head,
+  .combo-toolbar,
+  .combo-modal-head,
+  .combo-items-head,
+  .combo-card-actions,
+  .combo-head-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .combo-summary-grid,
+  .combo-card-grid,
+  .combo-form-grid,
+  .combo-date-grid,
+  .combo-switch-row,
+  .combo-price-row,
+  .combo-value-preview,
+  .combo-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .combo-toolbar select {
+    width: 100%;
+  }
+}

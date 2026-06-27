@@ -1,0 +1,144 @@
+/* POS gift voucher / store credit checkout */
+
+.pos-gift-voucher-box {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background:
+    radial-gradient(circle at top left, rgba(255, 191, 77, 0.11), transparent 12rem),
+    rgba(8, 8, 8, 0.54);
+  display: grid;
+  gap: 12px;
+}
+
+.pos-gift-voucher-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.pos-gift-voucher-head strong {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.pos-gift-voucher-head span {
+  display: block;
+  margin-top: 4px;
+  color: #cfcfcf;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pos-gift-voucher-head small {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.13);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  font-weight: 1000;
+  font-size: 11px;
+}
+
+.pos-gift-voucher-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.pos-gift-voucher-form input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.46);
+  color: #ffffff;
+  padding: 0 13px;
+  font: inherit;
+  font-weight: 800;
+  outline: none;
+  text-transform: uppercase;
+}
+
+.pos-gift-voucher-form input::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+  text-transform: none;
+}
+
+.pos-gift-voucher-form input:focus {
+  border-color: rgba(255, 191, 77, 0.58);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.11);
+}
+
+.pos-gift-voucher-form button,
+.pos-gift-voucher-applied button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 16px;
+  padding: 0 16px;
+  cursor: pointer;
+  color: #180c00;
+  background: linear-gradient(135deg, #ffcf86, #ff7a18);
+  font-weight: 1000;
+}
+
+.pos-gift-voucher-form button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pos-gift-voucher-applied {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(34, 197, 94, 0.09);
+  border: 1px solid rgba(34, 197, 94, 0.21);
+}
+
+.pos-gift-voucher-applied span,
+.pos-gift-voucher-applied small {
+  display: block;
+  color: #cfcfcf;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pos-gift-voucher-applied strong {
+  display: block;
+  margin: 3px 0;
+  color: #ffffff;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+
+.pos-gift-voucher-applied button {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.24);
+}
+
+.pos-voucher-total-row strong {
+  color: #86efac !important;
+}
+
+@media (max-width: 680px) {
+  .pos-gift-voucher-form,
+  .pos-gift-voucher-applied,
+  .pos-gift-voucher-head {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .pos-gift-voucher-form button,
+  .pos-gift-voucher-applied button {
+    width: 100%;
+  }
+}

@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import PublicMenuPage from './pages/PublicMenuPage'
+import PaymentResultPage from './pages/PaymentResultPage'
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/menu/:restaurantSlug" element={<PublicMenuPage />} />
+      <Route path="/payment/success" element={<PaymentResultPage resultType="success" />} />
+      <Route path="/payment/failed" element={<PaymentResultPage resultType="failed" />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

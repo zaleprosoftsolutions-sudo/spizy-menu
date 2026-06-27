@@ -1,0 +1,492 @@
+.gift-vouchers-page {
+  display: grid;
+  gap: 18px;
+  color: #ffffff;
+}
+
+.gift-vouchers-hero,
+.gift-voucher-form,
+.gift-voucher-history {
+  padding: 22px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 22rem),
+    linear-gradient(180deg, rgba(34, 34, 34, 0.96), rgba(14, 14, 14, 0.96));
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.gift-vouchers-hero,
+.gift-voucher-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.gift-vouchers-hero h2,
+.gift-voucher-section-head h3 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  letter-spacing: -0.045em;
+}
+
+.gift-vouchers-hero h2 {
+  font-size: clamp(28px, 3vw, 44px);
+}
+
+.gift-voucher-section-head h3 {
+  font-size: 24px;
+}
+
+.gift-vouchers-hero span,
+.gift-voucher-section-head span,
+.gift-voucher-summary-card p,
+.gift-voucher-history-row span,
+.gift-voucher-history-row small,
+.gift-voucher-meta-grid span,
+.gift-voucher-meta-grid small {
+  color: #d7d7d7;
+  line-height: 1.45;
+}
+
+.gift-voucher-actions,
+.gift-voucher-form-actions,
+.gift-voucher-card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.gift-voucher-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gift-voucher-summary-card {
+  min-height: 146px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.13);
+  background:
+    radial-gradient(circle at top left, rgba(255, 191, 77, 0.14), transparent 12rem),
+    rgba(255, 255, 255, 0.055);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.gift-voucher-summary-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+}
+
+.gift-voucher-summary-card span {
+  color: #cfcfcf;
+  font-weight: 850;
+  font-size: 13px;
+}
+
+.gift-voucher-summary-card strong {
+  color: #ffffff;
+  font-size: 23px;
+  letter-spacing: -0.04em;
+}
+
+.gift-voucher-summary-card p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.gift-voucher-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 12px;
+}
+
+.gift-voucher-search {
+  min-height: 54px;
+  padding: 0 16px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffbf4d;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.gift-voucher-search input,
+.gift-voucher-toolbar select,
+.gift-voucher-form input,
+.gift-voucher-form select,
+.gift-voucher-form textarea,
+.gift-voucher-redeem-modal input,
+.gift-voucher-redeem-modal textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 191, 77, 0.15);
+  background: rgba(8, 8, 8, 0.64);
+  color: #ffffff;
+  font: inherit;
+  outline: none;
+}
+
+.gift-voucher-search input {
+  border: 0;
+  background: transparent;
+  min-height: 50px;
+}
+
+.gift-voucher-toolbar select,
+.gift-voucher-form input,
+.gift-voucher-form select,
+.gift-voucher-form textarea,
+.gift-voucher-redeem-modal input,
+.gift-voucher-redeem-modal textarea {
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 16px;
+}
+
+.gift-voucher-form textarea,
+.gift-voucher-redeem-modal textarea {
+  padding: 14px;
+  resize: vertical;
+}
+
+.gift-voucher-search input::placeholder,
+.gift-voucher-form input::placeholder,
+.gift-voucher-form textarea::placeholder,
+.gift-voucher-redeem-modal input::placeholder,
+.gift-voucher-redeem-modal textarea::placeholder {
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.gift-voucher-form input:focus,
+.gift-voucher-form select:focus,
+.gift-voucher-form textarea:focus,
+.gift-voucher-toolbar select:focus,
+.gift-voucher-redeem-modal input:focus,
+.gift-voucher-redeem-modal textarea:focus {
+  border-color: rgba(255, 191, 77, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 191, 77, 0.09);
+}
+
+.gift-voucher-form-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gift-voucher-form label,
+.gift-voucher-redeem-modal label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.gift-code-field div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.gift-code-field button {
+  border: 0;
+  padding: 0 14px;
+  border-radius: 16px;
+  font-weight: 1000;
+  color: #1a1205;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18);
+  cursor: pointer;
+}
+
+.gift-voucher-wide-field {
+  grid-column: 1 / -1;
+}
+
+.gift-voucher-form-actions {
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.gift-voucher-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.gift-voucher-card {
+  padding: 18px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(30, 30, 30, 0.94), rgba(12, 12, 12, 0.94));
+  display: grid;
+  gap: 14px;
+}
+
+.gift-voucher-card.status-redeemed,
+.gift-voucher-card.status-cancelled,
+.gift-voucher-card.status-expired {
+  opacity: 0.76;
+}
+
+.gift-voucher-card-top,
+.gift-voucher-meta-grid,
+.gift-voucher-history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.gift-voucher-card h3 {
+  margin: 8px 0 10px;
+  color: #ffffff;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.gift-voucher-status {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #ffdd9a;
+  background: rgba(255, 191, 77, 0.11);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  font-weight: 1000;
+  font-size: 12px;
+}
+
+.status-redeemed .gift-voucher-status {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.status-expired .gift-voucher-status,
+.status-cancelled .gift-voucher-status {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+.gift-voucher-code {
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed rgba(255, 191, 77, 0.34);
+  border-radius: 999px;
+  padding: 9px 12px;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.08);
+  cursor: pointer;
+}
+
+.gift-voucher-code strong {
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gift-voucher-card-icon {
+  min-width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 21px;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.2);
+}
+
+.gift-voucher-balance-box {
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gift-voucher-balance-box span,
+.gift-voucher-meta-grid span {
+  display: block;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.gift-voucher-balance-box strong {
+  display: block;
+  margin-top: 5px;
+  color: #ffffff;
+  font-size: 28px;
+  letter-spacing: -0.045em;
+}
+
+.gift-voucher-balance-box small {
+  display: block;
+  color: #d7d7d7;
+  margin-top: 4px;
+}
+
+.gift-voucher-progress {
+  height: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gift-voucher-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18);
+}
+
+.gift-voucher-meta-grid > div {
+  min-width: 0;
+  width: 50%;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.gift-voucher-meta-grid strong {
+  display: block;
+  margin: 5px 0 4px;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gift-voucher-note {
+  margin: 0;
+  padding: 12px;
+  border-radius: 18px;
+  color: #d7d7d7;
+  background: rgba(255, 255, 255, 0.045);
+  line-height: 1.5;
+}
+
+.gift-voucher-card-actions {
+  justify-content: flex-end;
+}
+
+.gift-voucher-card-actions .primary-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gift-vouchers-empty {
+  padding: 30px;
+  border-radius: 24px;
+  text-align: center;
+  color: #d7d7d7;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.gift-vouchers-empty.compact {
+  padding: 18px;
+}
+
+.gift-voucher-history-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.gift-voucher-history-row {
+  padding: 14px;
+  border-radius: 18px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.gift-voucher-history-row strong {
+  color: #ffffff;
+}
+
+.gift-voucher-history-row span,
+.gift-voucher-history-row small {
+  display: block;
+  margin-top: 4px;
+}
+
+.gift-voucher-history-row > div:last-child {
+  text-align: right;
+}
+
+.gift-voucher-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2600;
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+.gift-voucher-redeem-modal {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 18rem),
+    linear-gradient(180deg, rgba(30, 30, 30, 0.98), rgba(12, 12, 12, 0.98));
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.62);
+}
+
+@media (max-width: 1180px) {
+  .gift-voucher-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gift-voucher-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .gift-vouchers-hero,
+  .gift-voucher-section-head,
+  .gift-voucher-card-top,
+  .gift-voucher-history-row {
+    flex-direction: column;
+  }
+
+  .gift-voucher-summary-grid,
+  .gift-voucher-toolbar,
+  .gift-voucher-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gift-voucher-meta-grid {
+    flex-direction: column;
+  }
+
+  .gift-voucher-meta-grid > div {
+    width: 100%;
+  }
+
+  .gift-voucher-history-row > div:last-child {
+    text-align: left;
+  }
+}

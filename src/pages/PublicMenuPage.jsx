@@ -34,6 +34,11 @@ import './PublicModifiers.css'
 import './PublicDeliveryZones.css'
 import './PublicDeliveryAddress.css'
 import './PublicMenuTheme.css'
+import './PublicGiftVouchers.css'
+import './PublicComboDeals.css'
+import './PublicMenuSchedule.css'
+import './PublicPaymentGateways.css'
+import './PublicPaymentStatusPolish.css'
 
 const phoneCountryOptions = [
   { code: '+971', label: 'UAE' },
@@ -56,6 +61,8 @@ function PublicMenuPage() {
   const [table, setTable] = useState(null)
   const [categories, setCategories] = useState([])
   const [products, setProducts] = useState([])
+  const [comboDeals, setComboDeals] = useState([])
+  const [menuSchedules, setMenuSchedules] = useState([])
   const [activeCampaigns, setActiveCampaigns] = useState([])
   const [deliveryZones, setDeliveryZones] = useState([])
   const [selectedDeliveryZoneId, setSelectedDeliveryZoneId] = useState('')
@@ -81,6 +88,9 @@ function PublicMenuPage() {
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponApplying, setCouponApplying] = useState(false)
+  const [giftVoucherCode, setGiftVoucherCode] = useState('')
+  const [appliedGiftVoucher, setAppliedGiftVoucher] = useState(null)
+  const [giftVoucherApplying, setGiftVoucherApplying] = useState(false)
   const [deliveryPaymentChoice, setDeliveryPaymentChoice] = useState('')
   const [showCodChoiceModal, setShowCodChoiceModal] = useState(false)
   const [showReservationModal, setShowReservationModal] = useState(false)
@@ -163,6 +173,16 @@ function PublicMenuPage() {
 
     return deliveryZones.find((zone) => zone.id === selectedDeliveryZoneId) || null
   }, [deliveryZones, isTableOrder, selectedDeliveryZoneId])
+
+  const publicDeliveryPaymentOptions = useMemo(
+    () => getPublicDeliveryPaymentOptions(restaurant),
+    [restaurant],
+  )
+
+  const activeMenuScheduleNotices = useMemo(
+    () => getPublicActiveMenuScheduleNotices(menuSchedules),
+    [menuSchedules],
+  )
 
   const customerFullPhone = getFullPhoneNumber({
     countryCode: customerForm.countryCode,
@@ -288,6 +308,54 @@ function PublicMenuPage() {
       modifierGroups: modifierGroupsByItem[product.id] || [],
     }))
 
+    const { data: comboData } = await supabase
+      .from('restaurant_combo_deals')
+      .select(`
+        id,
+        combo_name,
+        combo_code,
+        description,
+        bundle_price,
+        discount_percentage,
+        discount_amount,
+        start_at,
+        end_at,
+        sort_order,
+        is_active,
+        is_public,
+        items:restaurant_combo_deal_items (
+          id,
+          menu_item_id,
+          variation_id,
+          quantity,
+          group_name,
+          sort_order,
+          item:menu_items (
+            id,
+            name,
+            image_url,
+            price,
+            is_available,
+            is_deleted
+          ),
+          variation:menu_item_variations (
+            id,
+            name,
+            price,
+            is_available
+          )
+        )
+      `)
+      .eq('restaurant_id', restaurantData.id)
+      .eq('is_deleted', false)
+      .eq('is_active', true)
+      .eq('is_public', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .limit(12)
+
+    const visibleComboDeals = normalizePublicComboDeals(comboData)
+
     const { data: campaignData } = await supabase
       .from('restaurant_campaigns')
       .select(
@@ -317,6 +385,35 @@ function PublicMenuPage() {
       isPublicCampaignLive(campaign),
     )
 
+    const { data: scheduleData } = await supabase
+      .from('restaurant_menu_schedules')
+      .select(`
+        id,
+        schedule_name,
+        schedule_type,
+        applies_to,
+        item_id,
+        category_id,
+        days_of_week,
+        start_time,
+        end_time,
+        start_date,
+        end_date,
+        special_price,
+        discount_percent,
+        banner_note,
+        is_active
+      `)
+      .eq('restaurant_id', restaurantData.id)
+      .eq('is_deleted', false)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+
+    const enrichedScheduledProducts = applyPublicMenuSchedulesToProducts(
+      enrichedProducts,
+      scheduleData || [],
+    )
+
     const { data: zoneData } = await supabase
       .from('restaurant_delivery_zones')
       .select(`
@@ -342,7 +439,9 @@ function PublicMenuPage() {
     setDeliveryZones(zoneData || [])
 
     setCategories(categoryData || [])
-    setProducts(enrichedProducts)
+    setProducts(enrichedScheduledProducts)
+    setMenuSchedules(scheduleData || [])
+    setComboDeals(visibleComboDeals)
     setActiveCampaigns(visibleCampaigns.slice(0, 3))
     setLoading(false)
   }, [restaurantSlug, tableToken])
@@ -355,6 +454,8 @@ function PublicMenuPage() {
     const keyword = search.trim().toLowerCase()
 
     return products.filter((product) => {
+      if (product.publicSchedule?.isHidden) return false
+
       const matchesCategory =
         categoryFilter === 'all' ||
         (categoryFilter === 'none' && !product.category_id) ||
@@ -472,7 +573,7 @@ function PublicMenuPage() {
     )
   }, [discountedCartTotal, packagingFeeAmount, restaurant?.tax_rate, shippingFeeAmount])
 
-  const cartPayableTotal = useMemo(() => {
+  const giftVoucherBaseTotal = useMemo(() => {
     return Math.max(
       Number(discountedCartTotal || 0) +
         Number(shippingFeeAmount || 0) +
@@ -482,12 +583,31 @@ function PublicMenuPage() {
     )
   }, [discountedCartTotal, packagingFeeAmount, shippingFeeAmount, taxAmount])
 
+  const giftVoucherDiscountAmount = useMemo(() => {
+    if (!appliedGiftVoucher) return 0
+
+    return Math.min(
+      Number(
+        appliedGiftVoucher.balanceAmount || appliedGiftVoucher.discountAmount || 0,
+      ),
+      Number(giftVoucherBaseTotal || 0),
+    )
+  }, [appliedGiftVoucher, giftVoucherBaseTotal])
+
+  const cartPayableTotal = useMemo(() => {
+    return Math.max(
+      Number(giftVoucherBaseTotal || 0) - Number(giftVoucherDiscountAmount || 0),
+      0,
+    )
+  }, [giftVoucherBaseTotal, giftVoucherDiscountAmount])
+
   useEffect(() => {
     if (cart.length === 0) {
       if (appliedReward) setAppliedReward(null)
       if (appliedCoupon) setAppliedCoupon(null)
+      if (appliedGiftVoucher) setAppliedGiftVoucher(null)
     }
-  }, [appliedCoupon, appliedReward, cart.length])
+  }, [appliedCoupon, appliedGiftVoucher, appliedReward, cart.length])
 
   useEffect(() => {
     if (isTableOrder) {
@@ -502,6 +622,24 @@ function PublicMenuPage() {
       setSelectedDeliveryZoneId('')
     }
   }, [deliveryZones, isTableOrder, selectedDeliveryZoneId])
+
+  useEffect(() => {
+    if (isTableOrder) {
+      if (deliveryPaymentChoice) setDeliveryPaymentChoice('')
+      return
+    }
+
+    if (!deliveryPaymentChoice) return
+
+    const resolvedChoice = resolvePublicDeliveryPaymentChoice(
+      deliveryPaymentChoice,
+      publicDeliveryPaymentOptions,
+    )
+
+    if (!resolvedChoice) {
+      setDeliveryPaymentChoice('')
+    }
+  }, [deliveryPaymentChoice, isTableOrder, publicDeliveryPaymentOptions])
 
   const updateCustomerForm = (key, value) => {
     setCustomerForm((current) => ({ ...current, [key]: value }))
@@ -620,6 +758,11 @@ function PublicMenuPage() {
       return
     }
 
+    if (!isProductPubliclyOrderable(product)) {
+      showPublicMessage(getPublicScheduleUnavailableMessage(product))
+      return
+    }
+
     const variations = getAvailableVariations(product)
     const modifierGroups = getAvailableModifierGroups(product)
 
@@ -645,6 +788,11 @@ function PublicMenuPage() {
       return
     }
 
+    if (!isProductPubliclyOrderable(product)) {
+      showPublicMessage(getPublicScheduleUnavailableMessage(product))
+      return
+    }
+
     const safeModifiers = Array.isArray(modifiers) ? modifiers : []
     const modifierKey = safeModifiers.length
       ? safeModifiers
@@ -657,7 +805,11 @@ function PublicMenuPage() {
       (total, modifier) => total + Number(modifier.priceDelta || 0),
       0,
     )
-    const finalUnitPrice = roundPublicMoney(Number(unitPrice || 0) + modifierTotal)
+    const scheduledUnitPrice = getPublicScheduledPrice(
+      product,
+      Number(unitPrice || 0),
+    )
+    const finalUnitPrice = roundPublicMoney(scheduledUnitPrice + modifierTotal)
     const modifierSummary = safeModifiers.map((modifier) => modifier.name).join(', ')
 
     setCart((current) => {
@@ -685,7 +837,8 @@ function PublicMenuPage() {
           variationName: variation?.name || '',
           modifierSummary,
           modifiers: safeModifiers,
-          baseUnitPrice: Number(unitPrice || 0),
+          baseUnitPrice: scheduledUnitPrice,
+          scheduleOriginalUnitPrice: Number(unitPrice || 0),
           modifierTotal,
           imageUrl: product.image_url,
           unitPrice: finalUnitPrice,
@@ -696,6 +849,67 @@ function PublicMenuPage() {
     })
 
     setVariationProduct(null)
+  }
+
+
+  const addComboToCart = (combo) => {
+    if (!acceptsOrders) {
+      showPublicMessage('This menu is currently view-only. Ordering is turned off.')
+      return
+    }
+
+    const comboItems = getAvailablePublicComboItems(combo)
+
+    if (comboItems.length === 0) {
+      showPublicMessage('This combo is not available right now.')
+      return
+    }
+
+    const lineKey = `combo-${combo.id}`
+    const unitPrice = roundPublicMoney(Number(combo.bundle_price || 0))
+    const comboSummary = buildPublicComboSummary(comboItems)
+
+    setCart((current) => {
+      const existingLine = current.find((item) => item.lineKey === lineKey)
+
+      if (existingLine) {
+        return current.map((item) =>
+          item.lineKey === lineKey
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                totalPrice: roundPublicMoney((item.quantity + 1) * item.unitPrice),
+              }
+            : item,
+        )
+      }
+
+      return [
+        ...current,
+        {
+          lineKey,
+          isCombo: true,
+          comboId: combo.id,
+          comboCode: combo.combo_code || '',
+          itemId: comboItems[0]?.itemId || null,
+          variationId: comboItems[0]?.variationId || null,
+          name: combo.combo_name,
+          variationName: combo.combo_code ? `Combo ${combo.combo_code}` : 'Combo deal',
+          comboSummary,
+          comboItems,
+          modifierSummary: '',
+          modifiers: [],
+          baseUnitPrice: unitPrice,
+          modifierTotal: 0,
+          imageUrl: comboItems[0]?.imageUrl || '',
+          unitPrice,
+          quantity: 1,
+          totalPrice: unitPrice,
+        },
+      ]
+    })
+
+    showPublicMessage(`${combo.combo_name} added to cart.`)
   }
 
   const updateCartQuantity = (lineKey, quantity) => {
@@ -774,6 +988,63 @@ function PublicMenuPage() {
     setCouponCode('')
   }
 
+  const handleApplyGiftVoucher = async () => {
+    if (!restaurant?.id) return
+
+    const cleanCode = giftVoucherCode.trim().toUpperCase()
+
+    if (!cleanCode) {
+      showPublicMessage('Enter gift voucher code.')
+      return
+    }
+
+    if (cart.length === 0) {
+      showPublicMessage('Add items to cart before using a gift voucher.')
+      return
+    }
+
+    if (Number(giftVoucherBaseTotal || 0) <= 0) {
+      showPublicMessage('Gift voucher cannot be applied to zero total.')
+      return
+    }
+
+    setGiftVoucherApplying(true)
+
+    const activeCustomerPhone = savedCustomer?.fullPhone || customerFullPhone
+
+    const { data, error } = await supabase.rpc('validate_public_gift_voucher', {
+      p_restaurant_id: restaurant.id,
+      p_voucher_code: cleanCode,
+      p_order_total: giftVoucherBaseTotal,
+      p_customer_phone: activeCustomerPhone || null,
+    })
+
+    setGiftVoucherApplying(false)
+
+    if (error) {
+      showPublicMessage(error.message)
+      return
+    }
+
+    setAppliedGiftVoucher({
+      id: data?.voucher_id || null,
+      title: data?.title || 'Gift Voucher',
+      code: data?.voucher_code || cleanCode,
+      discountAmount: Number(data?.discount_amount || 0),
+      balanceAmount: Number(data?.balance_amount || 0),
+      remainingAfterUse: Number(data?.remaining_after_use || 0),
+      message: data?.message || 'Gift voucher applied successfully.',
+    })
+
+    setGiftVoucherCode(data?.voucher_code || cleanCode)
+    showPublicMessage(data?.message || 'Gift voucher applied successfully.')
+  }
+
+  const handleRemoveGiftVoucher = () => {
+    setAppliedGiftVoucher(null)
+    setGiftVoucherCode('')
+  }
+
 
   const handlePlaceOrder = async () => {
     if (!acceptsOrders) {
@@ -781,8 +1052,8 @@ function PublicMenuPage() {
       return
     }
 
-    if (!isTableOrder && restaurant?.accepts_cod === false) {
-      showPublicMessage('Delivery payment is not active for this restaurant yet.')
+    if (!isTableOrder && publicDeliveryPaymentOptions.length === 0) {
+      showPublicMessage('No delivery payment option is active for this restaurant yet.')
       return
     }
 
@@ -805,7 +1076,20 @@ function PublicMenuPage() {
       return
     }
 
-    if (!isTableOrder && !deliveryPaymentChoice) {
+    const selectedPublicPayment = resolvePublicDeliveryPaymentChoice(
+      deliveryPaymentChoice,
+      publicDeliveryPaymentOptions,
+    )
+
+    if (!isTableOrder && !selectedPublicPayment) {
+      if (publicDeliveryPaymentOptions.length === 1) {
+        const onlyPaymentOption = publicDeliveryPaymentOptions[0]
+
+        setDeliveryPaymentChoice(onlyPaymentOption.value)
+        await submitOrderWithPayment(onlyPaymentOption.value)
+        return
+      }
+
       setShowCodChoiceModal(true)
       return
     }
@@ -817,6 +1101,20 @@ function PublicMenuPage() {
     if (!restaurant?.id) return
 
     if (cart.length === 0) return
+
+    const selectedPublicPayment = isTableOrder
+      ? null
+      : resolvePublicDeliveryPaymentChoice(
+          selectedDeliveryPayment || deliveryPaymentChoice,
+          publicDeliveryPaymentOptions,
+        )
+
+    if (!isTableOrder && !selectedPublicPayment) {
+      setSavingOrder(false)
+      setShowCodChoiceModal(true)
+      showPublicMessage('Choose an active delivery payment option.')
+      return
+    }
 
     const activeCustomerPhone = savedCustomer?.fullPhone || customerFullPhone
     const activeCustomerName = savedCustomer?.name || customerForm.name.trim()
@@ -851,7 +1149,7 @@ function PublicMenuPage() {
     setSavingOrder(true)
 
     const { data, error } = await supabase.rpc(
-      'place_public_menu_order_with_rewards_coupon_charges',
+      'place_public_menu_order_with_rewards_coupon_charges_voucher',
       {
         p_restaurant_id: restaurant.id,
         p_order_type: orderType,
@@ -871,28 +1169,18 @@ function PublicMenuPage() {
         p_packaging_fee: isTableOrder ? 0 : packagingFeeAmount,
         p_tax_rate: getSafePublicAmount(restaurant?.tax_rate),
         p_tax_amount: taxAmount,
-        p_payment_gateway: isTableOrder ? null : 'cod',
+        p_payment_gateway: isTableOrder ? null : selectedPublicPayment?.gateway || null,
         p_delivery_payment_type: isTableOrder
           ? null
-          : selectedDeliveryPayment || deliveryPaymentChoice || null,
-        p_items: cart.map((item) => ({
-          itemId: item.itemId,
-          variationId: item.variationId,
-          name: item.name,
-          variationName: buildOrderVariationName(item),
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          baseUnitPrice: item.baseUnitPrice || item.unitPrice,
-          modifierTotal: item.modifierTotal || 0,
-          modifiers: item.modifiers || [],
-        })),
+          : selectedPublicPayment?.deliveryPaymentType || null,
+        p_gift_voucher_code: appliedGiftVoucher?.code || null,
+        p_gift_voucher_amount: giftVoucherDiscountAmount,
+        p_items: expandPublicCartItemsForOrder(cart),
       },
     )
 
-    setSavingOrder(false)
-
     if (error) {
+      setSavingOrder(false)
       showPublicMessage(error.message)
       return
     }
@@ -903,33 +1191,136 @@ function PublicMenuPage() {
       saveCustomerProfileFromForm()
     }
 
-    setOrderSuccess({
+    const paymentResultReference =
+      orderResult?.payment_reference ||
+      orderResult?.gateway_order_id ||
+      orderResult?.id ||
+      orderResult?.order_code ||
+      ''
+
+    const orderSuccessPayload = {
+      orderId: orderResult?.id || '',
       orderCode: orderResult?.order_code || 'Order placed',
+      orderReference: paymentResultReference,
+      restaurantSlug,
       total: cartPayableTotal,
+      currency,
       orderType,
       isExistingBill: Boolean(orderResult?.is_existing_bill),
       rewardDiscount: rewardDiscountAmount,
       rewardPoints: appliedReward ? Number(appliedReward.points || 0) : 0,
       couponDiscount: couponDiscountAmount,
       couponCode: appliedCoupon?.code || '',
+      giftVoucherDiscount: giftVoucherDiscountAmount,
+      giftVoucherCode: appliedGiftVoucher?.code || '',
       shippingFee: shippingFeeAmount,
       packagingFee: packagingFeeAmount,
       taxAmount,
-      deliveryPaymentChoice: selectedDeliveryPayment || deliveryPaymentChoice || '',
+      deliveryPaymentChoice: selectedPublicPayment?.value || '',
+      deliveryPaymentLabel: selectedPublicPayment?.label || '',
+      paymentGateway: selectedPublicPayment?.gateway || '',
+      deliveryPaymentType: selectedPublicPayment?.deliveryPaymentType || '',
+      isOnlinePayment: Boolean(selectedPublicPayment?.isOnline),
+      paymentStatus: selectedPublicPayment?.isOnline
+        ? 'pending_online'
+        : selectedPublicPayment
+          ? 'collection_pending'
+          : 'unpaid',
+      paymentInstruction: getPublicPaymentInstructionFromChoice(selectedPublicPayment),
       deliveryZoneName: selectedDeliveryZone?.zone_name || '',
-    })
+      createdAt: new Date().toISOString(),
+    }
 
-    setCart([])
-    setAppliedReward(null)
-    setAppliedCoupon(null)
-    setCouponCode('')
-    setDeliveryPaymentChoice('')
-    setShowCart(false)
-    setShowCodChoiceModal(false)
-    setCustomerForm((current) => ({
-      ...current,
-      notes: '',
-    }))
+    if (isZiinaPublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const ziinaCheckout = await createPublicZiinaCheckoutSession({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const ziinaPaymentReference =
+          ziinaCheckout?.payment_reference ||
+          ziinaCheckout?.payment_intent_id ||
+          ziinaCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const ziinaOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: ziinaPaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: ziinaPaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'ziina',
+          deliveryPaymentLabel: 'Ziina',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            ziinaCheckout?.message ||
+            'Redirecting to Ziina secure checkout. Your order will remain pending until payment is completed.',
+          gatewayRedirectUrl: ziinaCheckout?.redirect_url || '',
+          gatewayOrderId: ziinaCheckout?.gateway_order_id || ziinaPaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(ziinaOrderSuccessPayload)
+
+        if (ziinaCheckout?.redirect_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(ziinaCheckout.redirect_url)
+          return
+        }
+
+        setOrderSuccess(ziinaOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'ziina',
+          deliveryPaymentLabel: 'Ziina',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'Ziina checkout could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'Ziina checkout could not be opened. The order was saved as pending.',
+        )
+      }
+    } else {
+      storePublicPaymentResultSnapshot(orderSuccessPayload)
+      setOrderSuccess(orderSuccessPayload)
+    }
+
+    setSavingOrder(false)
+
+    clearPublicCartAfterOrder({
+      setCart,
+      setAppliedReward,
+      setAppliedCoupon,
+      setCouponCode,
+      setAppliedGiftVoucher,
+      setGiftVoucherCode,
+      setDeliveryPaymentChoice,
+      setShowCart,
+      setShowCodChoiceModal,
+      setCustomerForm,
+    })
 
     if (showOrdersModal) {
       await loadCustomerOrders()
@@ -1537,12 +1928,25 @@ function PublicMenuPage() {
         </section>
       )}
 
+      {activeMenuScheduleNotices.length > 0 && (
+        <PublicMenuScheduleNotice notices={activeMenuScheduleNotices} />
+      )}
+
       {publicTheme.show_campaigns && activeCampaigns.length > 0 && (
         <PublicCampaignStrip
           campaigns={activeCampaigns}
           currency={currency}
           onCampaignAction={handleCampaignAction}
           onCopyCoupon={handleCopyCampaignCoupon}
+        />
+      )}
+
+      {comboDeals.length > 0 && (
+        <PublicComboDealsSection
+          combos={comboDeals}
+          currency={currency}
+          acceptsOrders={acceptsOrders}
+          onAddCombo={addComboToCart}
         />
       )}
 
@@ -1591,11 +1995,24 @@ function PublicMenuPage() {
             const hasOptions = product.has_variations && variations.length > 0
             const hasModifiers = modifierGroups.length > 0
             const shouldCustomize = hasOptions || hasModifiers
+            const scheduleState = product.publicSchedule || {}
+            const isScheduleUnavailable = scheduleState.isUnavailable === true
+            const displayPrice = getPublicScheduledPrice(
+              product,
+              Number(product.price || 0),
+            )
+            const showOriginalPrice =
+              Number(displayPrice || 0) < Number(product.price || 0)
             const productQuantity = getCartProductQuantity(product.id)
             const baseCartItem = getBaseCartItem(product)
 
             return (
-              <article className="public-product-card" key={product.id}>
+              <article
+                className={`public-product-card ${
+                  isScheduleUnavailable ? 'schedule-unavailable' : ''
+                }`}
+                key={product.id}
+              >
                 <button
                   type="button"
                   className="public-product-main"
@@ -1611,13 +2028,23 @@ function PublicMenuPage() {
 
                   <div className="public-product-info">
                     <span>{product.category?.name || 'Special'}</span>
+                    {scheduleState.badge && (
+                      <span className={`public-schedule-product-badge ${scheduleState.badgeType || ''}`}>
+                        {scheduleState.badge}
+                      </span>
+                    )}
                     <h3>{product.name}</h3>
                     <p>{product.description || 'Tap to add this item.'}</p>
 
                     <div className="public-product-price-row">
                       <strong>
                         {shouldCustomize ? 'From ' : ''}
-                        {currency} {Number(product.price || 0).toFixed(2)}
+                        {currency} {Number(displayPrice || 0).toFixed(2)}
+                        {showOriginalPrice && (
+                          <small className="public-schedule-original-price">
+                            {currency} {Number(product.price || 0).toFixed(2)}
+                          </small>
+                        )}
                       </strong>
 
                       {shouldCustomize && productQuantity > 0 && (
@@ -1630,6 +2057,10 @@ function PublicMenuPage() {
                 <div className="public-product-action-area">
                   {!acceptsOrders ? (
                     <div className="public-view-only-pill">View only</div>
+                  ) : isScheduleUnavailable ? (
+                    <div className="public-view-only-pill schedule">
+                      {scheduleState.shortLabel || 'Not now'}
+                    </div>
                   ) : shouldCustomize ? (
                     <button
                       type="button"
@@ -1763,6 +2194,7 @@ function PublicMenuPage() {
           packagingFeeAmount={packagingFeeAmount}
           taxAmount={taxAmount}
           deliveryPaymentChoice={deliveryPaymentChoice}
+          deliveryPaymentOptions={publicDeliveryPaymentOptions}
           deliveryZones={deliveryZones}
           selectedDeliveryZoneId={selectedDeliveryZoneId}
           selectedDeliveryZone={selectedDeliveryZone}
@@ -1774,6 +2206,10 @@ function PublicMenuPage() {
           couponCode={couponCode}
           appliedCoupon={appliedCoupon}
           couponApplying={couponApplying}
+          giftVoucherDiscountAmount={giftVoucherDiscountAmount}
+          giftVoucherCode={giftVoucherCode}
+          appliedGiftVoucher={appliedGiftVoucher}
+          giftVoucherApplying={giftVoucherApplying}
           appliedReward={appliedReward}
           isTableOrder={isTableOrder}
           table={table}
@@ -1788,6 +2224,9 @@ function PublicMenuPage() {
           onCouponCodeChange={setCouponCode}
           onApplyCoupon={handleApplyCouponCode}
           onRemoveCoupon={handleRemoveCouponCode}
+          onGiftVoucherCodeChange={setGiftVoucherCode}
+          onApplyGiftVoucher={handleApplyGiftVoucher}
+          onRemoveGiftVoucher={handleRemoveGiftVoucher}
           onOpenRewards={() => loadCustomerRewards()}
           onRemoveReward={() => setAppliedReward(null)}
           onDeliveryZoneChange={setSelectedDeliveryZoneId}
@@ -1801,9 +2240,11 @@ function PublicMenuPage() {
       )}
 
       {showCodChoiceModal && (
-        <PublicCodChoiceModal
+        <PublicPaymentChoiceModal
           currency={currency}
           total={cartPayableTotal}
+          options={publicDeliveryPaymentOptions}
+          selectedValue={deliveryPaymentChoice}
           saving={savingOrder}
           onClose={() => setShowCodChoiceModal(false)}
           onChoose={(choice) => {
@@ -1908,6 +2349,117 @@ function PublicMenuPage() {
 }
 
 
+
+
+function PublicMenuScheduleNotice({ notices }) {
+  if (!Array.isArray(notices) || notices.length === 0) return null
+
+  return (
+    <section className="public-menu-schedule-notice">
+      <div className="public-menu-schedule-notice-icon">⏱</div>
+      <div>
+        <span>Live menu timing</span>
+        <strong>{notices[0].title}</strong>
+        {notices[0].text && <small>{notices[0].text}</small>}
+      </div>
+
+      {notices.length > 1 && (
+        <div className="public-menu-schedule-extra">
+          +{notices.length - 1} more rule{notices.length - 1 === 1 ? '' : 's'}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function PublicComboDealsSection({ combos, currency, acceptsOrders, onAddCombo }) {
+  return (
+    <section className="public-combo-deals-section">
+      <div className="public-combo-head">
+        <div>
+          <p className="public-menu-label">Combo Deals</p>
+          <h2>Meal bundles and family offers</h2>
+          <span>Pick ready-made combos and save more on your order.</span>
+        </div>
+      </div>
+
+      <div className="public-combo-scroll-row">
+        {combos.map((combo) => (
+          <PublicComboDealCard
+            combo={combo}
+            currency={currency}
+            acceptsOrders={acceptsOrders}
+            onAddCombo={onAddCombo}
+            key={combo.id}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function PublicComboDealCard({ combo, currency, acceptsOrders, onAddCombo }) {
+  const comboItems = getAvailablePublicComboItems(combo)
+  const menuValue = getPublicComboMenuValue(comboItems)
+  const bundlePrice = Number(combo.bundle_price || 0)
+  const savings = Math.max(menuValue - bundlePrice, 0)
+  const firstImage = comboItems.find((item) => item.imageUrl)?.imageUrl
+
+  return (
+    <article className="public-combo-card">
+      <div className="public-combo-card-top">
+        <div className="public-combo-image">
+          {firstImage ? (
+            <img src={firstImage} alt={combo.combo_name} />
+          ) : (
+            <Sparkles size={24} />
+          )}
+        </div>
+
+        <div className="public-combo-title-area">
+          <span>{combo.combo_code || 'COMBO'}</span>
+          <h3>{combo.combo_name}</h3>
+          {combo.description && <p>{combo.description}</p>}
+        </div>
+      </div>
+
+      <div className="public-combo-items-list">
+        {comboItems.slice(0, 4).map((item) => (
+          <div key={`${combo.id}-${item.itemId}-${item.variationId || 'base'}`}>
+            <span>{Number(item.quantity || 1)} × {item.itemName}</span>
+            {item.variationName && <small>{item.variationName}</small>}
+          </div>
+        ))}
+        {comboItems.length > 4 && (
+          <div>
+            <span>+ {comboItems.length - 4} more item{comboItems.length - 4 === 1 ? '' : 's'}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="public-combo-price-row">
+        <div>
+          <span>Combo price</span>
+          <strong>{currency} {bundlePrice.toFixed(2)}</strong>
+        </div>
+
+        {savings > 0 && (
+          <small>Save {currency} {savings.toFixed(2)}</small>
+        )}
+      </div>
+
+      <button
+        type="button"
+        className="public-combo-add-button"
+        onClick={() => onAddCombo(combo)}
+        disabled={!acceptsOrders || comboItems.length === 0}
+      >
+        {acceptsOrders ? '+ Add Combo' : 'View only'}
+      </button>
+    </article>
+  )
+}
+
 function PublicCampaignStrip({ campaigns, currency, onCampaignAction, onCopyCoupon }) {
   return (
     <section className="public-campaign-strip">
@@ -1986,17 +2538,27 @@ function PublicSocialLinks({ restaurant }) {
   )
 }
 
-function PublicCodChoiceModal({ currency, total, saving, onClose, onChoose }) {
+function PublicPaymentChoiceModal({
+  currency,
+  total,
+  options,
+  selectedValue,
+  saving,
+  onClose,
+  onChoose,
+}) {
+  const paymentOptions = Array.isArray(options) ? options : []
+
   return (
     <div className="public-modal-overlay" onClick={onClose}>
       <div
-        className="public-cod-choice-modal"
+        className="public-payment-choice-modal"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="public-cart-head">
           <div>
-            <p className="public-menu-label">Payment on delivery</p>
-            <h2>How will you pay?</h2>
+            <p className="public-menu-label">Delivery Payment</p>
+            <h2>Choose payment option</h2>
             <span>
               Total: {currency} {Number(total || 0).toFixed(2)}
             </span>
@@ -2007,23 +2569,111 @@ function PublicCodChoiceModal({ currency, total, saving, onClose, onChoose }) {
           </button>
         </div>
 
-        <div className="public-cod-choice-grid">
-          <button type="button" onClick={() => onChoose('cash')} disabled={saving}>
-            <Banknote size={24} />
-            <strong>Cash on delivery</strong>
-            <span>Pay cash to the delivery staff.</span>
-          </button>
-
-          <button type="button" onClick={() => onChoose('card')} disabled={saving}>
-            <CreditCard size={24} />
-            <strong>Card on delivery</strong>
-            <span>Delivery staff will bring tap/card POS machine.</span>
-          </button>
-        </div>
+        {paymentOptions.length === 0 ? (
+          <div className="public-payment-empty">
+            No delivery payment option is active for this restaurant yet.
+          </div>
+        ) : (
+          <div className="public-payment-choice-grid">
+            {paymentOptions.map((option) => (
+              <button
+                type="button"
+                className={selectedValue === option.value ? 'active' : ''}
+                onClick={() => onChoose(option.value)}
+                disabled={saving}
+                key={option.value}
+              >
+                <span className="public-payment-logo">
+                  {option.gateway === 'cod' ? (
+                    option.deliveryPaymentType === 'card' ? (
+                      <CreditCard size={24} />
+                    ) : (
+                      <Banknote size={24} />
+                    )
+                  ) : (
+                    <img
+                      src={`/payment-gateways/${option.gateway}.png`}
+                      alt={option.label}
+                      onError={(event) => {
+                        event.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  )}
+                </span>
+                <strong>{option.label}</strong>
+                <span>{option.text}</span>
+                <small className={option.isOnline ? 'online' : 'offline'}>
+                  {option.statusText}
+                </small>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
 }
+
+function PublicDeliveryPaymentSelector({ options, selectedValue, onChange }) {
+  const paymentOptions = Array.isArray(options) ? options : []
+  const selectedPayment = resolvePublicDeliveryPaymentChoice(
+    selectedValue,
+    paymentOptions,
+  )
+
+  return (
+    <div className="public-delivery-payment-preview payment-gateway-selector">
+      <div>
+        <span>Delivery payment</span>
+        <strong>{selectedPayment?.label || 'Choose payment option'}</strong>
+        <small>Only payment options activated by the restaurant are shown here.</small>
+      </div>
+
+      {paymentOptions.length === 0 ? (
+        <div className="public-payment-empty compact">
+          No delivery payment option is active.
+        </div>
+      ) : (
+        <div className="public-delivery-payment-buttons gateway-buttons">
+          {paymentOptions.map((option) => (
+            <button
+              type="button"
+              className={selectedValue === option.value ? 'active' : ''}
+              onClick={() => onChange(option.value)}
+              key={option.value}
+            >
+              {option.gateway === 'cod' ? (
+                option.deliveryPaymentType === 'card' ? (
+                  <CreditCard size={15} />
+                ) : (
+                  <Banknote size={15} />
+                )
+              ) : (
+                <span className="public-inline-gateway-logo">
+                  <img
+                    src={`/payment-gateways/${option.gateway}.png`}
+                    alt={option.label}
+                    onError={(event) => {
+                      event.currentTarget.style.display = 'none'
+                    }}
+                  />
+                </span>
+              )}
+              {option.shortLabel || option.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedPayment && (
+        <div className={`public-online-payment-note ${selectedPayment.isOnline ? 'online' : 'cod'}`}>
+          {selectedPayment.statusText}
+        </div>
+      )}
+    </div>
+  )
+}
+
 
 function PublicServiceRequestModal({
   form,
@@ -2390,6 +3040,7 @@ function PublicCartSheet({
   packagingFeeAmount,
   taxAmount,
   deliveryPaymentChoice,
+  deliveryPaymentOptions,
   deliveryZones,
   selectedDeliveryZoneId,
   selectedDeliveryZone,
@@ -2401,6 +3052,10 @@ function PublicCartSheet({
   couponCode,
   appliedCoupon,
   couponApplying,
+  giftVoucherDiscountAmount,
+  giftVoucherCode,
+  appliedGiftVoucher,
+  giftVoucherApplying,
   appliedReward,
   isTableOrder,
   table,
@@ -2415,6 +3070,9 @@ function PublicCartSheet({
   onCouponCodeChange,
   onApplyCoupon,
   onRemoveCoupon,
+  onGiftVoucherCodeChange,
+  onApplyGiftVoucher,
+  onRemoveGiftVoucher,
   onOpenRewards,
   onRemoveReward,
   onDeliveryZoneChange,
@@ -2451,6 +3109,11 @@ function PublicCartSheet({
                 {item.modifierSummary && (
                   <span className="public-cart-modifier-summary">
                     Add-ons: {item.modifierSummary}
+                  </span>
+                )}
+                {item.comboSummary && (
+                  <span className="public-cart-modifier-summary combo">
+                    Includes: {item.comboSummary}
                   </span>
                 )}
                 <small>
@@ -2599,32 +3262,11 @@ function PublicCartSheet({
         </div>
 
         {!isTableOrder && (
-          <div className="public-delivery-payment-preview">
-            <div>
-              <span>Delivery payment</span>
-              <strong>COD - {deliveryPaymentChoice === 'card' ? 'Card machine' : deliveryPaymentChoice === 'cash' ? 'Cash' : 'Choose on place order'}</strong>
-              <small>For card selection, delivery staff will bring a tap/card POS machine.</small>
-            </div>
-
-            <div className="public-delivery-payment-buttons">
-              <button
-                type="button"
-                className={deliveryPaymentChoice === 'cash' ? 'active' : ''}
-                onClick={() => onDeliveryPaymentChoiceChange('cash')}
-              >
-                <Banknote size={15} />
-                Cash
-              </button>
-              <button
-                type="button"
-                className={deliveryPaymentChoice === 'card' ? 'active' : ''}
-                onClick={() => onDeliveryPaymentChoiceChange('card')}
-              >
-                <CreditCard size={15} />
-                Card
-              </button>
-            </div>
-          </div>
+          <PublicDeliveryPaymentSelector
+            options={deliveryPaymentOptions}
+            selectedValue={deliveryPaymentChoice}
+            onChange={onDeliveryPaymentChoiceChange}
+          />
         )}
 
         <div className="public-cart-coupon-area">
@@ -2660,6 +3302,44 @@ function PublicCartSheet({
                 disabled={couponApplying}
               >
                 {couponApplying ? 'Checking...' : 'Apply'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="public-cart-gift-voucher-area">
+          {appliedGiftVoucher ? (
+            <div className="public-cart-gift-voucher-applied">
+              <div>
+                <span>Gift voucher applied</span>
+                <strong>{appliedGiftVoucher.code}</strong>
+                <small>
+                  {appliedGiftVoucher.title} • -{currency}{' '}
+                  {Number(giftVoucherDiscountAmount || 0).toFixed(2)}
+                </small>
+              </div>
+
+              <button type="button" onClick={onRemoveGiftVoucher}>
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="public-cart-gift-voucher-form">
+              <input
+                type="text"
+                value={giftVoucherCode}
+                onChange={(event) =>
+                  onGiftVoucherCodeChange(event.target.value.toUpperCase())
+                }
+                placeholder="Gift voucher code"
+              />
+
+              <button
+                type="button"
+                onClick={onApplyGiftVoucher}
+                disabled={giftVoucherApplying}
+              >
+                {giftVoucherApplying ? 'Checking...' : 'Use'}
               </button>
             </div>
           )}
@@ -2723,6 +3403,15 @@ function PublicCartSheet({
               <span>Coupon discount</span>
               <strong>
                 -{currency} {Number(couponDiscountAmount || 0).toFixed(2)}
+              </strong>
+            </div>
+          )}
+
+          {giftVoucherDiscountAmount > 0 && (
+            <div className="discount gift-voucher">
+              <span>Gift voucher</span>
+              <strong>
+                -{currency} {Number(giftVoucherDiscountAmount || 0).toFixed(2)}
               </strong>
             </div>
           )}
@@ -2913,6 +3602,7 @@ function PublicCustomizeItemModal({ product, currency, onClose, onAdd }) {
     (variation) => variation.id === selectedVariationId,
   )
   const baseUnitPrice = Number(selectedVariation?.price ?? product.price ?? 0)
+  const scheduledBaseUnitPrice = getPublicScheduledPrice(product, baseUnitPrice)
   const selectedModifierOptions = getSelectedModifierOptions(
     modifierGroups,
     selectedModifiers,
@@ -2921,7 +3611,7 @@ function PublicCustomizeItemModal({ product, currency, onClose, onAdd }) {
     (total, option) => total + Number(option.priceDelta || 0),
     0,
   )
-  const finalUnitPrice = roundPublicMoney(baseUnitPrice + modifierTotal)
+  const finalUnitPrice = roundPublicMoney(scheduledBaseUnitPrice + modifierTotal)
 
   const toggleModifierOption = (group, option) => {
     setSelectedModifiers((current) => {
@@ -2989,6 +3679,11 @@ function PublicCustomizeItemModal({ product, currency, onClose, onAdd }) {
             <span>
               Choose size, spice level, sauces or extra toppings before adding.
             </span>
+            {product.publicSchedule?.badge && (
+              <small className="public-schedule-modal-hint">
+                {product.publicSchedule.badge}
+              </small>
+            )}
           </div>
 
           <button type="button" onClick={onClose}>
@@ -3017,7 +3712,7 @@ function PublicCustomizeItemModal({ product, currency, onClose, onAdd }) {
                 >
                   <span>{variation.name}</span>
                   <strong>
-                    {currency} {Number(variation.price || 0).toFixed(2)}
+                    {currency} {Number(getPublicScheduledPrice(product, Number(variation.price || 0))).toFixed(2)}
                   </strong>
                 </button>
               ))}
@@ -3252,6 +3947,7 @@ function PublicOrderCard({
   const isLive = isPublicOngoingOrder(order)
   const isFinal = ['completed', 'cancelled', 'delivered'].includes(order.status)
   const orderCurrency = order.currency || currency
+  const paymentDetails = getPublicOrderPaymentDetails(order)
 
   return (
     <article
@@ -3285,8 +3981,16 @@ function PublicOrderCard({
       <div className="public-order-meta">
         <span>{formatPublicOrderType(order.order_type)}</span>
         <span>{formatPublicDate(order.created_at)}</span>
-        <span>{formatPublicPayment(order.payment_status)}</span>
+        <span className={`public-payment-status-chip ${paymentDetails.className}`}>
+          {paymentDetails.label}
+        </span>
       </div>
+
+      {paymentDetails.note && (
+        <div className={`public-payment-status-note ${paymentDetails.className}`}>
+          {paymentDetails.note}
+        </div>
+      )}
 
       {order.table_name && (
         <div className="public-order-table">{order.table_name}</div>
@@ -3848,6 +4552,13 @@ function PublicProfileModal({
 }
 
 function OrderSuccessModal({ order, currency, onClose }) {
+  const paymentDetails = getPublicSuccessPaymentDetails(order)
+  const paymentResultPath = buildPublicPaymentResultPath({
+    status: order?.isOnlinePayment ? 'success' : 'success',
+    restaurantSlug: order?.restaurantSlug,
+    order,
+  })
+
   return (
     <div className="public-modal-overlay" onClick={onClose}>
       <div
@@ -3887,7 +4598,15 @@ function OrderSuccessModal({ order, currency, onClose }) {
 
         {order.deliveryPaymentChoice && (
           <div className="public-success-reward payment">
-            Delivery payment: COD - {order.deliveryPaymentChoice === 'card' ? 'Card machine' : 'Cash'}
+            Delivery payment: {order.deliveryPaymentLabel || order.deliveryPaymentChoice}
+          </div>
+        )}
+
+        {paymentDetails.label && (
+          <div className={`public-success-payment-status ${paymentDetails.className}`}>
+            <span>Payment status</span>
+            <strong>{paymentDetails.label}</strong>
+            {paymentDetails.note && <small>{paymentDetails.note}</small>}
           </div>
         )}
 
@@ -3912,6 +4631,12 @@ function OrderSuccessModal({ order, currency, onClose }) {
         <strong>
           {currency} {Number(order.total || 0).toFixed(2)}
         </strong>
+
+        {paymentResultPath && (
+          <Link className="public-success-action-link" to={paymentResultPath}>
+            View payment status
+          </Link>
+        )}
 
         <button type="button" onClick={onClose}>
           Close
@@ -3949,6 +4674,221 @@ function showPublicMessage(message) {
       detail: message,
     }),
   )
+}
+
+
+
+function isZiinaPublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'ziina')
+}
+
+async function createPublicZiinaCheckoutSession({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-ziina-payment-intent',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open Ziina checkout.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open Ziina checkout.')
+  }
+
+  return data
+}
+
+function clearPublicCartAfterOrder({
+  setCart,
+  setAppliedReward,
+  setAppliedCoupon,
+  setCouponCode,
+  setAppliedGiftVoucher,
+  setGiftVoucherCode,
+  setDeliveryPaymentChoice,
+  setShowCart,
+  setShowCodChoiceModal,
+  setCustomerForm,
+}) {
+  setCart([])
+  setAppliedReward(null)
+  setAppliedCoupon(null)
+  setCouponCode('')
+  setAppliedGiftVoucher(null)
+  setGiftVoucherCode('')
+  setDeliveryPaymentChoice('')
+  setShowCart(false)
+  setShowCodChoiceModal(false)
+  setCustomerForm((current) => ({
+    ...current,
+    notes: '',
+  }))
+}
+
+function normalizePublicComboDeals(comboData) {
+  return (comboData || [])
+    .filter((combo) => isPublicComboLive(combo))
+    .map((combo) => ({
+      ...combo,
+      items: getAvailablePublicComboItems(combo),
+    }))
+    .filter((combo) => combo.items.length > 0 && Number(combo.bundle_price || 0) > 0)
+    .sort(
+      (first, second) =>
+        Number(first.sort_order || 0) - Number(second.sort_order || 0) ||
+        String(first.combo_name || '').localeCompare(String(second.combo_name || '')),
+    )
+}
+
+function isPublicComboLive(combo) {
+  if (!combo || combo.is_active === false || combo.is_public === false) return false
+
+  const now = Date.now()
+  const startsAt = combo.start_at ? new Date(combo.start_at).getTime() : null
+  const endsAt = combo.end_at ? new Date(combo.end_at).getTime() : null
+
+  if (startsAt && startsAt > now) return false
+  if (endsAt && endsAt < now) return false
+
+  return true
+}
+
+function getAvailablePublicComboItems(combo) {
+  if (!Array.isArray(combo?.items)) return []
+
+  return combo.items
+    .filter((comboItem) => {
+      if (comboItem.itemId && comboItem.itemName) return true
+
+      const item = comboItem.item
+      const variation = comboItem.variation
+
+      if (!item || item.is_deleted === true || item.is_available === false) {
+        return false
+      }
+
+      if (comboItem.variation_id && (!variation || variation.is_available === false)) {
+        return false
+      }
+
+      return true
+    })
+    .map((comboItem) => {
+      if (comboItem.itemId && comboItem.itemName) {
+        return {
+          ...comboItem,
+          quantity: Math.max(Number(comboItem.quantity || 1), 0.001),
+          unitPrice: Number(comboItem.unitPrice || 0),
+          sortOrder: Number(comboItem.sortOrder || 0),
+        }
+      }
+
+      const item = comboItem.item || {}
+      const variation = comboItem.variation || null
+      const basePrice = variation ? variation.price : item.price
+
+      return {
+        id: comboItem.id,
+        itemId: comboItem.menu_item_id || item.id,
+        variationId: comboItem.variation_id || null,
+        itemName: item.name || 'Combo item',
+        variationName: variation?.name || '',
+        imageUrl: item.image_url || '',
+        quantity: Math.max(Number(comboItem.quantity || 1), 0.001),
+        unitPrice: Number(basePrice || 0),
+        groupName: comboItem.group_name || '',
+        sortOrder: Number(comboItem.sort_order || 0),
+      }
+    })
+    .sort((first, second) => Number(first.sortOrder || 0) - Number(second.sortOrder || 0))
+}
+
+function getPublicComboMenuValue(comboItems) {
+  return roundPublicMoney(
+    (comboItems || []).reduce(
+      (total, item) => total + Number(item.quantity || 1) * Number(item.unitPrice || 0),
+      0,
+    ),
+  )
+}
+
+function buildPublicComboSummary(comboItems) {
+  return (comboItems || [])
+    .slice(0, 4)
+    .map((item) => {
+      const quantity = Number(item.quantity || 1)
+      const quantityText = Number.isInteger(quantity) ? String(quantity) : quantity.toFixed(2)
+      return `${quantityText}× ${item.itemName}${item.variationName ? ` (${item.variationName})` : ''}`
+    })
+    .join(', ')
+}
+
+function expandPublicCartItemsForOrder(cart) {
+  return cart.flatMap((item) => {
+    if (!item.isCombo || !Array.isArray(item.comboItems) || item.comboItems.length === 0) {
+      return [{
+        itemId: item.itemId,
+        variationId: item.variationId,
+        name: item.name,
+        variationName: buildOrderVariationName(item),
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+        baseUnitPrice: item.baseUnitPrice || item.unitPrice,
+        modifierTotal: item.modifierTotal || 0,
+        modifiers: item.modifiers || [],
+      }]
+    }
+
+    const comboQuantity = Math.max(Number(item.quantity || 1), 1)
+    const comboItems = getAvailablePublicComboItems({ items: item.comboItems })
+
+    return comboItems.map((comboItem, index) => {
+      const quantity = roundPublicQuantity(Number(comboItem.quantity || 1) * comboQuantity)
+      const lineTotal = index === 0 ? Number(item.totalPrice || 0) : 0
+      const unitPrice = quantity > 0 ? roundPublicMoney(lineTotal / quantity) : 0
+
+      return {
+        itemId: comboItem.itemId,
+        variationId: comboItem.variationId,
+        name: comboItem.itemName,
+        variationName: [
+          item.comboCode ? `Combo ${item.comboCode}` : item.name,
+          comboItem.variationName,
+        ]
+          .filter(Boolean)
+          .join(' • '),
+        quantity,
+        unitPrice,
+        totalPrice: lineTotal,
+        baseUnitPrice: unitPrice,
+        modifierTotal: 0,
+        modifiers: [],
+      }
+    })
+  })
+}
+
+function roundPublicQuantity(value) {
+  return Math.round(Number(value || 0) * 1000) / 1000
 }
 
 async function loadPublicModifierGroupsByItem(restaurantId) {
@@ -4349,9 +5289,185 @@ function formatPublicOrderType(type) {
 }
 
 function formatPublicPayment(status) {
-  if (status === 'paid') return 'Paid'
-  if (status === 'refunded') return 'Refunded'
+  const normalizedStatus = String(status || '').trim().toLowerCase()
+
+  if (normalizedStatus === 'paid') return 'Paid'
+  if (normalizedStatus === 'refunded') return 'Refunded'
+  if (['failed', 'payment_failed'].includes(normalizedStatus)) return 'Payment failed'
+  if (['pending_online', 'online_pending', 'pending'].includes(normalizedStatus)) {
+    return 'Payment pending'
+  }
+
   return 'Unpaid'
+}
+
+
+function buildPublicPaymentResultPath({ status = 'success', restaurantSlug = '', order = {} }) {
+  const orderReference =
+    order?.orderReference ||
+    order?.paymentReference ||
+    order?.orderId ||
+    order?.orderCode ||
+    ''
+
+  if (!orderReference && !restaurantSlug) return ''
+
+  const params = new URLSearchParams()
+
+  if (restaurantSlug) params.set('restaurant', restaurantSlug)
+  if (orderReference) params.set('order', orderReference)
+  if (order?.paymentGateway) params.set('gateway', order.paymentGateway)
+
+  return `/payment/${status === 'failed' ? 'failed' : 'success'}?${params.toString()}`
+}
+
+function storePublicPaymentResultSnapshot(order) {
+  if (!order) return
+
+  try {
+    const orderReference =
+      order.orderReference || order.paymentReference || order.orderId || order.orderCode
+
+    const snapshot = {
+      restaurant_slug: order.restaurantSlug || '',
+      order_id: order.orderId || '',
+      order_code: order.orderCode || '',
+      order_reference: orderReference || '',
+      payment_reference: orderReference || '',
+      payment_gateway: order.paymentGateway || '',
+      gateway_order_id: order.gatewayOrderId || '',
+      gateway_redirect_url: order.gatewayRedirectUrl || '',
+      delivery_payment_type: order.deliveryPaymentType || '',
+      payment_status: order.paymentStatus || 'unpaid',
+      payment_method_label: order.deliveryPaymentLabel || '',
+      payment_status_note: order.paymentInstruction || '',
+      total_amount: Number(order.total || 0),
+      currency: order.currency || '',
+      order_type: order.orderType || '',
+      created_at: order.createdAt || new Date().toISOString(),
+    }
+
+    localStorage.setItem('spizy_last_payment_result', JSON.stringify(snapshot))
+
+    if (orderReference) {
+      localStorage.setItem(
+        `spizy_payment_result_${String(orderReference).toLowerCase()}`,
+        JSON.stringify(snapshot),
+      )
+    }
+  } catch {
+    // Local storage is optional. The database/RPC remains the source of truth.
+  }
+}
+
+function getPublicPaymentInstructionFromChoice(paymentChoice) {
+  if (!paymentChoice) return ''
+
+  if (paymentChoice.gateway === 'cod') {
+    if (paymentChoice.deliveryPaymentType === 'card') {
+      return 'Card amount will be collected by delivery staff using a tap/card POS machine.'
+    }
+
+    return 'Cash amount will be collected by delivery staff when the order is delivered.'
+  }
+
+  if (paymentChoice.gateway === 'ziina') {
+    return 'You will be redirected to Ziina secure checkout. The order stays pending until Ziina confirms payment.'
+  }
+
+  if (paymentChoice.isOnline) {
+    return 'Online gateway checkout is saved as pending in this foundation. Secure redirect and webhook will be connected in the next gateway phase.'
+  }
+
+  return paymentChoice.text || ''
+}
+
+function getPublicOrderPaymentDetails(order) {
+  const status = String(order?.payment_status || order?.paymentStatus || '').trim().toLowerCase()
+  const gateway = String(order?.payment_gateway || order?.paymentGateway || '').trim().toLowerCase()
+  const paymentStatusNote = order?.payment_status_note || order?.paymentInstruction || ''
+  const deliveryPaymentType = String(
+    order?.delivery_payment_type || order?.deliveryPaymentType || '',
+  )
+    .trim()
+    .toLowerCase()
+  const isOnlinePayment = Boolean(order?.is_online_payment || order?.isOnlinePayment) ||
+    (gateway && gateway !== 'cod')
+
+  if (status === 'paid') {
+    return {
+      label: 'Paid',
+      className: 'paid',
+      note: paymentStatusNote || order?.payment_method_label || '',
+    }
+  }
+
+  if (status === 'refunded') {
+    return {
+      label: 'Refunded',
+      className: 'refunded',
+      note: 'Payment was refunded.',
+    }
+  }
+
+  if (['failed', 'payment_failed'].includes(status)) {
+    return {
+      label: 'Payment failed',
+      className: 'failed',
+      note: 'Payment was not successful. Please contact the restaurant or choose another method.',
+    }
+  }
+
+  if (gateway === 'cod') {
+    if (deliveryPaymentType === 'card') {
+      return {
+        label: 'Card on delivery pending',
+        className: 'cod',
+        note: paymentStatusNote || 'Delivery staff should collect payment using a tap/card POS machine.',
+      }
+    }
+
+    return {
+      label: 'Cash on delivery pending',
+      className: 'cod',
+      note: paymentStatusNote || 'Delivery staff should collect cash when the order is delivered.',
+    }
+  }
+
+  if (isOnlinePayment) {
+    return {
+      label: `${getPublicGatewayLabel(gateway)} payment pending`,
+      className: 'online',
+      note: paymentStatusNote || 'Online checkout/webhook is pending. Keep this order unpaid until gateway success is verified.',
+    }
+  }
+
+  return {
+    label: formatPublicPayment(status),
+    className: status || 'unpaid',
+    note: '',
+  }
+}
+
+function getPublicSuccessPaymentDetails(order) {
+  if (!order?.deliveryPaymentChoice && !order?.paymentStatus) {
+    return { label: '', className: '', note: '' }
+  }
+
+  return getPublicOrderPaymentDetails({
+    payment_status: order.paymentStatus,
+    payment_gateway: order.paymentGateway,
+    delivery_payment_type: order.deliveryPaymentType,
+    is_online_payment: order.isOnlinePayment,
+    payment_method_label: order.deliveryPaymentLabel,
+    payment_status_note: order.paymentInstruction,
+  })
+}
+
+function getPublicGatewayLabel(gateway) {
+  if (!gateway) return 'Online'
+
+  return publicGatewayLabels[gateway] || gateway.charAt(0).toUpperCase() + gateway.slice(1)
 }
 
 function formatPublicDate(value) {
@@ -4600,6 +5716,424 @@ function getPublicLabelFromUrl(value) {
   } catch {
     return 'Link'
   }
+}
+
+
+function applyPublicMenuSchedulesToProducts(products, schedules) {
+  const now = new Date()
+  const safeSchedules = Array.isArray(schedules) ? schedules : []
+
+  return (products || []).map((product) => {
+    const matchingSchedules = safeSchedules.filter((schedule) =>
+      publicScheduleAppliesToProduct(schedule, product),
+    )
+
+    const liveSchedules = matchingSchedules.filter((schedule) =>
+      isPublicScheduleLiveNow(schedule, now),
+    )
+
+    const liveHideRule = liveSchedules.find(
+      (schedule) => schedule.schedule_type === 'hide_item',
+    )
+
+    if (liveHideRule) {
+      return {
+        ...product,
+        publicSchedule: {
+          isHidden: true,
+          isUnavailable: true,
+          isOrderable: false,
+          badge: liveHideRule.banner_note || 'Currently unavailable',
+          badgeType: 'hidden',
+          shortLabel: 'Hidden now',
+        },
+      }
+    }
+
+    const availabilityRules = matchingSchedules.filter(
+      (schedule) =>
+        schedule.schedule_type === 'availability' &&
+        isPublicScheduleDateRelevant(schedule, now),
+    )
+    const liveAvailabilityRule = availabilityRules.find((schedule) =>
+      isPublicScheduleLiveNow(schedule, now),
+    )
+
+    if (availabilityRules.length > 0 && !liveAvailabilityRule) {
+      const nextRule = availabilityRules[0]
+      return {
+        ...product,
+        publicSchedule: {
+          isHidden: false,
+          isUnavailable: true,
+          isOrderable: false,
+          badge:
+            nextRule.banner_note ||
+            `Available ${getPublicScheduleTimeText(nextRule)}`,
+          badgeType: 'time',
+          shortLabel: 'Not now',
+          unavailableMessage:
+            nextRule.banner_note ||
+            `${product.name} is available only ${getPublicScheduleDaysText(nextRule)} ${getPublicScheduleTimeText(nextRule)}.`,
+        },
+      }
+    }
+
+    const liveSpecialPriceRules = liveSchedules
+      .filter(
+        (schedule) =>
+          schedule.schedule_type === 'special_price' &&
+          Number(schedule.special_price || 0) >= 0,
+      )
+      .sort(
+        (a, b) => Number(a.special_price || 0) - Number(b.special_price || 0),
+      )
+    const liveHappyHourRules = liveSchedules
+      .filter(
+        (schedule) =>
+          schedule.schedule_type === 'happy_hour' &&
+          Number(schedule.discount_percent || 0) > 0,
+      )
+      .sort(
+        (a, b) =>
+          Number(b.discount_percent || 0) - Number(a.discount_percent || 0),
+      )
+
+    const specialRule = liveSpecialPriceRules[0]
+    const happyRule = liveHappyHourRules[0]
+    const timingRule = liveAvailabilityRule
+
+    if (specialRule) {
+      return {
+        ...product,
+        publicSchedule: {
+          isHidden: false,
+          isUnavailable: false,
+          isOrderable: true,
+          badge:
+            specialRule.banner_note ||
+            `Special price ${getPublicScheduleTimeText(specialRule)}`,
+          badgeType: 'special',
+          shortLabel: 'Special price',
+          specialPrice: Number(specialRule.special_price || 0),
+          pricingRuleType: 'special_price',
+        },
+      }
+    }
+
+    if (happyRule) {
+      return {
+        ...product,
+        publicSchedule: {
+          isHidden: false,
+          isUnavailable: false,
+          isOrderable: true,
+          badge:
+            happyRule.banner_note ||
+            `${Number(happyRule.discount_percent || 0).toFixed(0)}% happy hour`,
+          badgeType: 'discount',
+          shortLabel: 'Happy hour',
+          discountPercent: Number(happyRule.discount_percent || 0),
+          pricingRuleType: 'happy_hour',
+        },
+      }
+    }
+
+    if (timingRule) {
+      return {
+        ...product,
+        publicSchedule: {
+          isHidden: false,
+          isUnavailable: false,
+          isOrderable: true,
+          badge: timingRule.banner_note || `Available now until ${normalizePublicScheduleTime(timingRule.end_time)}`,
+          badgeType: 'available',
+          shortLabel: 'Available now',
+        },
+      }
+    }
+
+    return {
+      ...product,
+      publicSchedule: {
+        isHidden: false,
+        isUnavailable: false,
+        isOrderable: true,
+      },
+    }
+  })
+}
+
+function getPublicActiveMenuScheduleNotices(schedules) {
+  const now = new Date()
+
+  return (Array.isArray(schedules) ? schedules : [])
+    .filter((schedule) => isPublicScheduleLiveNow(schedule, now))
+    .filter((schedule) =>
+      ['all_menu', 'category'].includes(String(schedule.applies_to || '')),
+    )
+    .slice(0, 3)
+    .map((schedule) => ({
+      title:
+        schedule.banner_note ||
+        schedule.schedule_name ||
+        getPublicScheduleTypeLabel(schedule.schedule_type),
+      text: `${getPublicScheduleTypeLabel(schedule.schedule_type)} • ${getPublicScheduleTimeText(schedule)}`,
+    }))
+}
+
+function isProductPubliclyOrderable(product) {
+  if (!product?.publicSchedule) return true
+  return product.publicSchedule.isOrderable !== false
+}
+
+function getPublicScheduleUnavailableMessage(product) {
+  return (
+    product?.publicSchedule?.unavailableMessage ||
+    product?.publicSchedule?.badge ||
+    'This item is not available right now.'
+  )
+}
+
+function getPublicScheduledPrice(product, unitPrice) {
+  const normalPrice = Number(unitPrice || 0)
+  const schedule = product?.publicSchedule || {}
+
+  if (schedule.pricingRuleType === 'special_price') {
+    return roundPublicMoney(Number(schedule.specialPrice || 0))
+  }
+
+  if (schedule.pricingRuleType === 'happy_hour') {
+    const discountPercent = Math.min(
+      100,
+      Math.max(0, Number(schedule.discountPercent || 0)),
+    )
+    return roundPublicMoney(normalPrice * (1 - discountPercent / 100))
+  }
+
+  return roundPublicMoney(normalPrice)
+}
+
+function publicScheduleAppliesToProduct(schedule, product) {
+  if (!schedule || !product) return false
+
+  if (schedule.applies_to === 'all_menu') return true
+  if (schedule.applies_to === 'item') return schedule.item_id === product.id
+  if (schedule.applies_to === 'category') {
+    return Boolean(product.category_id && schedule.category_id === product.category_id)
+  }
+
+  return false
+}
+
+function isPublicScheduleDateRelevant(schedule, now = new Date()) {
+  if (!schedule?.is_active) return false
+
+  const today = getPublicScheduleDateKey(now)
+
+  if (schedule.start_date && today < schedule.start_date) return false
+  if (schedule.end_date && today > schedule.end_date) return false
+
+  return true
+}
+
+function isPublicScheduleLiveNow(schedule, now = new Date()) {
+  if (!isPublicScheduleDateRelevant(schedule, now)) return false
+
+  const days = Array.isArray(schedule.days_of_week) ? schedule.days_of_week : []
+  if (days.length > 0 && !days.includes(now.getDay())) return false
+
+  return isPublicScheduleTimeLive(schedule, now)
+}
+
+function isPublicScheduleTimeLive(schedule, now = new Date()) {
+  const startMinutes = getPublicScheduleMinutes(schedule.start_time, 0)
+  const endMinutes = getPublicScheduleMinutes(schedule.end_time, 1439)
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+
+  if (startMinutes === endMinutes) return true
+
+  if (startMinutes < endMinutes) {
+    return currentMinutes >= startMinutes && currentMinutes <= endMinutes
+  }
+
+  return currentMinutes >= startMinutes || currentMinutes <= endMinutes
+}
+
+function getPublicScheduleMinutes(value, fallback) {
+  const parts = String(value || '').split(':')
+  const hours = Number(parts[0])
+  const minutes = Number(parts[1])
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return fallback
+
+  return Math.min(1439, Math.max(0, hours * 60 + minutes))
+}
+
+function normalizePublicScheduleTime(value) {
+  const parts = String(value || '').split(':')
+  const hours = Number(parts[0])
+  const minutes = Number(parts[1])
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return '--:--'
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+function getPublicScheduleTimeText(schedule) {
+  return `${normalizePublicScheduleTime(schedule.start_time)} - ${normalizePublicScheduleTime(schedule.end_time)}`
+}
+
+function getPublicScheduleDaysText(schedule) {
+  const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const days = Array.isArray(schedule.days_of_week) ? schedule.days_of_week : []
+
+  if (days.length === 0 || days.length === 7) return 'daily'
+
+  return days.map((day) => labels[day]).filter(Boolean).join(', ')
+}
+
+function getPublicScheduleDateKey(value) {
+  const date = value instanceof Date ? value : new Date(value)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function getPublicScheduleTypeLabel(type) {
+  if (type === 'availability') return 'Menu timing'
+  if (type === 'happy_hour') return 'Happy hour'
+  if (type === 'special_price') return 'Special price'
+  if (type === 'hide_item') return 'Hidden now'
+  return 'Menu schedule'
+}
+
+
+const publicGatewayLabels = {
+  ziina: 'Ziina',
+  stripe: 'Stripe',
+  paypal: 'PayPal',
+  network: 'Network',
+  cashfree: 'Cashfree',
+  razorpay: 'Razorpay',
+  phonepe: 'PhonePe',
+}
+
+function getPublicDeliveryPaymentOptions(restaurant) {
+  if (!restaurant || restaurant.delivery_enabled === false) return []
+
+  const settings = normalizePublicPaymentGatewaySettings(
+    restaurant.payment_gateway_settings,
+  )
+  const options = []
+
+  if (restaurant.accepts_cod !== false && settings.cod?.enabled !== false) {
+    if (settings.cod?.cash_enabled !== false) {
+      options.push({
+        value: 'cod_cash',
+        gateway: 'cod',
+        deliveryPaymentType: 'cash',
+        label: 'Cash on Delivery',
+        shortLabel: 'Cash',
+        text: 'Pay cash to the delivery staff.',
+        statusText: 'Order will stay unpaid until cash is collected by the delivery staff.',
+        isOnline: false,
+      })
+    }
+
+    if (settings.cod?.card_enabled !== false) {
+      options.push({
+        value: 'cod_card',
+        gateway: 'cod',
+        deliveryPaymentType: 'card',
+        label: 'Card on Delivery',
+        shortLabel: 'Card machine',
+        text: 'Delivery staff will bring tap/card POS machine.',
+        statusText: 'Order will stay unpaid until card payment is collected by the delivery staff.',
+        isOnline: false,
+      })
+    }
+  }
+
+  Object.entries(publicGatewayLabels).forEach(([gateway, label]) => {
+    if (!settings[gateway]?.enabled) return
+
+    if (settings[gateway]?.requiresConnection && !settings[gateway]?.isConnected) {
+      return
+    }
+
+    options.push({
+      value: gateway,
+      gateway,
+      deliveryPaymentType: null,
+      label,
+      shortLabel: label,
+      text:
+        gateway === 'ziina'
+          ? 'Pay online using Ziina secure checkout.'
+          : `Pay online using ${label}.`,
+      statusText:
+        gateway === 'ziina'
+          ? 'Ziina checkout will open after your order is saved. The restaurant receives confirmation after payment succeeds.'
+          : 'Foundation mode: order is saved as unpaid/pending until secure checkout and webhook are connected.',
+      isOnline: true,
+    })
+  })
+
+  return options
+}
+
+function normalizePublicPaymentGatewaySettings(value) {
+  const incoming = value && typeof value === 'object' ? value : {}
+
+  return {
+    cod: {
+      enabled: incoming.cod?.enabled !== false,
+      cash_enabled: incoming.cod?.cash_enabled !== false,
+      card_enabled: incoming.cod?.card_enabled !== false,
+    },
+    ziina: normalizePublicOnlineGateway(incoming.ziina, true),
+    stripe: normalizePublicOnlineGateway(incoming.stripe, false),
+    paypal: normalizePublicOnlineGateway(incoming.paypal, false),
+    network: normalizePublicOnlineGateway(incoming.network, false),
+    cashfree: normalizePublicOnlineGateway(incoming.cashfree, false),
+    razorpay: normalizePublicOnlineGateway(incoming.razorpay, false),
+    phonepe: normalizePublicOnlineGateway(incoming.phonepe, false),
+  }
+}
+
+function normalizePublicOnlineGateway(value, requiresConnection = false) {
+  const incoming = value && typeof value === 'object' ? value : {}
+  const connectionStatus = String(incoming.connection_status || '').toLowerCase()
+  const credentialStatus = String(incoming.credential_status || '').toLowerCase()
+  const isConnected = ['connected', 'tested'].includes(connectionStatus) || credentialStatus === 'saved'
+
+  return {
+    enabled: Boolean(incoming.enabled),
+    requiresConnection,
+    isConnected: requiresConnection ? isConnected : true,
+    connection_status: connectionStatus,
+    last_test_status: String(incoming.last_test_status || '').toLowerCase(),
+  }
+}
+
+function resolvePublicDeliveryPaymentChoice(value, options) {
+  const paymentOptions = Array.isArray(options) ? options : []
+  const normalizedValue = String(value || '').trim().toLowerCase()
+
+  if (!normalizedValue) return null
+
+  if (normalizedValue === 'cash') {
+    return paymentOptions.find((option) => option.value === 'cod_cash') || null
+  }
+
+  if (normalizedValue === 'card') {
+    return paymentOptions.find((option) => option.value === 'cod_card') || null
+  }
+
+  return paymentOptions.find((option) => option.value === normalizedValue) || null
 }
 
 export default PublicMenuPage

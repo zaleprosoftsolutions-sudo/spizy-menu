@@ -1,5 +1,6 @@
 import {
   Archive,
+  Award,
   ArrowLeftRight,
   Building2,
   BookOpenCheck,
@@ -9,6 +10,7 @@ import {
   ClipboardCheck,
   CircleDollarSign,
   FileText,
+  Gift,
   Download,
   Upload,
   Clock,
@@ -26,6 +28,7 @@ import {
   LayoutGrid,
   ListPlus,
   Megaphone,
+  MessageCircle,
   QrCode,
   ReceiptText,
   Settings,
@@ -128,6 +131,18 @@ const restaurantNavGroups = [
         icon: Utensils,
       },
       {
+        id: 'menu-schedule',
+        label: 'Menu Schedule',
+        description: 'Availability and happy hours',
+        icon: Clock,
+      },
+      {
+        id: 'nutrition-labels',
+        label: 'Nutrition & Allergens',
+        description: 'Dietary labels and warnings',
+        icon: Tags,
+      },
+      {
         id: 'recipes',
         label: 'Recipes & Costing',
         description: 'Ingredients, cost and margin',
@@ -205,6 +220,30 @@ const restaurantNavGroups = [
         icon: Users,
       },
       {
+        id: 'loyalty-tiers',
+        label: 'Loyalty Tiers',
+        description: 'VIP tiers and membership',
+        icon: Award,
+      },
+      {
+        id: 'gift-vouchers',
+        label: 'Gift Vouchers',
+        description: 'Store credit and gift cards',
+        icon: Gift,
+      },
+      {
+        id: 'combo-deals',
+        label: 'Combo Deals',
+        description: 'Meal bundles and offers',
+        icon: PackageCheck,
+      },
+      {
+        id: 'crm',
+        label: 'CRM Notes',
+        description: 'Tags, notes and follow-ups',
+        icon: MessageCircle,
+      },
+      {
         id: 'discounts',
         label: 'Discounts',
         description: 'Coupons and offers',
@@ -215,6 +254,12 @@ const restaurantNavGroups = [
         label: 'Campaigns',
         description: 'Banner and countdown',
         icon: Megaphone,
+      },
+      {
+        id: 'marketing',
+        label: 'Marketing Broadcast',
+        description: 'WhatsApp and customer messages',
+        icon: MessageCircle,
       },
       {
         id: 'reviews',

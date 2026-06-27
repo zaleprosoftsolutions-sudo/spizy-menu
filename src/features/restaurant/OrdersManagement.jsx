@@ -34,9 +34,20 @@ const orderTypeOptions = [
 ]
 
 const paymentOptions = [
-  { value: 'unpaid', label: 'Unpaid' },
+  { value: 'unpaid', label: 'Unpaid / pending' },
   { value: 'paid', label: 'Paid' },
   { value: 'refunded', label: 'Refunded' },
+]
+
+const paymentFilterOptions = [
+  { value: 'all', label: 'All payments' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'pending', label: 'All pending' },
+  { value: 'cod_pending', label: 'COD pending' },
+  { value: 'online_pending', label: 'Online pending' },
+  { value: 'unpaid', label: 'Unpaid only' },
+  { value: 'refunded', label: 'Refunded' },
+  { value: 'cancelled_unpaid', label: 'Cancelled / unpaid' },
 ]
 
 const paymentMethodOptions = [
@@ -283,9 +294,7 @@ function OrdersManagement({ restaurant }) {
     return orders.filter((order) => {
       if (statusFilter !== 'all' && order.status !== statusFilter) return false
       if (typeFilter !== 'all' && order.order_type !== typeFilter) return false
-      if (paymentFilter !== 'all' && order.payment_status !== paymentFilter) {
-        return false
-      }
+      if (!doesOrderMatchPaymentFilter(order, paymentFilter)) return false
 
       if (!keyword) return true
 
@@ -302,6 +311,13 @@ function OrdersManagement({ restaurant }) {
         order.status,
         order.order_type,
         order.payment_method,
+        order.payment_gateway,
+        order.delivery_payment_type,
+        order.payment_reference,
+        order.gateway_order_id,
+        order.gateway_transaction_id,
+        getOrderPaymentMeta(order).label,
+        getOrderPaymentMethodLabel(order),
         itemNames,
       ].some((value) =>
         String(value || '')
@@ -313,11 +329,11 @@ function OrdersManagement({ restaurant }) {
 
   const stats = useMemo(() => {
     const paidRevenue = orders
-      .filter((order) => order.payment_status === 'paid')
+      .filter((order) => isOrderPaid(order))
       .reduce((total, order) => total + Number(order.total_amount || 0), 0)
 
     const unpaidRevenue = orders
-      .filter((order) => order.payment_status !== 'paid')
+      .filter((order) => !isOrderPaid(order) && order.payment_status !== 'refunded')
       .reduce((total, order) => total + Number(order.total_amount || 0), 0)
 
     const liveOrders = orders.filter(
@@ -328,10 +344,17 @@ function OrdersManagement({ restaurant }) {
       (order) => order.status === 'bill_requested',
     ).length
 
+    const paymentPending = orders.filter((order) => isPaymentPending(order)).length
+    const codPending = orders.filter((order) => isCodPaymentPending(order)).length
+    const onlinePending = orders.filter((order) => isOnlinePaymentPending(order)).length
+
     return {
       totalOrders: orders.length,
       liveOrders,
       billRequested,
+      paymentPending,
+      codPending,
+      onlinePending,
       paidRevenue,
       unpaidRevenue,
     }
@@ -441,7 +464,8 @@ function OrdersManagement({ restaurant }) {
     const updatedOrder = await updateOrderFields(completeOrder, {
       status: 'completed',
       payment_status: 'paid',
-      payment_method: completePaymentMethod || 'cash',
+      payment_method:
+        completePaymentMethod || getDefaultPaymentMethodForOrder(completeOrder),
     })
 
     setCompletingOrder(false)
@@ -449,6 +473,25 @@ function OrdersManagement({ restaurant }) {
     if (updatedOrder) {
       setCompleteOrder(null)
     }
+  }
+
+  const markOrderPaid = async (order, methodOverride = '') => {
+    if (!order?.id || isOrderPaid(order)) return
+
+    await updateOrderFields(order, {
+      payment_status: 'paid',
+      payment_method: methodOverride || getDefaultPaymentMethodForOrder(order),
+    })
+  }
+
+  const markOrderFailedCancelled = async (order) => {
+    if (!order?.id || isOrderPaid(order)) return
+
+    await updateOrderFields(order, {
+      status: 'cancelled',
+      payment_status: 'unpaid',
+      payment_method: getDefaultPaymentMethodForOrder(order),
+    })
   }
 
   const openAddItemModal = (order) => {
@@ -610,6 +653,9 @@ function OrdersManagement({ restaurant }) {
         <MiniOrderStat label="Total orders" value={stats.totalOrders} />
         <MiniOrderStat label="Live orders" value={stats.liveOrders} />
         <MiniOrderStat label="Bill requested" value={stats.billRequested} />
+        <MiniOrderStat label="Payment pending" value={stats.paymentPending} />
+        <MiniOrderStat label="COD pending" value={stats.codPending} />
+        <MiniOrderStat label="Online pending" value={stats.onlinePending} />
         <MiniOrderStat
           label="Paid revenue"
           value={formatMoney(stats.paidRevenue, restaurant?.currency)}
@@ -658,8 +704,7 @@ function OrdersManagement({ restaurant }) {
           value={paymentFilter}
           onChange={(event) => setPaymentFilter(event.target.value)}
         >
-          <option value="all">All payments</option>
-          {paymentOptions.map((payment) => (
+          {paymentFilterOptions.map((payment) => (
             <option value={payment.value} key={payment.value}>
               {payment.label}
             </option>
@@ -691,11 +736,7 @@ function OrdersManagement({ restaurant }) {
               {filteredOrders.map((order) => (
                 <tr
                   key={order.id}
-                  className={
-                    order.status === 'bill_requested'
-                      ? 'bill-requested-row'
-                      : ''
-                  }
+                  className={getOrderRowClass(order)}
                 >
                   <td>
                     <strong>{order.order_code || order.public_order_number}</strong>
@@ -717,8 +758,8 @@ function OrdersManagement({ restaurant }) {
                     <strong>
                       {formatMoney(order.total_amount, order.currency)}
                     </strong>
-                    <span>{formatPaymentStatus(order.payment_status)}</span>
-                    <small>{formatPaymentMethod(order.payment_method)}</small>
+                    <PaymentStatusPill order={order} />
+                    <PaymentMethodPill order={order} />
                   </td>
 
                   <td>
@@ -758,6 +799,30 @@ function OrdersManagement({ restaurant }) {
                         Add Item
                       </button>
 
+                      {!isOrderPaid(order) && (
+                        <button
+                          type="button"
+                          className="tiny-button payment"
+                          onClick={() => markOrderPaid(order)}
+                          disabled={updatingOrderId === order.id}
+                        >
+                          <CheckCircle2 size={15} />
+                          Mark Paid
+                        </button>
+                      )}
+
+                      {canMarkPaymentFailedCancelled(order) && (
+                        <button
+                          type="button"
+                          className="tiny-button danger"
+                          onClick={() => markOrderFailedCancelled(order)}
+                          disabled={updatingOrderId === order.id}
+                        >
+                          <X size={15} />
+                          Fail / Cancel
+                        </button>
+                      )}
+
                       {!isFinalRestaurantOrderStatus(order.status) && (
                         <button
                           type="button"
@@ -787,6 +852,8 @@ function OrdersManagement({ restaurant }) {
           onUpdateField={updateOrderField}
           onComplete={openCompleteModal}
           onAddItem={openAddItemModal}
+          onMarkPaid={markOrderPaid}
+          onMarkFailedCancelled={markOrderFailedCancelled}
         />
       )}
 
@@ -883,6 +950,8 @@ function OrderDetailsModal({
   onUpdateField,
   onComplete,
   onAddItem,
+  onMarkPaid,
+  onMarkFailedCancelled,
 }) {
   return (
     <div className="orders-modal-overlay" onClick={onClose}>
@@ -918,8 +987,8 @@ function OrderDetailsModal({
           <InfoCard
             label="Total"
             value={formatMoney(order.total_amount, order.currency)}
-            meta={`${formatPaymentStatus(order.payment_status)} • ${formatPaymentMethod(
-              order.payment_method,
+            meta={`${getOrderPaymentMeta(order).label} • ${getOrderPaymentMethodLabel(
+              order,
             )}`}
           />
 
@@ -930,10 +999,13 @@ function OrderDetailsModal({
           />
         </div>
 
+        <PaymentGuidanceBox order={order} />
+        <PaymentGatewayReferenceBox order={order} />
+
         {order.status === 'bill_requested' && (
           <div className="orders-bill-request-alert">
-            Customer requested bill completion. Confirm payment and complete the
-            order.
+            Customer requested bill completion. Confirm the payment status first,
+            then complete the order when the restaurant is ready to close the bill.
           </div>
         )}
 
@@ -1001,7 +1073,7 @@ function OrderDetailsModal({
             onClick={() =>
               printOrderReceipt({
                 order,
-                paymentMethod: order.payment_method || 'cash',
+                paymentMethod: order.payment_method || getDefaultPaymentMethodForOrder(order),
                 restaurantName,
               })
             }
@@ -1009,6 +1081,30 @@ function OrderDetailsModal({
             <Printer size={16} />
             Print
           </button>
+
+          {!isOrderPaid(order) && (
+            <button
+              type="button"
+              className="payment"
+              onClick={() => onMarkPaid(order)}
+              disabled={updatingOrderId === order.id}
+            >
+              <CheckCircle2 size={16} />
+              Mark Paid
+            </button>
+          )}
+
+          {canMarkPaymentFailedCancelled(order) && (
+            <button
+              type="button"
+              className="danger"
+              onClick={() => onMarkFailedCancelled(order)}
+              disabled={updatingOrderId === order.id}
+            >
+              <X size={16} />
+              Fail / Cancel
+            </button>
+          )}
 
           {!isFinalRestaurantOrderStatus(order.status) && (
             <button
@@ -1238,13 +1334,15 @@ function CompleteOrderModal({
           <div>
             <p className="section-kicker">Complete bill</p>
             <h2>{order.order_code || order.public_order_number}</h2>
-            <span>Collect payment, print bill and complete the order.</span>
+            <span>Collect payment, print if needed, then close the bill as paid.</span>
           </div>
 
           <button type="button" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
+
+        <PaymentGuidanceBox order={order} compact />
 
         <div className="complete-payment-grid">
           <label>
@@ -1264,6 +1362,7 @@ function CompleteOrderModal({
           <div className="complete-total-card">
             <span>Bill total</span>
             <strong>{formatMoney(order.total_amount, order.currency)}</strong>
+            <small>{getOrderPaymentMethodLabel(order)}</small>
           </div>
         </div>
 
@@ -1281,6 +1380,11 @@ function CompleteOrderModal({
           <div className="receipt-line">
             <span>Type</span>
             <strong>{formatOrderType(order.order_type)}</strong>
+          </div>
+
+          <div className="receipt-line">
+            <span>Payment</span>
+            <strong>{getOrderPaymentMeta(order).label}</strong>
           </div>
 
           {order.table_name && (
@@ -1376,6 +1480,72 @@ function AdminOrderPopup({ popup, soundEnabled, onClose, onView }) {
   )
 }
 
+function PaymentStatusPill({ order }) {
+  const paymentMeta = getOrderPaymentMeta(order)
+
+  return (
+    <span className={`orders-payment-chip ${paymentMeta.tone}`}>
+      {paymentMeta.label}
+    </span>
+  )
+}
+
+function PaymentMethodPill({ order }) {
+  return (
+    <small className="orders-payment-method-chip">
+      {getOrderPaymentMethodLabel(order)}
+    </small>
+  )
+}
+
+
+function PaymentGatewayReferenceBox({ order }) {
+  const rows = getOrderPaymentReferenceRows(order)
+
+  if (rows.length === 0) return null
+
+  return (
+    <div className="orders-payment-reference-box">
+      <div>
+        <span>Gateway / webhook reference</span>
+        <strong>Payment tracking is ready</strong>
+      </div>
+
+      <div className="orders-payment-reference-grid">
+        {rows.map((row) => (
+          <div key={row.label}>
+            <span>{row.label}</span>
+            <strong>{row.value}</strong>
+          </div>
+        ))}
+      </div>
+
+      <p>
+        These values connect the order with gateway redirect and webhook flow.
+        For Ziina, payment_reference / gateway_order_id should match the Ziina
+        Payment Intent ID returned by the checkout API.
+      </p>
+    </div>
+  )
+}
+
+function PaymentGuidanceBox({ order, compact = false }) {
+  const paymentMeta = getOrderPaymentMeta(order)
+  const methodLabel = getOrderPaymentMethodLabel(order)
+  const note = getOrderPaymentNote(order)
+
+  return (
+    <div className={`orders-payment-note-box ${paymentMeta.tone} ${compact ? 'compact' : ''}`}>
+      <div>
+        <span>Payment status</span>
+        <strong>{paymentMeta.label}</strong>
+        <small>{methodLabel}</small>
+      </div>
+      <p>{note}</p>
+    </div>
+  )
+}
+
 function formatMoney(value, currency = 'AED') {
   return `${currency || 'AED'} ${Number(value || 0).toFixed(2)}`
 }
@@ -1418,6 +1588,11 @@ function formatOrderType(type) {
 function formatPaymentStatus(status) {
   if (status === 'paid') return 'Paid'
   if (status === 'refunded') return 'Refunded'
+  if (status === 'failed') return 'Failed'
+  if (status === 'cancelled') return 'Cancelled'
+  if (['pending', 'payment_pending', 'online_pending'].includes(status)) {
+    return 'Pending'
+  }
   return 'Unpaid'
 }
 
@@ -1427,7 +1602,235 @@ function formatPaymentMethod(method) {
   if (method === 'upi') return 'UPI'
   if (method === 'online') return 'Online'
   if (method === 'cod') return 'COD'
+  if (method === 'cod_cash') return 'COD Cash'
+  if (method === 'cod_card') return 'COD Card Machine'
   return 'Cash'
+}
+
+function isOrderPaid(order) {
+  return order?.payment_status === 'paid'
+}
+
+function isOrderRefunded(order) {
+  return order?.payment_status === 'refunded'
+}
+
+function getNormalizedGateway(order) {
+  return String(order?.payment_gateway || order?.gateway || '').toLowerCase()
+}
+
+function getNormalizedDeliveryPaymentType(order) {
+  return String(
+    order?.delivery_payment_type ||
+      order?.deliveryPaymentType ||
+      order?.payment_type ||
+      '',
+  ).toLowerCase()
+}
+
+function isOnlinePaymentOrder(order) {
+  const gateway = getNormalizedGateway(order)
+  const method = String(order?.payment_method || '').toLowerCase()
+
+  return Boolean(gateway && gateway !== 'cod') || method === 'online'
+}
+
+function isCodPaymentOrder(order) {
+  const gateway = getNormalizedGateway(order)
+  const method = String(order?.payment_method || '').toLowerCase()
+
+  return gateway === 'cod' || method === 'cod'
+}
+
+function isPaymentPending(order) {
+  if (!order || isOrderPaid(order) || isOrderRefunded(order)) return false
+  return order.status !== 'cancelled'
+}
+
+function isCodPaymentPending(order) {
+  return isPaymentPending(order) && isCodPaymentOrder(order)
+}
+
+function isOnlinePaymentPending(order) {
+  return isPaymentPending(order) && isOnlinePaymentOrder(order)
+}
+
+function canMarkPaymentFailedCancelled(order) {
+  return isPaymentPending(order) && (isOnlinePaymentOrder(order) || isCodPaymentOrder(order))
+}
+
+
+function getOrderPaymentReferenceRows(order) {
+  const rows = []
+  const addRow = (label, value) => {
+    const cleanedValue = String(value || '').trim()
+    if (!cleanedValue) return
+    rows.push({ label, value: cleanedValue })
+  }
+
+  addRow('Payment reference', order?.payment_reference)
+  addRow('Gateway order ID', order?.gateway_order_id)
+  addRow('Gateway transaction ID', order?.gateway_transaction_id)
+  addRow('Gateway', formatGatewayLabel(getNormalizedGateway(order)))
+  addRow('Online status', order?.online_payment_status)
+
+  return rows
+}
+
+function getOrderPaymentMeta(order) {
+  if (isOrderPaid(order)) {
+    return { label: 'Paid', tone: 'paid' }
+  }
+
+  if (isOrderRefunded(order)) {
+    return { label: 'Refunded', tone: 'refunded' }
+  }
+
+  if (order?.status === 'cancelled') {
+    return { label: 'Cancelled / unpaid', tone: 'cancelled' }
+  }
+
+  const rawStatus = String(order?.payment_status || '').toLowerCase()
+
+  if (rawStatus === 'failed') {
+    return { label: 'Payment failed', tone: 'failed' }
+  }
+
+  if (isOnlinePaymentOrder(order)) {
+    return { label: 'Online payment pending', tone: 'online-pending' }
+  }
+
+  if (isCodPaymentOrder(order)) {
+    const deliveryType = getNormalizedDeliveryPaymentType(order)
+
+    if (deliveryType === 'card' || deliveryType === 'card_machine') {
+      return { label: 'COD card pending', tone: 'cod-pending' }
+    }
+
+    if (deliveryType === 'cash') {
+      return { label: 'COD cash pending', tone: 'cod-pending' }
+    }
+
+    return { label: 'COD collection pending', tone: 'cod-pending' }
+  }
+
+  return { label: formatPaymentStatus(order?.payment_status), tone: 'unpaid' }
+}
+
+function getOrderPaymentMethodLabel(order) {
+  const gateway = getNormalizedGateway(order)
+  const deliveryType = getNormalizedDeliveryPaymentType(order)
+  const method = String(order?.payment_method || '').toLowerCase()
+
+  if (gateway === 'cod' || method === 'cod') {
+    if (deliveryType === 'card' || deliveryType === 'card_machine') {
+      return 'COD • Rider card machine'
+    }
+
+    if (deliveryType === 'cash') return 'COD • Cash collection'
+
+    return 'COD collection'
+  }
+
+  if (gateway) {
+    return `${formatGatewayLabel(gateway)} online gateway`
+  }
+
+  return formatPaymentMethod(method || 'cash')
+}
+
+function getOrderPaymentNote(order) {
+  if (isOrderPaid(order)) {
+    return 'Payment is marked as collected. You can complete the order when service is finished.'
+  }
+
+  if (isOrderRefunded(order)) {
+    return 'This order is marked as refunded. Check finance records before closing the bill.'
+  }
+
+  if (order?.status === 'cancelled') {
+    return 'This order is cancelled and payment is not collected.'
+  }
+
+  if (isOnlinePaymentOrder(order)) {
+    if (getNormalizedGateway(order) === 'ziina') {
+      return 'Ziina checkout is pending. The webhook should mark this paid automatically after successful payment. Mark paid manually only after verifying in Ziina.'
+    }
+
+    return 'Online gateway is still pending/foundation mode. Mark paid only after the gateway confirms payment or the restaurant collects manually.'
+  }
+
+  if (isCodPaymentOrder(order)) {
+    const deliveryType = getNormalizedDeliveryPaymentType(order)
+
+    if (deliveryType === 'card' || deliveryType === 'card_machine') {
+      return 'Delivery rider should collect with a card/tap machine. Mark paid after collection.'
+    }
+
+    if (deliveryType === 'cash') {
+      return 'Delivery rider should collect cash from the customer. Mark paid after collection.'
+    }
+
+    return 'COD payment must be collected outside the online gateway flow before marking paid.'
+  }
+
+  return 'Payment is not collected yet. Choose Mark Paid after collection, or complete the bill with the correct payment method.'
+}
+
+function getDefaultPaymentMethodForOrder(order) {
+  const gateway = getNormalizedGateway(order)
+  const deliveryType = getNormalizedDeliveryPaymentType(order)
+  const method = String(order?.payment_method || '').toLowerCase()
+
+  if (method && ['cash', 'card', 'upi', 'online', 'cod'].includes(method)) {
+    return method
+  }
+
+  if (gateway === 'cod') {
+    if (deliveryType === 'card' || deliveryType === 'card_machine') return 'card'
+    if (deliveryType === 'cash') return 'cash'
+    return 'cod'
+  }
+
+  if (gateway) return 'online'
+
+  return 'cash'
+}
+
+function formatGatewayLabel(gateway) {
+  if (gateway === 'ziina') return 'Ziina'
+  if (gateway === 'stripe') return 'Stripe'
+  if (gateway === 'paypal') return 'PayPal'
+  if (gateway === 'network') return 'Network / N-Genius'
+  if (gateway === 'cashfree') return 'Cashfree'
+  if (gateway === 'razorpay') return 'Razorpay'
+  if (gateway === 'phonepe') return 'PhonePe'
+  return gateway.toUpperCase()
+}
+
+function doesOrderMatchPaymentFilter(order, filter) {
+  if (filter === 'all') return true
+  if (filter === 'paid') return isOrderPaid(order)
+  if (filter === 'pending') return isPaymentPending(order)
+  if (filter === 'cod_pending') return isCodPaymentPending(order)
+  if (filter === 'online_pending') return isOnlinePaymentPending(order)
+  if (filter === 'unpaid') {
+    return order?.payment_status !== 'paid' && !isCodPaymentOrder(order) && !isOnlinePaymentOrder(order)
+  }
+  if (filter === 'refunded') return isOrderRefunded(order)
+  if (filter === 'cancelled_unpaid') return order?.status === 'cancelled' && !isOrderPaid(order)
+  return true
+}
+
+function getOrderRowClass(order) {
+  const classes = []
+
+  if (order.status === 'bill_requested') classes.push('bill-requested-row')
+  if (isOnlinePaymentPending(order)) classes.push('online-payment-pending-row')
+  if (isCodPaymentPending(order)) classes.push('cod-payment-pending-row')
+  if (order.status === 'cancelled') classes.push('cancelled-order-row')
+
+  return classes.join(' ')
 }
 
 function isFinalRestaurantOrderStatus(status) {
@@ -1518,7 +1921,7 @@ function printOrderReceipt({ order, paymentMethod, restaurantName }) {
         <p>Order: ${order.order_code || order.public_order_number}</p>
         <p>${formatDateTime(order.created_at)}</p>
         ${order.table_name ? `<p>Table: ${order.table_name}</p>` : ''}
-        <p>Payment: ${formatPaymentMethod(paymentMethod)}</p>
+        <p>Payment: ${formatPaymentMethod(paymentMethod)} • ${formatPaymentStatus(order.payment_status)}</p>
 
         <table>
           ${itemsHtml}
