@@ -1189,3 +1189,348 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Payment refund / adjustment foundation */
+.tiny-button.refund,
+.orders-modal-action-row button.refund,
+.complete-modal-actions button.refund {
+  color: #2f1600;
+  background: linear-gradient(135deg, #fdba74, #f97316);
+}
+
+.refund-order-modal {
+  width: min(720px, 100%);
+}
+
+.refund-summary-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.refund-summary-grid div {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(6, 6, 6, 0.54);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.refund-summary-grid span {
+  display: block;
+  color: #d6d6d6;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.refund-summary-grid strong {
+  display: block;
+  margin-top: 6px;
+  color: #fdba74;
+  font-size: 20px;
+}
+
+.refund-form-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.refund-form-grid label {
+  display: grid;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.refund-form-grid label.wide {
+  grid-column: 1 / -1;
+}
+
+.refund-form-grid input,
+.refund-form-grid select,
+.refund-form-grid textarea {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  background: rgba(5, 5, 5, 0.74);
+  color: #ffffff;
+  padding: 0 14px;
+  outline: 0;
+  font: inherit;
+}
+
+.refund-form-grid textarea {
+  min-height: 96px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.refund-form-grid option {
+  background: #111;
+  color: #fff;
+}
+
+.refund-warning-box {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 18px;
+  color: #fed7aa;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .refund-summary-grid,
+  .refund-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment-reconciliation-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 18rem),
+    rgba(20, 20, 20, 0.82);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  display: grid;
+  gap: 16px;
+}
+
+.payment-reconciliation-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.payment-reconciliation-head h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+}
+
+.payment-reconciliation-head span {
+  display: block;
+  margin-top: 6px;
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.reconciliation-net-card {
+  min-width: 220px;
+  padding: 15px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(134, 239, 172, 0.16), rgba(34, 197, 94, 0.1));
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  text-align: right;
+}
+
+.reconciliation-net-card span,
+.reconciliation-metric span,
+.reconciliation-box-title span,
+.reconciliation-gateway-row span,
+.reconciliation-warning-row span,
+.reconciliation-empty {
+  color: #d6d6d6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reconciliation-net-card strong {
+  display: block;
+  margin-top: 5px;
+  color: #86efac;
+  font-size: 24px;
+}
+
+.reconciliation-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reconciliation-metric {
+  min-width: 0;
+  padding: 13px;
+  border-radius: 18px;
+  background: rgba(5, 5, 5, 0.52);
+  border: 1px solid rgba(255, 191, 77, 0.1);
+}
+
+.reconciliation-metric strong {
+  display: block;
+  margin-top: 6px;
+  color: #ffffff;
+  font-size: 17px;
+}
+
+.reconciliation-metric.paid strong {
+  color: #86efac;
+}
+
+.reconciliation-metric.pending strong,
+.reconciliation-metric.cod strong,
+.reconciliation-metric.online strong {
+  color: #fde68a;
+}
+
+.reconciliation-metric.refund strong {
+  color: #c4b5fd;
+}
+
+.reconciliation-metric.cancelled strong {
+  color: #fca5a5;
+}
+
+.reconciliation-breakdown-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 12px;
+}
+
+.reconciliation-breakdown-box {
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(5, 5, 5, 0.5);
+  border: 1px solid rgba(255, 191, 77, 0.1);
+  min-width: 0;
+}
+
+.reconciliation-breakdown-box.warnings {
+  border-color: rgba(245, 158, 11, 0.16);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.reconciliation-box-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.reconciliation-box-title strong,
+.reconciliation-gateway-row strong,
+.reconciliation-warning-row strong {
+  color: #ffffff;
+}
+
+.reconciliation-gateway-list,
+.reconciliation-warning-list {
+  display: grid;
+  gap: 8px;
+}
+
+.reconciliation-gateway-row,
+.reconciliation-warning-row {
+  padding: 11px 0;
+  border-top: 1px solid rgba(255, 191, 77, 0.08);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.reconciliation-gateway-row:first-child,
+.reconciliation-warning-row:first-child {
+  border-top: 0;
+}
+
+.reconciliation-gateway-row > div:last-child,
+.reconciliation-warning-row > strong:last-child {
+  text-align: right;
+}
+
+@media (max-width: 1180px) {
+  .reconciliation-metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reconciliation-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .payment-reconciliation-head,
+  .reconciliation-box-title {
+    display: grid;
+  }
+
+  .reconciliation-net-card {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .reconciliation-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reconciliation-gateway-row,
+  .reconciliation-warning-row {
+    grid-template-columns: 1fr;
+  }
+
+  .reconciliation-gateway-row > div:last-child,
+  .reconciliation-warning-row > strong:last-child {
+    text-align: left;
+  }
+}
+
+.reconciliation-head-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reconciliation-post-button {
+  min-height: 58px;
+  border: 0;
+  border-radius: 18px;
+  padding: 0 16px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 1000;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.reconciliation-post-button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.reconciliation-post-message {
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 18px;
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .reconciliation-head-actions,
+  .reconciliation-post-button {
+    width: 100%;
+  }
+}

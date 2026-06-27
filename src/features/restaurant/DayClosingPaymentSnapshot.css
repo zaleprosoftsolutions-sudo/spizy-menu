@@ -1,0 +1,265 @@
+.day-snapshot-button {
+  border-color: rgba(34, 197, 94, 0.22) !important;
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #d1fae5 !important;
+}
+
+.day-payment-snapshot-panel {
+  padding: 20px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 18rem),
+    linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(12, 12, 12, 0.96));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+  display: grid;
+  gap: 16px;
+}
+
+.day-payment-snapshot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.day-payment-snapshot-head h3 {
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.day-payment-snapshot-head span,
+.day-payment-snapshot-status span,
+.day-payment-snapshot-empty span,
+.day-snapshot-card small,
+.day-snapshot-breakdown-row span,
+.day-snapshot-breakdown-empty {
+  color: #d0d0d0;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.day-payment-snapshot-status {
+  min-width: 210px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(6, 6, 6, 0.38);
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.day-payment-snapshot-status strong {
+  color: #86efac;
+  font-weight: 1000;
+}
+
+.day-payment-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.day-snapshot-card {
+  min-width: 0;
+  padding: 15px;
+  border-radius: 20px;
+  display: grid;
+  gap: 7px;
+  background: rgba(6, 6, 6, 0.34);
+  border: 1px solid rgba(255, 191, 77, 0.11);
+}
+
+.day-snapshot-card span {
+  color: #f6d28d;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.day-snapshot-card strong {
+  color: #ffffff;
+  font-size: 21px;
+  letter-spacing: -0.04em;
+}
+
+.day-snapshot-card.strong {
+  border-color: rgba(34, 197, 94, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 12rem),
+    rgba(6, 6, 6, 0.34);
+}
+
+.day-snapshot-card.strong strong {
+  color: #86efac;
+}
+
+.day-snapshot-card.warning {
+  border-color: rgba(248, 113, 113, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.1), transparent 12rem),
+    rgba(6, 6, 6, 0.34);
+}
+
+.day-snapshot-card.warning strong {
+  color: #fca5a5;
+}
+
+.day-payment-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.day-snapshot-breakdown {
+  min-width: 0;
+  padding: 15px;
+  border-radius: 20px;
+  background: rgba(6, 6, 6, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.day-snapshot-breakdown h4 {
+  margin: 0 0 12px;
+  color: #f6d28d;
+  font-size: 15px;
+}
+
+.day-snapshot-breakdown-row {
+  padding: 11px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.day-snapshot-breakdown-row:first-of-type {
+  border-top: 0;
+}
+
+.day-snapshot-breakdown-row div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.day-snapshot-breakdown-row strong {
+  color: #ffffff;
+}
+
+.day-snapshot-breakdown-empty {
+  padding: 16px;
+  border-radius: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.day-payment-snapshot-empty {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 191, 77, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #ffbf4d;
+}
+
+.day-payment-snapshot-empty div {
+  display: grid;
+  gap: 5px;
+}
+
+.day-payment-snapshot-empty strong {
+  color: #ffffff;
+}
+
+@media (max-width: 1180px) {
+  .day-payment-snapshot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .day-payment-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .day-payment-snapshot-head,
+  .day-payment-snapshot-empty {
+    flex-direction: column;
+  }
+
+  .day-payment-snapshot-status {
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .day-payment-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.day-cash-bank-posting-strip {
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.1), transparent 16rem),
+    rgba(10, 10, 10, 0.72);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.day-cash-bank-posting-strip.posted {
+  border-color: rgba(34, 197, 94, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 16rem),
+    rgba(10, 10, 10, 0.72);
+}
+
+.day-cash-bank-posting-strip div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.day-cash-bank-posting-strip strong {
+  color: #ffffff;
+}
+
+.day-cash-bank-posting-strip > strong {
+  color: #86efac;
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+.day-cash-bank-posting-strip span {
+  color: #d6d6d6;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.day-cash-bank-post-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .day-cash-bank-posting-strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .day-cash-bank-posting-strip > strong {
+    white-space: normal;
+  }
+}

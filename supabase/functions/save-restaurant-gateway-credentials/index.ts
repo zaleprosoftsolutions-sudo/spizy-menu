@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
     const merchantLabel = cleanString(body.merchant_label)
     const testMode = body.test_mode !== false
     const isEnabled = body.is_enabled !== false
+    const incomingMetadata = normalizeObject(body.metadata)
 
     if (!restaurantId) {
       return jsonResponse({ success: false, message: 'Restaurant ID is required.' }, 400)
@@ -93,14 +94,47 @@ Deno.serve(async (req) => {
 
     const { data: existing } = await serviceClient
       .from('restaurant_gateway_credentials')
-      .select('id, access_token, webhook_secret, public_key, merchant_label, last_test_status, last_test_message')
+      .select('id, access_token, webhook_secret, public_key, merchant_label, last_test_status, last_test_message, metadata')
       .eq('restaurant_id', restaurantId)
       .eq('gateway', gateway)
       .maybeSingle()
 
     if (!accessToken && !existing?.access_token) {
       return jsonResponse(
-        { success: false, message: 'Gateway access token is required the first time you connect this gateway.' },
+        { success: false, message: 'Gateway secret credential is required the first time you connect this gateway.' },
+        400,
+      )
+    }
+
+    if (gateway === 'phonepe' && !publicKey && !existing?.public_key) {
+      return jsonResponse(
+        { success: false, message: 'PhonePe Client ID is required. Add it in the Public key / client ID field.' },
+        400,
+      )
+    }
+
+    if (gateway === 'network' && !publicKey && !existing?.public_key) {
+      return jsonResponse(
+        { success: false, message: 'Network / N-Genius Outlet Reference is required. Add it in the Public key / client ID field.' },
+        400,
+      )
+    }
+
+    if (gateway === 'paypal' && !publicKey && !existing?.public_key) {
+      return jsonResponse(
+        { success: false, message: 'PayPal Client ID is required. Add it in the Public key / client ID field.' },
+        400,
+      )
+    }
+
+    const mergedMetadata = {
+      ...normalizeObject(existing?.metadata),
+      ...removeEmptyValues(incomingMetadata),
+    }
+
+    if (gateway === 'phonepe' && !cleanString(mergedMetadata.client_version)) {
+      return jsonResponse(
+        { success: false, message: 'PhonePe Client Version is required. Add it in the PhonePe Client Version field.' },
         400,
       )
     }
@@ -119,6 +153,7 @@ Deno.serve(async (req) => {
       last_error: null,
       last_test_status: existing?.last_test_status || null,
       last_test_message: existing?.last_test_message || null,
+      metadata: mergedMetadata,
       updated_at: new Date().toISOString(),
     }
 
@@ -127,7 +162,7 @@ Deno.serve(async (req) => {
       .upsert(credentialPayload, {
         onConflict: 'restaurant_id,gateway',
       })
-      .select('id, restaurant_id, gateway, merchant_label, public_key, test_mode, is_enabled, connected_at, updated_at')
+      .select('id, restaurant_id, gateway, merchant_label, public_key, test_mode, is_enabled, connected_at, updated_at, metadata')
       .single()
 
     if (error) throw new Error(error.message)
@@ -149,6 +184,26 @@ Deno.serve(async (req) => {
       },
     })
 
+    await writeGatewayAuditLog({
+      serviceClient,
+      restaurantId,
+      gateway,
+      actorUserId: user.id,
+      action: existing?.id ? 'rotate_or_update' : 'connect',
+      status: 'success',
+      message: `${formatGatewayName(gateway)} credentials saved for this restaurant-owned account.`,
+      metadata: {
+        test_mode: testMode,
+        is_enabled: isEnabled,
+        token_updated: Boolean(accessToken),
+        webhook_secret_updated: Boolean(webhookSecret),
+        phonepe_client_version_saved: gateway === 'phonepe' ? Boolean(mergedMetadata.client_version) : undefined,
+        phonepe_webhook_username_saved: gateway === 'phonepe' ? Boolean(mergedMetadata.webhook_username) : undefined,
+        network_outlet_reference_saved: gateway === 'network' ? Boolean(publicKey || existing?.public_key) : undefined,
+        paypal_client_id_saved: gateway === 'paypal' ? Boolean(publicKey || existing?.public_key) : undefined,
+      },
+    })
+
     return jsonResponse({
       success: true,
       message: `${formatGatewayName(gateway)} credentials saved for this restaurant account.`,
@@ -163,6 +218,31 @@ Deno.serve(async (req) => {
     )
   }
 })
+
+async function writeGatewayAuditLog({
+  serviceClient,
+  restaurantId,
+  gateway,
+  actorUserId,
+  action,
+  status,
+  message,
+  metadata = {},
+}) {
+  try {
+    await serviceClient.from('restaurant_gateway_audit_logs').insert({
+      restaurant_id: restaurantId,
+      gateway,
+      action,
+      actor_user_id: actorUserId,
+      status,
+      message,
+      metadata,
+    })
+  } catch {
+    // Audit logging must never block saving credentials.
+  }
+}
 
 async function updateRestaurantGatewayPublicStatus({
   serviceClient,
@@ -235,6 +315,13 @@ async function userCanManageRestaurant({ serviceClient, restaurantId, userId }) 
   } catch {
     return false
   }
+}
+
+function removeEmptyValues(value) {
+  const incoming = normalizeObject(value)
+  return Object.fromEntries(
+    Object.entries(incoming).filter(([, entryValue]) => String(entryValue || '').trim()),
+  )
 }
 
 function formatGatewayName(gateway) {

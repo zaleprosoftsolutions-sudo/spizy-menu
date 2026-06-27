@@ -1302,6 +1302,432 @@ function PublicMenuPage() {
             'Ziina checkout could not be opened. The order was saved as pending.',
         )
       }
+    } else if (isStripePublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const stripeCheckout = await createPublicStripeCheckoutSession({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const stripePaymentReference =
+          stripeCheckout?.payment_reference ||
+          stripeCheckout?.checkout_session_id ||
+          stripeCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const stripeOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: stripePaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: stripePaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'stripe',
+          deliveryPaymentLabel: 'Stripe',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            stripeCheckout?.message ||
+            'Redirecting to Stripe secure checkout. Your order will remain pending until payment is completed.',
+          gatewayRedirectUrl: stripeCheckout?.checkout_url || stripeCheckout?.redirect_url || '',
+          gatewayOrderId: stripeCheckout?.checkout_session_id || stripePaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(stripeOrderSuccessPayload)
+
+        if (stripeCheckout?.checkout_url || stripeCheckout?.redirect_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(stripeCheckout.checkout_url || stripeCheckout.redirect_url)
+          return
+        }
+
+        setOrderSuccess(stripeOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'stripe',
+          deliveryPaymentLabel: 'Stripe',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'Stripe checkout could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'Stripe checkout could not be opened. The order was saved as pending.',
+        )
+      }
+    } else if (isPayPalPublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const paypalCheckout = await createPublicPayPalCheckoutOrder({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const paypalPaymentReference =
+          paypalCheckout?.payment_reference ||
+          paypalCheckout?.paypal_order_id ||
+          paypalCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const paypalOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: paypalPaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: paypalPaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'paypal',
+          deliveryPaymentLabel: 'PayPal',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            paypalCheckout?.message ||
+            'Redirecting to PayPal secure checkout. Your order will remain pending until payment is approved and captured.',
+          gatewayRedirectUrl: paypalCheckout?.approval_url || paypalCheckout?.redirect_url || '',
+          gatewayOrderId: paypalCheckout?.paypal_order_id || paypalPaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(paypalOrderSuccessPayload)
+
+        if (paypalCheckout?.approval_url || paypalCheckout?.redirect_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(paypalCheckout.approval_url || paypalCheckout.redirect_url)
+          return
+        }
+
+        setOrderSuccess(paypalOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'paypal',
+          deliveryPaymentLabel: 'PayPal',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'PayPal checkout could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'PayPal checkout could not be opened. The order was saved as pending.',
+        )
+      }
+    } else if (isRazorpayPublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const razorpayCheckout = await createPublicRazorpayPaymentLink({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const razorpayPaymentReference =
+          razorpayCheckout?.payment_reference ||
+          razorpayCheckout?.payment_link_id ||
+          razorpayCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const razorpayOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: razorpayPaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: razorpayPaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'razorpay',
+          deliveryPaymentLabel: 'Razorpay',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            razorpayCheckout?.message ||
+            'Redirecting to Razorpay secure payment link. Your order will remain pending until payment is completed.',
+          gatewayRedirectUrl: razorpayCheckout?.payment_link_url || razorpayCheckout?.short_url || razorpayCheckout?.redirect_url || '',
+          gatewayOrderId: razorpayCheckout?.payment_link_id || razorpayPaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(razorpayOrderSuccessPayload)
+
+        if (razorpayCheckout?.payment_link_url || razorpayCheckout?.short_url || razorpayCheckout?.redirect_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(razorpayCheckout.payment_link_url || razorpayCheckout.short_url || razorpayCheckout.redirect_url)
+          return
+        }
+
+        setOrderSuccess(razorpayOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'razorpay',
+          deliveryPaymentLabel: 'Razorpay',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'Razorpay payment link could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'Razorpay payment link could not be opened. The order was saved as pending.',
+        )
+      }
+    } else if (isCashfreePublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const cashfreeCheckout = await createPublicCashfreePaymentLink({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const cashfreePaymentReference =
+          cashfreeCheckout?.payment_reference ||
+          cashfreeCheckout?.payment_link_id ||
+          cashfreeCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const cashfreeOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: cashfreePaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: cashfreePaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'cashfree',
+          deliveryPaymentLabel: 'Cashfree',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            cashfreeCheckout?.message ||
+            'Redirecting to Cashfree secure payment link. Your order will remain pending until payment is completed.',
+          gatewayRedirectUrl: cashfreeCheckout?.payment_link_url || cashfreeCheckout?.link_url || cashfreeCheckout?.redirect_url || '',
+          gatewayOrderId: cashfreeCheckout?.payment_link_id || cashfreePaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(cashfreeOrderSuccessPayload)
+
+        if (cashfreeCheckout?.payment_link_url || cashfreeCheckout?.link_url || cashfreeCheckout?.redirect_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(cashfreeCheckout.payment_link_url || cashfreeCheckout.link_url || cashfreeCheckout.redirect_url)
+          return
+        }
+
+        setOrderSuccess(cashfreeOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'cashfree',
+          deliveryPaymentLabel: 'Cashfree',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'Cashfree payment link could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'Cashfree payment link could not be opened. The order was saved as pending.',
+        )
+      }
+    } else if (isNetworkPublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const networkCheckout = await createPublicNetworkCheckoutSession({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const networkPaymentReference =
+          networkCheckout?.payment_reference ||
+          networkCheckout?.ngenius_order_reference ||
+          networkCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const networkOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: networkPaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: networkPaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'network',
+          deliveryPaymentLabel: 'Network / N-Genius',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            networkCheckout?.message ||
+            'Redirecting to Network / N-Genius secure checkout. Your order will remain pending until payment is completed.',
+          gatewayRedirectUrl: networkCheckout?.redirect_url || networkCheckout?.payment_url || '',
+          gatewayOrderId: networkCheckout?.gateway_order_id || networkPaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(networkOrderSuccessPayload)
+
+        if (networkCheckout?.redirect_url || networkCheckout?.payment_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(networkCheckout.redirect_url || networkCheckout.payment_url)
+          return
+        }
+
+        setOrderSuccess(networkOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'network',
+          deliveryPaymentLabel: 'Network / N-Genius',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'Network / N-Genius checkout could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'Network / N-Genius checkout could not be opened. The order was saved as pending.',
+        )
+      }
+    } else if (isPhonePePublicPaymentChoice(selectedPublicPayment)) {
+      try {
+        const phonepeCheckout = await createPublicPhonePeCheckoutSession({
+          restaurantId: restaurant.id,
+          restaurantSlug,
+          orderId: orderResult?.id || '',
+          orderCode: orderResult?.order_code || '',
+          orderReference: paymentResultReference,
+          customerSessionId,
+        })
+
+        const phonepePaymentReference =
+          phonepeCheckout?.payment_reference ||
+          phonepeCheckout?.merchant_order_id ||
+          phonepeCheckout?.gateway_order_id ||
+          paymentResultReference
+
+        const phonepeOrderSuccessPayload = {
+          ...orderSuccessPayload,
+          orderReference: phonepePaymentReference || orderSuccessPayload.orderReference,
+          paymentReference: phonepePaymentReference || orderSuccessPayload.orderReference,
+          paymentGateway: 'phonepe',
+          deliveryPaymentLabel: 'PhonePe',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            phonepeCheckout?.message ||
+            'Redirecting to PhonePe secure checkout. Your order will remain pending until payment is completed.',
+          gatewayRedirectUrl: phonepeCheckout?.redirect_url || phonepeCheckout?.payment_link_url || '',
+          gatewayOrderId: phonepeCheckout?.gateway_order_id || phonepePaymentReference || '',
+        }
+
+        storePublicPaymentResultSnapshot(phonepeOrderSuccessPayload)
+
+        if (phonepeCheckout?.redirect_url || phonepeCheckout?.payment_link_url) {
+          clearPublicCartAfterOrder({
+            setCart,
+            setAppliedReward,
+            setAppliedCoupon,
+            setCouponCode,
+            setAppliedGiftVoucher,
+            setGiftVoucherCode,
+            setDeliveryPaymentChoice,
+            setShowCart,
+            setShowCodChoiceModal,
+            setCustomerForm,
+          })
+
+          setSavingOrder(false)
+          window.location.assign(phonepeCheckout.redirect_url || phonepeCheckout.payment_link_url)
+          return
+        }
+
+        setOrderSuccess(phonepeOrderSuccessPayload)
+      } catch (checkoutError) {
+        const fallbackPayload = {
+          ...orderSuccessPayload,
+          paymentGateway: 'phonepe',
+          deliveryPaymentLabel: 'PhonePe',
+          paymentStatus: 'pending_online',
+          paymentInstruction:
+            checkoutError?.message ||
+            'PhonePe checkout could not be opened. The order is saved as unpaid/pending. Restaurant admin can retry or collect another way.',
+        }
+
+        storePublicPaymentResultSnapshot(fallbackPayload)
+        setOrderSuccess(fallbackPayload)
+        showPublicMessage(
+          checkoutError?.message ||
+            'PhonePe checkout could not be opened. The order was saved as pending.',
+        )
+      }
     } else {
       storePublicPaymentResultSnapshot(orderSuccessPayload)
       setOrderSuccess(orderSuccessPayload)
@@ -2638,7 +3064,12 @@ function PublicDeliveryPaymentSelector({ options, selectedValue, onChange }) {
           {paymentOptions.map((option) => (
             <button
               type="button"
-              className={selectedValue === option.value ? 'active' : ''}
+              className={[
+                selectedValue === option.value ? 'active' : '',
+                option.isHighlighted ? 'recommended' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               onClick={() => onChange(option.value)}
               key={option.value}
             >
@@ -2659,7 +3090,10 @@ function PublicDeliveryPaymentSelector({ options, selectedValue, onChange }) {
                   />
                 </span>
               )}
-              {option.shortLabel || option.label}
+              <span>{option.shortLabel || option.label}</span>
+              {option.isHighlighted && (
+                <small className="public-payment-recommended">Recommended</small>
+              )}
             </button>
           ))}
         </div>
@@ -4682,6 +5116,30 @@ function isZiinaPublicPaymentChoice(paymentChoice) {
   return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'ziina')
 }
 
+function isStripePublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'stripe')
+}
+
+function isPayPalPublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'paypal')
+}
+
+function isRazorpayPublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'razorpay')
+}
+
+function isCashfreePublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'cashfree')
+}
+
+function isPhonePePublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'phonepe')
+}
+
+function isNetworkPublicPaymentChoice(paymentChoice) {
+  return Boolean(paymentChoice?.isOnline && paymentChoice?.gateway === 'network')
+}
+
 async function createPublicZiinaCheckoutSession({
   restaurantId,
   restaurantSlug,
@@ -4711,6 +5169,176 @@ async function createPublicZiinaCheckoutSession({
 
   if (!data?.success) {
     throw new Error(data?.message || data?.error || 'Unable to open Ziina checkout.')
+  }
+
+  return data
+}
+
+async function createPublicStripeCheckoutSession({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-stripe-checkout-session',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open Stripe checkout.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open Stripe checkout.')
+  }
+
+  return data
+}
+
+async function createPublicRazorpayPaymentLink({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-razorpay-payment-link',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open Razorpay payment link.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open Razorpay payment link.')
+  }
+
+  return data
+}
+
+async function createPublicCashfreePaymentLink({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-cashfree-payment-link',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open Cashfree payment link.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open Cashfree payment link.')
+  }
+
+  return data
+}
+
+async function createPublicPhonePeCheckoutSession({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-phonepe-checkout-session',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open PhonePe checkout.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open PhonePe checkout.')
+  }
+
+  return data
+}
+
+async function createPublicNetworkCheckoutSession({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-network-checkout-session',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open Network / N-Genius checkout.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open Network / N-Genius checkout.')
   }
 
   return data
@@ -5373,6 +6001,14 @@ function getPublicPaymentInstructionFromChoice(paymentChoice) {
 
   if (paymentChoice.gateway === 'ziina') {
     return 'You will be redirected to Ziina secure checkout. The order stays pending until Ziina confirms payment.'
+  }
+
+  if (paymentChoice.gateway === 'paypal') {
+    return 'You will be redirected to PayPal secure checkout. The order stays pending until PayPal approves and captures the payment.'
+  }
+
+  if (paymentChoice.gateway === 'network') {
+    return 'You will be redirected to Network / N-Genius secure checkout. The order stays pending until Network confirms payment.'
   }
 
   if (paymentChoice.isOnline) {
@@ -6057,28 +6693,63 @@ function getPublicDeliveryPaymentOptions(restaurant) {
     }
   }
 
-  Object.entries(publicGatewayLabels).forEach(([gateway, label]) => {
-    if (!settings[gateway]?.enabled) return
+  const sortedPublicGatewayEntries = Object.entries(publicGatewayLabels).sort(
+    ([gatewayA], [gatewayB]) =>
+      getPublicGatewaySortOrder(settings[gatewayA]) -
+      getPublicGatewaySortOrder(settings[gatewayB]),
+  )
 
-    if (settings[gateway]?.requiresConnection && !settings[gateway]?.isConnected) {
+  sortedPublicGatewayEntries.forEach(([gateway, label]) => {
+    const gatewaySettings = settings[gateway] || {}
+
+    if (!gatewaySettings.enabled) return
+
+    if (gatewaySettings.requiresConnection && !gatewaySettings.isConnected) {
       return
     }
+
+    if (
+      gatewaySettings.require_successful_test &&
+      gatewaySettings.last_test_status !== 'success'
+    ) {
+      return
+    }
+
+    const textMap = {
+      ziina: 'Pay online using Ziina secure checkout.',
+      stripe: 'Pay online using Stripe secure checkout.',
+      paypal: 'Pay online using this restaurant’s PayPal checkout.',
+      razorpay: 'Pay online using this restaurant’s Razorpay payment link.',
+      cashfree: 'Pay online using this restaurant’s Cashfree payment link.',
+      phonepe: 'Pay online using this restaurant’s PhonePe checkout.',
+      network: 'Pay online using this restaurant’s Network / N-Genius checkout.',
+    }
+
+    const statusMap = {
+      ziina: 'Ziina checkout will open after your order is saved. The restaurant receives confirmation after payment succeeds.',
+      stripe: 'Stripe checkout will open after your order is saved. The restaurant receives confirmation after payment succeeds.',
+      paypal: 'PayPal checkout will open after your order is saved. The restaurant receives confirmation after PayPal approves and captures payment.',
+      razorpay: 'Razorpay payment link will open after your order is saved. The restaurant receives confirmation after payment succeeds.',
+      cashfree: 'Cashfree payment link will open after your order is saved. The restaurant receives confirmation after payment succeeds.',
+      phonepe: 'PhonePe checkout will open after your order is saved. The restaurant receives confirmation after payment succeeds.',
+      network: 'Network / N-Genius checkout will open after your order is saved. The restaurant receives confirmation after payment succeeds.',
+    }
+
+    const checkoutLabel = String(gatewaySettings.display_label || '').trim() || label
 
     options.push({
       value: gateway,
       gateway,
       deliveryPaymentType: null,
-      label,
-      shortLabel: label,
-      text:
-        gateway === 'ziina'
-          ? 'Pay online using Ziina secure checkout.'
-          : `Pay online using ${label}.`,
+      label: checkoutLabel,
+      shortLabel: checkoutLabel,
+      text: textMap[gateway] || `Pay online using ${checkoutLabel}.`,
       statusText:
-        gateway === 'ziina'
-          ? 'Ziina checkout will open after your order is saved. The restaurant receives confirmation after payment succeeds.'
-          : 'Foundation mode: order is saved as unpaid/pending until secure checkout and webhook are connected.',
+        statusMap[gateway] ||
+        'Order is saved as unpaid/pending until secure checkout and webhook confirmation are completed.',
       isOnline: true,
+      isHighlighted: Boolean(gatewaySettings.highlighted),
+      sortOrder: getPublicGatewaySortOrder(gatewaySettings),
     })
   })
 
@@ -6095,12 +6766,12 @@ function normalizePublicPaymentGatewaySettings(value) {
       card_enabled: incoming.cod?.card_enabled !== false,
     },
     ziina: normalizePublicOnlineGateway(incoming.ziina, true),
-    stripe: normalizePublicOnlineGateway(incoming.stripe, false),
-    paypal: normalizePublicOnlineGateway(incoming.paypal, false),
-    network: normalizePublicOnlineGateway(incoming.network, false),
-    cashfree: normalizePublicOnlineGateway(incoming.cashfree, false),
-    razorpay: normalizePublicOnlineGateway(incoming.razorpay, false),
-    phonepe: normalizePublicOnlineGateway(incoming.phonepe, false),
+    stripe: normalizePublicOnlineGateway(incoming.stripe, true),
+    paypal: normalizePublicOnlineGateway(incoming.paypal, true),
+    network: normalizePublicOnlineGateway(incoming.network, true),
+    cashfree: normalizePublicOnlineGateway(incoming.cashfree, true),
+    razorpay: normalizePublicOnlineGateway(incoming.razorpay, true),
+    phonepe: normalizePublicOnlineGateway(incoming.phonepe, true),
   }
 }
 
@@ -6116,7 +6787,21 @@ function normalizePublicOnlineGateway(value, requiresConnection = false) {
     isConnected: requiresConnection ? isConnected : true,
     connection_status: connectionStatus,
     last_test_status: String(incoming.last_test_status || '').toLowerCase(),
+    display_label: String(incoming.display_label || '').trim(),
+    sort_order: Number.isFinite(Number(incoming.sort_order))
+      ? Number(incoming.sort_order)
+      : 50,
+    highlighted: Boolean(incoming.highlighted),
+    require_successful_test: Boolean(incoming.require_successful_test),
   }
+}
+
+function getPublicGatewaySortOrder(gatewayValue) {
+  const numericOrder = Number(gatewayValue?.sort_order)
+
+  if (Number.isFinite(numericOrder)) return numericOrder
+
+  return 50
 }
 
 function resolvePublicDeliveryPaymentChoice(value, options) {

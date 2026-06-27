@@ -910,6 +910,9 @@ function CashBankManagement({ restaurant }) {
                         : ''}
                     </span>
                     {transaction.description && <small>{transaction.description}</small>}
+                    {transaction.source_type && (
+                      <small>{formatLedgerSource(transaction.source_type)}</small>
+                    )}
                   </div>
                 </div>
 
@@ -968,6 +971,13 @@ function formatAccountType(type) {
   if (type === 'online_gateway') return 'Online gateway'
   if (type === 'wallet') return 'Wallet'
   return 'Other account'
+}
+
+function formatLedgerSource(sourceType) {
+  if (sourceType === 'day_closing_cash_bank_posting') return 'Posted from Day Closing'
+  if (sourceType === 'day_closing') return 'Day Closing'
+  if (sourceType === 'payment_reconciliation') return 'Payment Reconciliation'
+  return String(sourceType || 'System source')
 }
 
 function formatTransactionType(type) {

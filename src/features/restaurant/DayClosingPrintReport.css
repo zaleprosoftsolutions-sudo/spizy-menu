@@ -1,0 +1,15 @@
+.day-print-button {
+  border-color: rgba(147, 197, 253, 0.22) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.day-print-button svg {
+  color: #93c5fd;
+}
+
+@media print {
+  .day-closing-actions,
+  .day-save-actions {
+    display: none !important;
+  }
+}

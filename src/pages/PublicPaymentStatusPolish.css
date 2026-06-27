@@ -1,130 +1,20 @@
-.public-payment-choice-grid button small.online,
-.public-payment-choice-grid button small.offline {
-  display: block;
-  margin-top: 5px;
-  color: #d6d6d6;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.45;
+
+
+.gateway-buttons button.recommended {
+  border-color: rgba(34, 197, 94, 0.36);
+  background: rgba(34, 197, 94, 0.12);
 }
 
-.public-payment-choice-grid button small.online {
-  color: #fde68a;
-}
-
-.public-online-payment-note.cod {
-  color: #bbf7d0;
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.18);
-}
-
-.public-payment-status-chip {
-  border-radius: 999px;
-  padding: 6px 9px;
-  color: #f5f5f5;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-weight: 1000;
-}
-
-.public-payment-status-chip.paid {
-  color: #052e16;
-  background: linear-gradient(135deg, #86efac, #22c55e);
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
-.public-payment-status-chip.cod,
-.public-payment-status-chip.online,
-.public-payment-status-chip.pending,
-.public-payment-status-chip.unpaid {
-  color: #fde68a;
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.22);
-}
-
-.public-payment-status-chip.failed {
-  color: #fecaca;
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.2);
-}
-
-.public-payment-status-chip.refunded {
-  color: #bae6fd;
-  background: rgba(56, 189, 248, 0.1);
-  border-color: rgba(56, 189, 248, 0.18);
-}
-
-.public-payment-status-note,
-.public-success-payment-status {
-  margin-top: 10px;
-  padding: 11px 12px;
-  border-radius: 16px;
-  color: #d6d6d6;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.public-payment-status-note.cod,
-.public-success-payment-status.cod {
-  color: #bbf7d0;
-  background: rgba(34, 197, 94, 0.09);
-  border-color: rgba(34, 197, 94, 0.16);
-}
-
-.public-payment-status-note.online,
-.public-success-payment-status.online,
-.public-success-payment-status.pending_online,
-.public-success-payment-status.collection_pending {
-  color: #fde68a;
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.18);
-}
-
-.public-payment-status-note.failed,
-.public-success-payment-status.failed {
-  color: #fecaca;
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.18);
-}
-
-.public-success-payment-status {
-  display: grid;
-  gap: 4px;
-  text-align: left;
-}
-
-.public-success-payment-status span {
-  color: inherit;
-  opacity: 0.75;
-  font-size: 11px;
-  font-weight: 1000;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.public-success-payment-status strong {
-  color: inherit;
-  font-size: 14px;
-}
-
-.public-success-payment-status small {
-  color: inherit;
-  opacity: 0.92;
-  line-height: 1.45;
-}
-
-
-.public-success-action-link {
-  min-height: 46px;
-  border-radius: 999px;
-  padding: 0 18px;
+.public-payment-recommended {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #1b0c02;
-  background: linear-gradient(135deg, var(--gold), var(--orange));
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #052e16;
+  background: #86efac;
+  font-size: 10px;
   font-weight: 1000;
-  text-decoration: none;
+  line-height: 1;
 }

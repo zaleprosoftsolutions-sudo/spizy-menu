@@ -1,67 +1,64 @@
-# Spizy Menu — Gateway Connection Test + Activation Safety
+# Spizy Menu — Day Closing to Cash & Bank Posting
 
-This package continues the restaurant-owned gateway architecture.
+This package connects the Day Closing payment snapshot to the Cash & Bank ledger.
 
-Important payment rule:
-- Mamo Pay is for Spizy/Zalepro collecting restaurant subscription fees.
-- Ziina/Stripe/Razorpay/etc. are for each restaurant collecting payments from its own customers.
-- Spizy only provides the SaaS platform and must not use a shared Spizy/Zalepro merchant account for restaurant customer payments.
+## Included
 
-## What changed
+- `src/features/restaurant/DayClosingManagement.jsx`
+- `src/features/restaurant/DayClosingPaymentSnapshot.css`
+- `src/features/restaurant/CashBankManagement.jsx`
+- `supabase/sql/20260628_day_closing_cash_bank_posting.sql`
+- `supabase/functions/post-day-closing-to-cash-bank/index.ts`
 
-1. Restaurant Settings now shows a Ziina connection status panel.
-2. Restaurant owners can click **Test Ziina connection** after saving their own Ziina token.
-3. The test is performed by a protected Supabase Edge Function.
-4. The public menu will hide Ziina checkout if Ziina is enabled but the restaurant has not saved backend credentials yet.
-5. The credential table now stores public-safe test metadata: last tested time, status, and message.
-6. The save credentials function updates public-safe `payment_gateway_settings.ziina.connection_status` without exposing secrets.
+## What it adds
 
-## Included files
-
-```text
-src/pages/PublicMenuPage.jsx
-src/features/restaurant/SettingsManagement.jsx
-src/features/restaurant/SettingsManagement.css
-supabase/sql/20260627_gateway_connection_tests.sql
-supabase/functions/save-restaurant-gateway-credentials/index.ts
-supabase/functions/test-restaurant-gateway-connection/index.ts
-README.md
-```
+1. **Post to Cash & Bank** button inside Day Closing.
+2. Duplicate posting protection per restaurant/date.
+3. Posts ledger entries for:
+   - cash + COD collections
+   - card machine collections
+   - online gateway collections
+   - refund adjustments
+   - cash surplus/shortage adjustment
+4. Auto-creates default Cash & Bank accounts if missing:
+   - Main Cash Drawer
+   - Card Machine Settlement
+   - Online Gateway Clearing
+5. Cash & Bank ledger now shows entries as “Posted from Day Closing”.
+6. Adds SQL-safe source/reference fields to account transactions.
+7. Uses `rm.role::text` in policies to avoid enum empty-string errors.
 
 ## Install
 
 From your project root:
 
 ```bash
-unzip -o ~/Downloads/spizy_gateway_connection_tests.zip -d .
+unzip -o ~/Downloads/spizy_day_closing_cash_bank_posting.zip -d .
 ```
 
-## Supabase SQL
+## Run SQL
 
-Run this SQL after unzip:
+Run this in Supabase SQL editor:
 
 ```text
-supabase/sql/20260627_gateway_connection_tests.sql
+supabase/sql/20260628_day_closing_cash_bank_posting.sql
 ```
 
-## Deploy functions
+## Deploy Edge Function
 
 ```bash
-supabase functions deploy save-restaurant-gateway-credentials
-supabase functions deploy test-restaurant-gateway-connection
+supabase functions deploy post-day-closing-to-cash-bank
 ```
 
-Keep your existing function deployments too:
+## Usage flow
 
-```bash
-supabase functions deploy create-ziina-payment-intent
-supabase functions deploy ziina-payment-webhook
-```
+1. Open Day Closing.
+2. Choose the closing date.
+3. Click **Payment Snapshot**.
+4. Save Draft or Close Day.
+5. Click **Post to Cash & Bank**.
+6. Open Cash & Bank and confirm the ledger entries.
 
-## Required runtime secret
+## Important
 
-```bash
-supabase secrets set PUBLIC_SITE_URL="https://spizy.site"
-```
-
-Do **not** set a global `ZIINA_ACCESS_TOKEN` for restaurant customer orders. Each restaurant saves its own Ziina access token from Settings.
+This does not move money through gateways. It only posts accounting/ledger records inside Spizy. Customer gateway payments still belong to each restaurant’s own connected gateway account.

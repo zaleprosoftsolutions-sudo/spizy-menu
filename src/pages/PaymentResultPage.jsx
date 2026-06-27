@@ -31,6 +31,11 @@ function PaymentResultPage({ resultType = 'success' }) {
     searchParams.get('gateway_order_id') ||
     ''
   const gateway = searchParams.get('gateway') || ''
+  const paypalOrderId =
+    searchParams.get('token') ||
+    searchParams.get('paypal_order_id') ||
+    searchParams.get('gateway_order_id') ||
+    ''
   const customerSessionId = getStoredCustomerSessionId()
 
   const loadPaymentResult = useCallback(async () => {
@@ -38,6 +43,29 @@ function PaymentResultPage({ resultType = 'success' }) {
     setMessage('')
 
     const fallbackResult = getLocalPaymentResultSnapshot(orderReference)
+    let captureMessage = ''
+
+    if (resultType === 'success' && String(gateway || '').toLowerCase() === 'paypal' && (orderReference || paypalOrderId)) {
+      try {
+        const { data, error } = await supabase.functions.invoke('capture-paypal-checkout-order', {
+          body: {
+            restaurant_slug: restaurantSlug || null,
+            order_reference: orderReference || null,
+            paypal_order_id: paypalOrderId || null,
+            customer_session_id: customerSessionId || null,
+          },
+        })
+
+        if (error) throw error
+        if (data?.success) {
+          captureMessage = data.message || 'PayPal payment capture checked successfully.'
+        } else if (data?.message) {
+          captureMessage = data.message
+        }
+      } catch (captureError) {
+        captureMessage = captureError?.message || 'PayPal capture check could not be completed automatically. Refresh or contact the restaurant.'
+      }
+    }
 
     if (!restaurantSlug && !orderReference) {
       setPaymentResult(fallbackResult)
@@ -63,6 +91,7 @@ function PaymentResultPage({ resultType = 'success' }) {
 
       if (normalizedResult) {
         setPaymentResult(normalizedResult)
+        if (captureMessage) setMessage(captureMessage)
         setLoading(false)
         return
       }
@@ -70,8 +99,8 @@ function PaymentResultPage({ resultType = 'success' }) {
       setPaymentResult(fallbackResult)
       setMessage(
         fallbackResult
-          ? 'Showing saved payment details from this device. Run the included SQL if database lookup is not active yet.'
-          : 'No payment record found yet. The restaurant may still be waiting for gateway confirmation.',
+          ? `${captureMessage ? `${captureMessage} ` : ''}Showing saved payment details from this device. Run the included SQL if database lookup is not active yet.`
+          : captureMessage || 'No payment record found yet. The restaurant may still be waiting for gateway confirmation.',
       )
     } catch (error) {
       setPaymentResult(fallbackResult)
@@ -83,7 +112,7 @@ function PaymentResultPage({ resultType = 'success' }) {
     } finally {
       setLoading(false)
     }
-  }, [customerSessionId, orderReference, restaurantSlug])
+  }, [customerSessionId, gateway, orderReference, paypalOrderId, restaurantSlug, resultType])
 
   useEffect(() => {
     loadPaymentResult()

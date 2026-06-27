@@ -7,6 +7,7 @@ import {
   CreditCard,
   Download,
   FileText,
+  Printer,
   RefreshCw,
   Save,
   WalletCards,
@@ -14,6 +15,8 @@ import {
 import { useAppFeedback } from '../../components/AppFeedback'
 import { supabase } from '../../lib/supabaseClient'
 import './DayClosingManagement.css'
+import './DayClosingPaymentSnapshot.css'
+import './DayClosingPrintReport.css'
 
 const paymentLabels = {
   cash: 'Cash',
@@ -43,6 +46,10 @@ function DayClosingManagement({ restaurant }) {
   const [payments, setPayments] = useState([])
   const [expenses, setExpenses] = useState([])
   const [existingClosing, setExistingClosing] = useState(null)
+  const [paymentSnapshot, setPaymentSnapshot] = useState(null)
+  const [snapshotLoading, setSnapshotLoading] = useState(false)
+  const [cashBankPosting, setCashBankPosting] = useState(null)
+  const [postingCashBank, setPostingCashBank] = useState(false)
   const [form, setForm] = useState(defaultClosingForm)
 
   const currency = restaurant?.currency || 'AED'
@@ -54,8 +61,14 @@ function DayClosingManagement({ restaurant }) {
 
     const { startIso, endIso } = getDateRangeIso(selectedDate)
 
-    const [ordersResult, paymentsResult, expensesResult, closingResult] =
-      await Promise.all([
+    const [
+      ordersResult,
+      paymentsResult,
+      expensesResult,
+      closingResult,
+      paymentSnapshotResult,
+      cashBankPostingResult,
+    ] = await Promise.all([
         supabase
           .from('restaurant_orders')
           .select(
@@ -84,6 +97,18 @@ function DayClosingManagement({ restaurant }) {
           .order('created_at', { ascending: false }),
         supabase
           .from('restaurant_day_closings')
+          .select('*')
+          .eq('restaurant_id', restaurant.id)
+          .eq('closing_date', selectedDate)
+          .maybeSingle(),
+        supabase
+          .from('restaurant_day_closing_payment_snapshots')
+          .select('*')
+          .eq('restaurant_id', restaurant.id)
+          .eq('closing_date', selectedDate)
+          .maybeSingle(),
+        supabase
+          .from('restaurant_day_closing_cash_bank_postings')
           .select('*')
           .eq('restaurant_id', restaurant.id)
           .eq('closing_date', selectedDate)
@@ -122,10 +147,34 @@ function DayClosingManagement({ restaurant }) {
       })
     }
 
+    if (
+      paymentSnapshotResult.error &&
+      !['42P01', 'PGRST116'].includes(paymentSnapshotResult.error.code)
+    ) {
+      showToast({
+        type: 'error',
+        title: 'Payment snapshot loading failed',
+        message: paymentSnapshotResult.error.message,
+      })
+    }
+
+    if (
+      cashBankPostingResult.error &&
+      !['42P01', 'PGRST116'].includes(cashBankPostingResult.error.code)
+    ) {
+      showToast({
+        type: 'error',
+        title: 'Cash & Bank posting loading failed',
+        message: cashBankPostingResult.error.message,
+      })
+    }
+
     setOrders(ordersResult.data || [])
     setPayments(paymentsResult.data || [])
     setExpenses(expensesResult.data || [])
     setExistingClosing(closingResult.data || null)
+    setPaymentSnapshot(paymentSnapshotResult.data || null)
+    setCashBankPosting(cashBankPostingResult.data || null)
 
     if (closingResult.data) {
       setForm({
@@ -221,6 +270,98 @@ function DayClosingManagement({ restaurant }) {
     })
   }
 
+  const createPaymentSnapshot = async () => {
+    if (!restaurant?.id) return
+
+    setSnapshotLoading(true)
+
+    const { data, error } = await supabase.functions.invoke(
+      'create-day-closing-payment-snapshot',
+      {
+        body: {
+          restaurant_id: restaurant.id,
+          closing_date: selectedDate,
+        },
+      },
+    )
+
+    setSnapshotLoading(false)
+
+    if (error || data?.error) {
+      showToast({
+        type: 'error',
+        title: 'Payment snapshot failed',
+        message:
+          data?.error ||
+          error?.message ||
+          'Unable to create payment snapshot for this day.',
+      })
+      return
+    }
+
+    setPaymentSnapshot(data?.snapshot || null)
+
+    showToast({
+      type: 'success',
+      title: 'Payment snapshot updated',
+      message:
+        data?.message ||
+        'Collected, pending, refund and gateway totals are now updated for this day.',
+    })
+  }
+
+  const postClosingToCashBank = async () => {
+    if (!restaurant?.id) return
+
+    if (!paymentSnapshot?.id) {
+      showToast({
+        type: 'warning',
+        title: 'Payment snapshot required',
+        message: 'Create the payment snapshot first, then post the closing collection to Cash & Bank.',
+      })
+      return
+    }
+
+    setPostingCashBank(true)
+
+    const { data, error } = await supabase.functions.invoke(
+      'post-day-closing-to-cash-bank',
+      {
+        body: {
+          restaurant_id: restaurant.id,
+          closing_date: selectedDate,
+        },
+      },
+    )
+
+    setPostingCashBank(false)
+
+    if (error || data?.error) {
+      showToast({
+        type: 'error',
+        title: 'Cash & Bank posting failed',
+        message:
+          data?.error ||
+          error?.message ||
+          'Unable to post this day closing to Cash & Bank.',
+      })
+      return
+    }
+
+    setCashBankPosting(data?.posting || null)
+
+    if (data?.snapshot) setPaymentSnapshot(data.snapshot)
+    if (data?.closing) setExistingClosing(data.closing)
+
+    showToast({
+      type: data?.already_posted ? 'info' : 'success',
+      title: data?.already_posted ? 'Already posted' : 'Posted to Cash & Bank',
+      message:
+        data?.message ||
+        'Daily cash, card, online gateway and refund entries are now linked to Cash & Bank.',
+    })
+  }
+
   const exportCsv = () => {
     const lines = [
       ['Metric', 'Amount'],
@@ -239,6 +380,13 @@ function DayClosingManagement({ restaurant }) {
       ['UPI total', summary.upiTotal.toFixed(2)],
       ['COD total', summary.codTotal.toFixed(2)],
       ['Expenses', summary.totalExpenses.toFixed(2)],
+      ['Snapshot collected total', Number(paymentSnapshot?.collected_total || 0).toFixed(2)],
+      ['Snapshot COD pending', Number(paymentSnapshot?.cod_pending || 0).toFixed(2)],
+      ['Snapshot online pending', Number(paymentSnapshot?.online_pending || 0).toFixed(2)],
+      ['Snapshot refunds', Number(paymentSnapshot?.refund_total || 0).toFixed(2)],
+      ['Snapshot net collected', Number(paymentSnapshot?.net_collected || 0).toFixed(2)],
+      ['Cash & Bank posted', cashBankPosting?.status === 'posted' ? 'Yes' : 'No'],
+      ['Cash & Bank net posted', Number(cashBankPosting?.net_posted || 0).toFixed(2)],
     ]
 
     const csv = lines
@@ -252,6 +400,37 @@ function DayClosingManagement({ restaurant }) {
     anchor.download = `spizy-day-closing-${selectedDate}.csv`
     anchor.click()
     URL.revokeObjectURL(url)
+  }
+
+  const printZReport = () => {
+    const reportWindow = window.open('', '_blank', 'width=460,height=780')
+
+    if (!reportWindow) {
+      showToast({
+        type: 'error',
+        title: 'Print blocked',
+        message: 'Allow popups for this site and try printing the Z report again.',
+      })
+      return
+    }
+
+    reportWindow.document.write(
+      buildZReportHtml({
+        restaurant,
+        selectedDate,
+        currency,
+        summary,
+        paymentSnapshot,
+        existingClosing,
+        cashBankPosting,
+        form,
+        orders,
+        payments,
+        expenses,
+      }),
+    )
+    reportWindow.document.close()
+    reportWindow.focus()
   }
 
   if (!restaurant?.id) {
@@ -294,6 +473,30 @@ function DayClosingManagement({ restaurant }) {
             <RefreshCw size={17} />
             Refresh
           </button>
+
+          <button
+            type="button"
+            className="secondary-button day-snapshot-button"
+            onClick={createPaymentSnapshot}
+            disabled={loading || snapshotLoading}
+          >
+            <WalletCards size={17} />
+            {snapshotLoading ? 'Updating snapshot...' : 'Payment Snapshot'}
+          </button>
+
+          <button
+            type="button"
+            className="secondary-button day-cash-bank-post-button"
+            onClick={postClosingToCashBank}
+            disabled={loading || postingCashBank || !paymentSnapshot?.id}
+          >
+            <WalletCards size={17} />
+            {postingCashBank
+              ? 'Posting...'
+              : cashBankPosting?.status === 'posted'
+                ? 'Posted to Cash & Bank'
+                : 'Post to Cash & Bank'}
+          </button>
         </div>
       </div>
 
@@ -312,6 +515,23 @@ function DayClosingManagement({ restaurant }) {
             ? `Closed ${formatDateTime(existingClosing.closed_at)}`
             : 'Save a draft during the day or close after counting cash.'}
         </span>
+      </div>
+
+      <div className={`day-cash-bank-posting-strip ${cashBankPosting?.status === 'posted' ? 'posted' : ''}`}>
+        <div>
+          <strong>{cashBankPosting?.status === 'posted' ? 'Cash & Bank posted' : 'Cash & Bank not posted'}</strong>
+          <span>
+            {cashBankPosting?.posted_at
+              ? `Posted ${formatDateTime(cashBankPosting.posted_at)}. Duplicate posting is blocked for this closing date.`
+              : paymentSnapshot
+                ? 'Ready to post this day’s cash, card, online and refund entries to Cash & Bank.'
+                : 'Create a payment snapshot first to enable Cash & Bank posting.'}
+          </span>
+        </div>
+
+        {cashBankPosting?.net_posted !== undefined && (
+          <strong>{formatMoney(currency, cashBankPosting.net_posted)}</strong>
+        )}
       </div>
 
       <div className="day-closing-summary-grid">
@@ -344,6 +564,85 @@ function DayClosingManagement({ restaurant }) {
           )}
           note="Non-cash collections"
         />
+      </div>
+
+      <div className="day-payment-snapshot-panel">
+        <div className="day-payment-snapshot-head">
+          <div>
+            <p className="pricing-label">Payment Snapshot</p>
+            <h3>Collections, pending payments & refunds</h3>
+            <span>
+              Create a payment snapshot before closing the day to lock COD, online gateway, refund and net collection totals.
+            </span>
+          </div>
+
+          <div className="day-payment-snapshot-status">
+            <strong>{paymentSnapshot ? 'Snapshot ready' : 'No snapshot yet'}</strong>
+            <span>{getSnapshotUpdatedLabel(paymentSnapshot)}</span>
+          </div>
+        </div>
+
+        {paymentSnapshot ? (
+          <>
+            <div className="day-payment-snapshot-grid">
+              <DaySnapshotCard
+                label="Collected"
+                value={formatMoney(currency, paymentSnapshot.collected_total)}
+                note={`${Number(paymentSnapshot.paid_order_count || 0)} paid order${Number(paymentSnapshot.paid_order_count || 0) === 1 ? '' : 's'}`}
+                strong
+              />
+              <DaySnapshotCard
+                label="Net collected"
+                value={formatMoney(currency, paymentSnapshot.net_collected)}
+                note="Collected minus refunds"
+                strong
+              />
+              <DaySnapshotCard
+                label="COD pending"
+                value={formatMoney(currency, paymentSnapshot.cod_pending)}
+                note="Cash/card collection still pending"
+                warning={Number(paymentSnapshot.cod_pending || 0) > 0}
+              />
+              <DaySnapshotCard
+                label="Online pending"
+                value={formatMoney(currency, paymentSnapshot.online_pending)}
+                note="Gateway confirmation pending"
+                warning={Number(paymentSnapshot.online_pending || 0) > 0}
+              />
+              <DaySnapshotCard
+                label="Refunds"
+                value={formatMoney(currency, paymentSnapshot.refund_total)}
+                note={`${Number(paymentSnapshot.refund_count || 0)} refund record${Number(paymentSnapshot.refund_count || 0) === 1 ? '' : 's'}`}
+                warning={Number(paymentSnapshot.refund_total || 0) > 0}
+              />
+            </div>
+
+            <div className="day-payment-breakdown-grid">
+              <DaySnapshotBreakdown
+                title="Gateway / method breakdown"
+                entries={getSnapshotBreakdownEntries(paymentSnapshot.gateway_breakdown)}
+                currency={currency}
+                emptyText="No paid gateway collections in this snapshot."
+              />
+              <DaySnapshotBreakdown
+                title="Issues needing attention"
+                entries={getSnapshotBreakdownEntries(paymentSnapshot.issue_breakdown)}
+                currency={currency}
+                emptyText="No pending payment issues found."
+              />
+            </div>
+          </>
+        ) : (
+          <div className="day-payment-snapshot-empty">
+            <WalletCards size={20} />
+            <div>
+              <strong>Create today’s payment snapshot</strong>
+              <span>
+                Use the Payment Snapshot button before Save Draft or Close Day to compare collected, pending, refunded and net payment totals.
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="day-closing-layout">
@@ -443,6 +742,16 @@ function DayClosingManagement({ restaurant }) {
             >
               <Download size={17} />
               Export CSV
+            </button>
+
+            <button
+              type="button"
+              className="secondary-button day-print-button"
+              onClick={printZReport}
+              disabled={loading}
+            >
+              <Printer size={17} />
+              Print Z Report
             </button>
 
             <button
@@ -562,6 +871,38 @@ function DayMetricCard({ icon, label, value, note, strong = false, warning = fal
       <strong>{value}</strong>
       <small>{note}</small>
     </article>
+  )
+}
+
+function DaySnapshotCard({ label, value, note, strong = false, warning = false }) {
+  return (
+    <article className={`day-snapshot-card ${strong ? 'strong' : ''} ${warning ? 'warning' : ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{note}</small>
+    </article>
+  )
+}
+
+function DaySnapshotBreakdown({ title, entries, currency, emptyText }) {
+  return (
+    <div className="day-snapshot-breakdown">
+      <h4>{title}</h4>
+
+      {entries.length === 0 ? (
+        <div className="day-snapshot-breakdown-empty">{emptyText}</div>
+      ) : (
+        entries.map((entry) => (
+          <div className="day-snapshot-breakdown-row" key={entry.key}>
+            <div>
+              <strong>{formatSnapshotKey(entry.key)}</strong>
+              <span>{entry.count} record{entry.count === 1 ? '' : 's'}</span>
+            </div>
+            <strong>{formatMoney(currency, entry.amount)}</strong>
+          </div>
+        ))
+      )}
+    </div>
   )
 }
 
@@ -690,6 +1031,271 @@ function buildDayClosingSummary({ orders, payments, expenses, form }) {
     totalCollections,
     paymentSplits,
   }
+}
+
+function getSnapshotBreakdownEntries(value) {
+  if (!value || typeof value !== 'object') return []
+
+  return Object.entries(value)
+    .map(([key, row]) => ({
+      key,
+      count: Number(row?.count || 0),
+      amount: Number(row?.amount || 0),
+    }))
+    .filter((row) => row.count > 0 || row.amount > 0)
+    .sort((a, b) => b.amount - a.amount)
+}
+
+function formatSnapshotKey(value) {
+  return String(value || 'Unknown')
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function getSnapshotUpdatedLabel(snapshot) {
+  if (!snapshot?.updated_at && !snapshot?.created_at) {
+    return 'Create one before closing the day'
+  }
+
+  return `Updated ${formatDateTime(snapshot.updated_at || snapshot.created_at)}`
+}
+
+
+function buildZReportHtml({
+  restaurant,
+  selectedDate,
+  currency,
+  summary,
+  paymentSnapshot,
+  existingClosing,
+  cashBankPosting,
+  form,
+  orders,
+  payments,
+  expenses,
+}) {
+  const gatewayRows = getSnapshotBreakdownEntries(paymentSnapshot?.gateway_breakdown)
+  const issueRows = getSnapshotBreakdownEntries(paymentSnapshot?.issue_breakdown)
+  const statusLabel = existingClosing?.status === 'closed'
+    ? 'Closed'
+    : existingClosing?.status === 'draft'
+      ? 'Draft'
+      : 'Open'
+  const snapshotLabel = paymentSnapshot
+    ? getSnapshotUpdatedLabel(paymentSnapshot)
+    : 'No payment snapshot created'
+
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <title>Spizy Z Report - ${escapeHtml(selectedDate)}</title>
+        <style>
+          body {
+            width: 320px;
+            margin: 0 auto;
+            padding: 14px;
+            font-family: Arial, sans-serif;
+            color: #111;
+            background: #fff;
+          }
+
+          h1, h2, p {
+            margin: 0;
+            text-align: center;
+          }
+
+          h1 {
+            font-size: 18px;
+            letter-spacing: -0.02em;
+          }
+
+          h2 {
+            margin-top: 4px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+          }
+
+          .muted {
+            color: #555;
+            font-size: 11px;
+            line-height: 1.35;
+          }
+
+          .section {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed #999;
+          }
+
+          .section-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 7px;
+          }
+
+          .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 4px 0;
+            font-size: 12px;
+          }
+
+          .row strong {
+            text-align: right;
+            white-space: nowrap;
+          }
+
+          .grand {
+            margin-top: 6px;
+            padding-top: 8px;
+            border-top: 2px solid #111;
+            font-size: 14px;
+            font-weight: 800;
+          }
+
+          .note {
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px dashed #999;
+            font-size: 11px;
+            white-space: pre-wrap;
+          }
+
+          .actions {
+            margin-top: 16px;
+            display: grid;
+            gap: 8px;
+          }
+
+          button {
+            width: 100%;
+            padding: 10px;
+            border: 0;
+            border-radius: 8px;
+            color: #fff;
+            background: #111;
+            font-weight: 800;
+            cursor: pointer;
+          }
+
+          @media print {
+            body {
+              width: 72mm;
+              padding: 4mm;
+            }
+
+            .actions {
+              display: none;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <h1>${escapeHtml(restaurant?.name || 'Restaurant')}</h1>
+        <p class="muted">${escapeHtml(restaurant?.address || '')}</p>
+        <h2>Z Report / Day Closing</h2>
+        <p class="muted">Date: ${escapeHtml(selectedDate)} • Status: ${escapeHtml(statusLabel)}</p>
+        <p class="muted">Printed: ${escapeHtml(formatDateTime(new Date().toISOString()))}</p>
+
+        <div class="section">
+          <div class="section-title">Sales Summary</div>
+          ${printRow('Total orders', summary.totalOrders)}
+          ${printRow('Total sales', formatMoney(currency, summary.totalSales))}
+          ${printRow('Total collections', formatMoney(currency, summary.totalCollections))}
+          ${printRow('Total expenses', formatMoney(currency, summary.totalExpenses))}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Cash Drawer</div>
+          ${printRow('Opening cash', formatMoney(currency, summary.openingCash))}
+          ${printRow('Cash sales', formatMoney(currency, summary.cashSales))}
+          ${printRow('Cash collections', formatMoney(currency, summary.cashCollections))}
+          ${printRow('Cash expenses', `- ${formatMoney(currency, summary.cashExpenses)}`)}
+          ${printRow('Expected cash', formatMoney(currency, summary.expectedCash))}
+          ${printRow('Counted cash', formatMoney(currency, summary.countedCash))}
+          ${printRow('Difference', formatMoney(currency, summary.cashDifference), true)}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Payment Snapshot</div>
+          <p class="muted" style="text-align:left;margin-bottom:6px;">${escapeHtml(snapshotLabel)}</p>
+          ${printRow('Collected', formatMoney(currency, paymentSnapshot?.collected_total || 0))}
+          ${printRow('Net collected', formatMoney(currency, paymentSnapshot?.net_collected || 0))}
+          ${printRow('COD pending', formatMoney(currency, paymentSnapshot?.cod_pending || 0))}
+          ${printRow('Online pending', formatMoney(currency, paymentSnapshot?.online_pending || 0))}
+          ${printRow('Refunds', formatMoney(currency, paymentSnapshot?.refund_total || 0))}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Collection Split</div>
+          ${summary.paymentSplits.length ? summary.paymentSplits.map((split) => printRow(paymentLabels[split.method] || formatSnapshotKey(split.method), formatMoney(currency, split.amount))).join('') : '<p class="muted" style="text-align:left;">No paid collections found.</p>'}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Gateway Breakdown</div>
+          ${gatewayRows.length ? gatewayRows.map((row) => printRow(`${formatSnapshotKey(row.key)} (${row.count})`, formatMoney(currency, row.amount))).join('') : '<p class="muted" style="text-align:left;">No gateway breakdown available.</p>'}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Issues Needing Attention</div>
+          ${issueRows.length ? issueRows.map((row) => printRow(`${formatSnapshotKey(row.key)} (${row.count})`, formatMoney(currency, row.amount))).join('') : '<p class="muted" style="text-align:left;">No payment issues found.</p>'}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Record Counts</div>
+          ${printRow('Orders loaded', orders.length)}
+          ${printRow('Customer payments', payments.length)}
+          ${printRow('Expenses', expenses.length)}
+          ${printRow('Card settlement', formatMoney(currency, summary.cardSettlement))}
+          ${printRow('Online settlement', formatMoney(currency, summary.onlineSettlement))}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Cash & Bank Posting</div>
+          ${printRow('Posting status', cashBankPosting?.status === 'posted' ? 'Posted' : 'Not posted')}
+          ${printRow('Net posted', formatMoney(currency, cashBankPosting?.net_posted || 0))}
+          ${cashBankPosting?.posted_at ? printRow('Posted at', formatDateTime(cashBankPosting.posted_at)) : ''}
+        </div>
+
+        ${form.notes?.trim() ? `<div class="note"><strong>Manager notes</strong><br/>${escapeHtml(form.notes.trim())}</div>` : ''}
+
+        <div class="section grand">
+          ${printRow('Net closing amount', formatMoney(currency, paymentSnapshot?.net_collected || summary.totalCollections))}
+        </div>
+
+        <p class="muted" style="margin-top:12px;">Generated by Spizy Menu</p>
+
+        <div class="actions">
+          <button onclick="window.print()">Print Z Report</button>
+          <button onclick="window.close()">Close</button>
+        </div>
+      </body>
+    </html>
+  `
+}
+
+function printRow(label, value, grand = false) {
+  return `
+    <div class="row ${grand ? 'grand' : ''}">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </div>
+  `
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
 }
 
 function sumBy(items, key) {

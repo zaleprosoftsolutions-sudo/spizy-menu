@@ -71,8 +71,13 @@ function OrdersManagement({ restaurant }) {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [addItemOrder, setAddItemOrder] = useState(null)
   const [completeOrder, setCompleteOrder] = useState(null)
+  const [refundOrder, setRefundOrder] = useState(null)
   const [completePaymentMethod, setCompletePaymentMethod] = useState('cash')
   const [completingOrder, setCompletingOrder] = useState(false)
+  const [refundingOrder, setRefundingOrder] = useState(false)
+  const [refundForm, setRefundForm] = useState({ amount: '', reason: '', mode: 'manual_record' })
+  const [postingFinanceSnapshot, setPostingFinanceSnapshot] = useState(false)
+  const [financePostMessage, setFinancePostMessage] = useState('')
   const [addingItem, setAddingItem] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [adminPopup, setAdminPopup] = useState(null)
@@ -167,6 +172,11 @@ function OrdersManagement({ restaurant }) {
     })
 
     setCompleteOrder((current) => {
+      if (!current?.id) return current
+      return ordersWithItems.find((order) => order.id === current.id) || current
+    })
+
+    setRefundOrder((current) => {
       if (!current?.id) return current
       return ordersWithItems.find((order) => order.id === current.id) || current
     })
@@ -360,6 +370,11 @@ function OrdersManagement({ restaurant }) {
     }
   }, [orders])
 
+  const reconciliation = useMemo(
+    () => buildPaymentReconciliationSummary(orders, restaurant?.currency || 'AED'),
+    [orders, restaurant?.currency],
+  )
+
   const replaceOrderInState = (updatedOrder) => {
     setOrders((current) => {
       const exists = current.some((order) => order.id === updatedOrder.id)
@@ -382,6 +397,10 @@ function OrdersManagement({ restaurant }) {
     )
 
     setCompleteOrder((current) =>
+      current?.id === updatedOrder.id ? updatedOrder : current,
+    )
+
+    setRefundOrder((current) =>
       current?.id === updatedOrder.id ? updatedOrder : current,
     )
   }
@@ -492,6 +511,92 @@ function OrdersManagement({ restaurant }) {
       payment_status: 'unpaid',
       payment_method: getDefaultPaymentMethodForOrder(order),
     })
+  }
+
+  const openRefundModal = (order) => {
+    if (!canRecordRefund(order)) return
+
+    const alreadyRefunded = Number(order.refunded_amount || 0)
+    const remainingAmount = Math.max(Number(order.total_amount || 0) - alreadyRefunded, 0)
+
+    setRefundOrder(order)
+    setRefundForm({
+      amount: remainingAmount > 0 ? remainingAmount.toFixed(2) : Number(order.total_amount || 0).toFixed(2),
+      reason: '',
+      mode: 'manual_record',
+    })
+  }
+
+  const recordRefund = async () => {
+    if (!refundOrder?.id || refundingOrder) return
+
+    const refundAmount = Number(refundForm.amount || 0)
+
+    if (!Number.isFinite(refundAmount) || refundAmount <= 0) {
+      return
+    }
+
+    setRefundingOrder(true)
+
+    const { data, error } = await supabase.functions.invoke('record-payment-refund', {
+      body: {
+        order_id: refundOrder.id,
+        refund_amount: refundAmount,
+        reason: refundForm.reason || null,
+        mode: refundForm.mode || 'manual_record',
+      },
+    })
+
+    setRefundingOrder(false)
+
+    if (error || data?.success === false) {
+      return
+    }
+
+    const updatedOrder = {
+      ...refundOrder,
+      ...(data?.updated_order || {}),
+      items: refundOrder.items || [],
+    }
+
+    replaceOrderInState(updatedOrder)
+    setRefundOrder(null)
+    setRefundForm({ amount: '', reason: '', mode: 'manual_record' })
+  }
+
+  const postPaymentReconciliationToFinance = async () => {
+    if (!restaurant?.id || !reconciliation || postingFinanceSnapshot) return
+
+    setPostingFinanceSnapshot(true)
+    setFinancePostMessage('')
+
+    const { data, error } = await supabase.functions.invoke(
+      'post-payment-reconciliation-finance-snapshot',
+      {
+        body: {
+          restaurant_id: restaurant.id,
+          currency: reconciliation.currency,
+          totals: reconciliation.totals,
+          gateway_rows: reconciliation.gatewayRows,
+          warning_rows: reconciliation.warningRows,
+          source: 'orders_reconciliation',
+        },
+      },
+    )
+
+    setPostingFinanceSnapshot(false)
+
+    if (error || data?.success === false) {
+      setFinancePostMessage(
+        data?.message || error?.message || 'Unable to post finance snapshot.',
+      )
+      return
+    }
+
+    setFinancePostMessage(
+      data?.message ||
+        'Finance collection snapshot posted for Cash & Bank / Day Closing review.',
+    )
   }
 
   const openAddItemModal = (order) => {
@@ -666,6 +771,13 @@ function OrdersManagement({ restaurant }) {
         />
       </div>
 
+      <PaymentReconciliationPanel
+        reconciliation={reconciliation}
+        postingFinance={postingFinanceSnapshot}
+        financePostMessage={financePostMessage}
+        onPostFinanceSnapshot={postPaymentReconciliationToFinance}
+      />
+
       <div className="orders-toolbar">
         <div className="orders-search">
           <Search size={16} />
@@ -811,7 +923,19 @@ function OrdersManagement({ restaurant }) {
                         </button>
                       )}
 
-                      {canMarkPaymentFailedCancelled(order) && (
+                      {canRecordRefund(order) && (
+                        <button
+                          type="button"
+                          className="tiny-button refund"
+                          onClick={() => openRefundModal(order)}
+                          disabled={updatingOrderId === order.id}
+                        >
+                          <ReceiptText size={15} />
+                          Refund
+                        </button>
+                      )}
+
+          {canMarkPaymentFailedCancelled(order) && (
                         <button
                           type="button"
                           className="tiny-button danger"
@@ -854,6 +978,7 @@ function OrdersManagement({ restaurant }) {
           onAddItem={openAddItemModal}
           onMarkPaid={markOrderPaid}
           onMarkFailedCancelled={markOrderFailedCancelled}
+          onRefund={openRefundModal}
         />
       )}
 
@@ -901,6 +1026,19 @@ function OrdersManagement({ restaurant }) {
         />
       )}
 
+      {refundOrder && (
+        <RefundOrderModal
+          order={refundOrder}
+          refundForm={refundForm}
+          refunding={refundingOrder}
+          onChange={(key, value) =>
+            setRefundForm((current) => ({ ...current, [key]: value }))
+          }
+          onClose={() => setRefundOrder(null)}
+          onRecord={recordRefund}
+        />
+      )}
+
       {adminPopup && (
         <AdminOrderPopup
           popup={adminPopup}
@@ -916,6 +1054,150 @@ function OrdersManagement({ restaurant }) {
 function MiniOrderStat({ label, value }) {
   return (
     <div className="orders-stat-card">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  )
+}
+
+function PaymentReconciliationPanel({
+  reconciliation,
+  postingFinance,
+  financePostMessage,
+  onPostFinanceSnapshot,
+}) {
+  if (!reconciliation) return null
+
+  const { totals, gatewayRows, warningRows, currency } = reconciliation
+
+  return (
+    <section className="payment-reconciliation-card">
+      <div className="payment-reconciliation-head">
+        <div>
+          <p className="section-kicker">Payment reconciliation</p>
+          <h3>Collection summary</h3>
+          <span>
+            Track collected, pending, COD, gateway, refund and net payable totals
+            before closing finance.
+          </span>
+        </div>
+
+        <div className="reconciliation-head-actions">
+          <div className="reconciliation-net-card">
+            <span>Net after refunds</span>
+            <strong>{formatMoney(totals.netCollected, currency)}</strong>
+          </div>
+
+          <button
+            type="button"
+            className="reconciliation-post-button"
+            onClick={onPostFinanceSnapshot}
+            disabled={postingFinance}
+          >
+            <ReceiptText size={16} />
+            {postingFinance ? 'Posting...' : 'Post finance snapshot'}
+          </button>
+        </div>
+      </div>
+
+      {financePostMessage && (
+        <div className="reconciliation-post-message">
+          {financePostMessage}
+        </div>
+      )}
+
+      <div className="reconciliation-metrics-grid">
+        <ReconciliationMetric
+          label="Collected"
+          value={formatMoney(totals.collected, currency)}
+          tone="paid"
+        />
+        <ReconciliationMetric
+          label="Pending collection"
+          value={formatMoney(totals.pending, currency)}
+          tone="pending"
+        />
+        <ReconciliationMetric
+          label="COD pending"
+          value={formatMoney(totals.codPending, currency)}
+          tone="cod"
+        />
+        <ReconciliationMetric
+          label="Online pending"
+          value={formatMoney(totals.onlinePending, currency)}
+          tone="online"
+        />
+        <ReconciliationMetric
+          label="Refunded / adjusted"
+          value={formatMoney(totals.refunded, currency)}
+          tone="refund"
+        />
+        <ReconciliationMetric
+          label="Cancelled unpaid"
+          value={formatMoney(totals.cancelledUnpaid, currency)}
+          tone="cancelled"
+        />
+      </div>
+
+      <div className="reconciliation-breakdown-grid">
+        <div className="reconciliation-breakdown-box">
+          <div className="reconciliation-box-title">
+            <strong>Gateway / collection breakdown</strong>
+            <span>{gatewayRows.length} method{gatewayRows.length === 1 ? '' : 's'}</span>
+          </div>
+
+          {gatewayRows.length === 0 ? (
+            <p className="reconciliation-empty">No payment collections yet.</p>
+          ) : (
+            <div className="reconciliation-gateway-list">
+              {gatewayRows.map((row) => (
+                <div className="reconciliation-gateway-row" key={row.key}>
+                  <div>
+                    <strong>{row.label}</strong>
+                    <span>
+                      {row.paidCount} paid • {row.pendingCount} pending • {row.refundCount} refund records
+                    </span>
+                  </div>
+                  <div>
+                    <strong>{formatMoney(row.collected, currency)}</strong>
+                    <span>Pending {formatMoney(row.pending, currency)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="reconciliation-breakdown-box warnings">
+          <div className="reconciliation-box-title">
+            <strong>Needs attention</strong>
+            <span>{warningRows.length} issue{warningRows.length === 1 ? '' : 's'}</span>
+          </div>
+
+          {warningRows.length === 0 ? (
+            <p className="reconciliation-empty">No urgent payment issues found.</p>
+          ) : (
+            <div className="reconciliation-warning-list">
+              {warningRows.slice(0, 6).map((row) => (
+                <div className="reconciliation-warning-row" key={row.id}>
+                  <div>
+                    <strong>{row.orderCode}</strong>
+                    <span>{row.reason}</span>
+                  </div>
+                  <strong>{formatMoney(row.amount, currency)}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ReconciliationMetric({ label, value, tone = '' }) {
+  return (
+    <div className={`reconciliation-metric ${tone}`}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -952,6 +1234,7 @@ function OrderDetailsModal({
   onAddItem,
   onMarkPaid,
   onMarkFailedCancelled,
+  onRefund,
 }) {
   return (
     <div className="orders-modal-overlay" onClick={onClose}>
@@ -1091,6 +1374,18 @@ function OrderDetailsModal({
             >
               <CheckCircle2 size={16} />
               Mark Paid
+            </button>
+          )}
+
+          {canRecordRefund(order) && (
+            <button
+              type="button"
+              className="refund"
+              onClick={() => onRefund(order)}
+              disabled={updatingOrderId === order.id}
+            >
+              <ReceiptText size={16} />
+              Refund / Adjustment
             </button>
           )}
 
@@ -1448,6 +1743,122 @@ function CompleteOrderModal({
   )
 }
 
+
+function RefundOrderModal({
+  order,
+  refundForm,
+  refunding,
+  onChange,
+  onClose,
+  onRecord,
+}) {
+  const totalAmount = Number(order.total_amount || 0)
+  const alreadyRefunded = Number(order.refunded_amount || 0)
+  const remainingAmount = Math.max(totalAmount - alreadyRefunded, 0)
+  const requestedAmount = Number(refundForm.amount || 0)
+  const canRecord = requestedAmount > 0 && requestedAmount <= Math.max(remainingAmount, totalAmount)
+
+  return (
+    <div className="orders-modal-overlay" onClick={onClose}>
+      <div
+        className="orders-modal-card refund-order-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="orders-modal-head">
+          <div>
+            <p className="section-kicker">Refund / adjustment</p>
+            <h2>{order.order_code || order.public_order_number}</h2>
+            <span>
+              Record a refund safely. This foundation records the adjustment in
+              Spizy; gateway API refund can be enabled per gateway later.
+            </span>
+          </div>
+
+          <button type="button" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="refund-summary-grid">
+          <div>
+            <span>Order total</span>
+            <strong>{formatMoney(totalAmount, order.currency)}</strong>
+          </div>
+
+          <div>
+            <span>Already refunded</span>
+            <strong>{formatMoney(alreadyRefunded, order.currency)}</strong>
+          </div>
+
+          <div>
+            <span>Remaining refundable</span>
+            <strong>{formatMoney(remainingAmount, order.currency)}</strong>
+          </div>
+        </div>
+
+        <div className="refund-form-grid">
+          <label>
+            Refund amount
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              max={remainingAmount || totalAmount}
+              value={refundForm.amount}
+              onChange={(event) => onChange('amount', event.target.value)}
+              disabled={refunding}
+            />
+          </label>
+
+          <label>
+            Mode
+            <select
+              value={refundForm.mode}
+              onChange={(event) => onChange('mode', event.target.value)}
+              disabled={refunding}
+            >
+              <option value="manual_record">Manual record only</option>
+              <option value="gateway_pending">Gateway refund pending</option>
+            </select>
+          </label>
+
+          <label className="wide">
+            Reason / internal note
+            <textarea
+              value={refundForm.reason}
+              onChange={(event) => onChange('reason', event.target.value)}
+              placeholder="Example: Customer cancelled after payment / partial item refund / duplicate payment..."
+              disabled={refunding}
+            />
+          </label>
+        </div>
+
+        <div className="refund-warning-box">
+          This does not move money automatically yet. The restaurant must process
+          the refund inside its own gateway dashboard, then record it here. API
+          refund automation can be added later per gateway.
+        </div>
+
+        <div className="complete-modal-actions">
+          <button type="button" onClick={onClose} disabled={refunding}>
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            className="refund"
+            onClick={onRecord}
+            disabled={!canRecord || refunding}
+          >
+            <ReceiptText size={16} />
+            {refunding ? 'Recording...' : 'Record refund'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AdminOrderPopup({ popup, soundEnabled, onClose, onView }) {
   return (
     <div className={`admin-order-popup ${popup.type}`}>
@@ -1615,6 +2026,22 @@ function isOrderRefunded(order) {
   return order?.payment_status === 'refunded'
 }
 
+function isPartialRefund(order) {
+  const refundStatus = String(order?.refund_status || '').toLowerCase()
+  return refundStatus.includes('partial') || (Number(order?.refunded_amount || 0) > 0 && isOrderPaid(order))
+}
+
+function canRecordRefund(order) {
+  if (!order?.id) return false
+  if (!isOrderPaid(order) && !isPartialRefund(order)) return false
+  if (isOrderRefunded(order)) return false
+
+  const totalAmount = Number(order.total_amount || 0)
+  const refundedAmount = Number(order.refunded_amount || 0)
+
+  return totalAmount > 0 && refundedAmount < totalAmount
+}
+
 function getNormalizedGateway(order) {
   return String(order?.payment_gateway || order?.gateway || '').toLowerCase()
 }
@@ -1673,11 +2100,19 @@ function getOrderPaymentReferenceRows(order) {
   addRow('Gateway transaction ID', order?.gateway_transaction_id)
   addRow('Gateway', formatGatewayLabel(getNormalizedGateway(order)))
   addRow('Online status', order?.online_payment_status)
+  addRow('Refund status', order?.refund_status)
+  if (Number(order?.refunded_amount || 0) > 0) {
+    addRow('Refunded amount', formatMoney(order.refunded_amount, order.currency))
+  }
 
   return rows
 }
 
 function getOrderPaymentMeta(order) {
+  if (isPartialRefund(order)) {
+    return { label: 'Partially refunded', tone: 'refunded' }
+  }
+
   if (isOrderPaid(order)) {
     return { label: 'Paid', tone: 'paid' }
   }
@@ -1740,6 +2175,10 @@ function getOrderPaymentMethodLabel(order) {
 }
 
 function getOrderPaymentNote(order) {
+  if (isPartialRefund(order)) {
+    return 'This order has a partial refund recorded. Check the refund history and gateway dashboard before closing finance reconciliation.'
+  }
+
   if (isOrderPaid(order)) {
     return 'Payment is marked as collected. You can complete the order when service is finished.'
   }
@@ -1831,6 +2270,141 @@ function getOrderRowClass(order) {
   if (order.status === 'cancelled') classes.push('cancelled-order-row')
 
   return classes.join(' ')
+}
+
+function buildPaymentReconciliationSummary(orders = [], defaultCurrency = 'AED') {
+  const totals = {
+    collected: 0,
+    pending: 0,
+    codPending: 0,
+    onlinePending: 0,
+    refunded: 0,
+    cancelledUnpaid: 0,
+    netCollected: 0,
+  }
+  const gatewayMap = new Map()
+  const warningRows = []
+
+  orders.forEach((order) => {
+    const amount = Number(order?.total_amount || 0)
+    const refundedAmount = Number(order?.refunded_amount || 0)
+    const gatewayKey = getCollectionGroupKey(order)
+    const gatewayLabel = getCollectionGroupLabel(order)
+
+    if (!gatewayMap.has(gatewayKey)) {
+      gatewayMap.set(gatewayKey, {
+        key: gatewayKey,
+        label: gatewayLabel,
+        collected: 0,
+        pending: 0,
+        paidCount: 0,
+        pendingCount: 0,
+        refundCount: 0,
+      })
+    }
+
+    const gatewayRow = gatewayMap.get(gatewayKey)
+
+    if (isOrderPaid(order)) {
+      totals.collected += amount
+      gatewayRow.collected += amount
+      gatewayRow.paidCount += 1
+    } else if (order?.status === 'cancelled') {
+      totals.cancelledUnpaid += amount
+    } else {
+      totals.pending += amount
+      gatewayRow.pending += amount
+      gatewayRow.pendingCount += 1
+
+      if (isCodPaymentOrder(order)) totals.codPending += amount
+      if (isOnlinePaymentOrder(order)) totals.onlinePending += amount
+    }
+
+    if (refundedAmount > 0 || isOrderRefunded(order)) {
+      totals.refunded += refundedAmount || amount
+      gatewayRow.refundCount += 1
+    }
+
+    const warning = getPaymentAttentionReason(order)
+
+    if (warning) {
+      warningRows.push({
+        id: order.id,
+        orderCode: order.order_code || order.public_order_number || 'Order',
+        amount,
+        reason: warning,
+      })
+    }
+  })
+
+  totals.netCollected = Math.max(totals.collected - totals.refunded, 0)
+
+  return {
+    currency: defaultCurrency || 'AED',
+    totals: Object.fromEntries(
+      Object.entries(totals).map(([key, value]) => [key, roundOrderMoney(value)]),
+    ),
+    gatewayRows: [...gatewayMap.values()]
+      .map((row) => ({
+        ...row,
+        collected: roundOrderMoney(row.collected),
+        pending: roundOrderMoney(row.pending),
+      }))
+      .sort((a, b) => Number(b.collected + b.pending) - Number(a.collected + a.pending)),
+    warningRows,
+  }
+}
+
+function getCollectionGroupKey(order) {
+  const gateway = getPaymentGatewayKey(order)
+
+  if (gateway) return `gateway-${gateway}`
+  if (isCodPaymentOrder(order)) return 'cod'
+
+  const method = String(order?.payment_method || '').toLowerCase()
+
+  if (method) return `method-${method}`
+
+  return 'unknown'
+}
+
+function getCollectionGroupLabel(order) {
+  const gateway = getPaymentGatewayKey(order)
+
+  if (gateway) return getGatewayDisplayName(gateway)
+  if (isCodPaymentOrder(order)) return getOrderPaymentMethodLabel(order)
+
+  return formatPaymentMethod(order?.payment_method || 'cash')
+}
+
+function getPaymentAttentionReason(order) {
+  if (!order?.id) return ''
+
+  if (isOnlinePaymentPending(order)) {
+    return 'Online gateway payment is still pending or waiting for webhook confirmation.'
+  }
+
+  if (isCodPaymentPending(order)) {
+    return 'COD order is not marked paid yet. Confirm rider/cashier collection.'
+  }
+
+  if (order.status === 'bill_requested' && !isOrderPaid(order)) {
+    return 'Customer requested bill, but payment is not marked paid yet.'
+  }
+
+  if (isOrderPartiallyRefunded(order)) {
+    return 'Partial refund recorded. Check gateway dashboard before final finance closing.'
+  }
+
+  if (order.status === 'cancelled' && isOrderPaid(order)) {
+    return 'Cancelled order is still marked paid. Confirm refund or adjustment.'
+  }
+
+  return ''
+}
+
+function roundOrderMoney(value) {
+  return Number(Number(value || 0).toFixed(2))
 }
 
 function isFinalRestaurantOrderStatus(status) {
