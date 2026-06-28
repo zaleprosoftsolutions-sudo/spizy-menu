@@ -1,126 +1,175 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarClock, CreditCard, Sparkles } from 'lucide-react'
+import { CreditCard, Sparkles, TimerReset } from 'lucide-react'
 import './SubscriptionTrialHeaderBar.css'
 
-function SubscriptionTrialHeaderBar({ restaurant, onOpenSection }) {
+const fallbackTrialDays = 7
+
+function SubscriptionTrialHeaderBar({ restaurant, onSubscribe }) {
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60 * 1000)
+    const timer = window.setInterval(() => setNow(new Date()), 30000)
     return () => window.clearInterval(timer)
   }, [])
 
-  const trialInfo = useMemo(
-    () => buildTrialInfo({ restaurant, now }),
+  const subscriptionInfo = useMemo(
+    () => buildSubscriptionInfo({ restaurant, now }),
     [restaurant, now],
   )
 
-  const status = String(restaurant?.subscription_status || 'trialing').toLowerCase()
-  const isActive = status === 'active'
-
   return (
-    <section className={`spizy-subscription-header-bar ${isActive ? 'active' : trialInfo.isExpired ? 'expired' : 'trial'}`}>
-      <div className="spizy-subscription-header-main">
-        <div className="spizy-subscription-header-icon">
-          {isActive ? <CreditCard size={20} /> : <CalendarClock size={20} />}
+    <section className={`subscription-trial-header-bar ${subscriptionInfo.tone}`}>
+      <div className="subscription-trial-main">
+        <div className="subscription-trial-icon">
+          {subscriptionInfo.isActive ? <Sparkles size={20} /> : <TimerReset size={20} />}
         </div>
 
         <div>
-          <p>{isActive ? 'Subscription active' : trialInfo.isExpired ? 'Trial ended' : 'Trial countdown'}</p>
-          <h3>{isActive ? 'Your Spizy plan is active' : trialInfo.title}</h3>
-          <span>{isActive ? trialInfo.activeNote : trialInfo.note}</span>
+          <span>{subscriptionInfo.kicker}</span>
+          <strong>{subscriptionInfo.title}</strong>
+          <small>{subscriptionInfo.note}</small>
         </div>
       </div>
 
-      <div className="spizy-subscription-countdown">
-        <CountdownCell label="Days" value={trialInfo.days} />
-        <CountdownCell label="Hours" value={trialInfo.hours} />
-        <CountdownCell label="Mins" value={trialInfo.minutes} />
+      <div className="subscription-countdown-wrap">
+        {subscriptionInfo.countdown.map((item) => (
+          <div className="subscription-countdown-box" key={item.label}>
+            <strong>{item.value}</strong>
+            <span>{item.label}</span>
+          </div>
+        ))}
       </div>
 
-      <button
-        type="button"
-        className="spizy-subscribe-now-button"
-        onClick={() => onOpenSection?.('subscription-billing')}
-      >
-        <Sparkles size={17} />
-        {isActive ? 'Manage Plan' : 'Subscribe Now'}
+      <button type="button" className="subscription-header-button" onClick={onSubscribe}>
+        <CreditCard size={17} />
+        {subscriptionInfo.buttonLabel}
       </button>
     </section>
   )
 }
 
-function CountdownCell({ label, value }) {
-  return (
-    <div>
-      <strong>{String(Math.max(0, Number(value || 0))).padStart(2, '0')}</strong>
-      <span>{label}</span>
-    </div>
-  )
-}
-
-function buildTrialInfo({ restaurant, now }) {
+function buildSubscriptionInfo({ restaurant, now }) {
   const status = String(restaurant?.subscription_status || 'trialing').toLowerCase()
-  const trialEnd = getTrialEndDate(restaurant)
-  const diffMs = trialEnd.getTime() - now.getTime()
-  const positiveMs = Math.max(0, diffMs)
-  const totalMinutes = Math.floor(positiveMs / (1000 * 60))
-  const days = Math.floor(totalMinutes / (60 * 24))
-  const hours = Math.floor((totalMinutes - days * 24 * 60) / 60)
-  const minutes = totalMinutes % 60
-  const isExpired = diffMs <= 0 && status !== 'active'
+  const plan = String(restaurant?.subscription_plan || restaurant?.plan || 'QR Menu').replace(/[_-]+/g, ' ')
+  const activeStatuses = new Set(['active', 'paid', 'subscribed'])
+  const trialStatuses = new Set(['trialing', 'trial', 'free_trial'])
+  const trialEnd = getSubscriptionEndDate(restaurant)
+  const isActive = activeStatuses.has(status)
+  const isTrial = trialStatuses.has(status) || (!isActive && trialEnd)
+  const remainingMs = trialEnd ? trialEnd.getTime() - now.getTime() : 0
+  const isExpired = remainingMs <= 0 && !isActive
+  const parts = getCountdownParts(Math.max(remainingMs, 0))
+
+  if (isActive) {
+    return {
+      tone: 'active',
+      isActive: true,
+      kicker: 'Subscription Active',
+      title: `${titleCase(plan)} plan is active`,
+      note: trialEnd ? `Current period ends ${formatDate(trialEnd)}.` : 'Your restaurant subscription is active.',
+      countdown: trialEnd
+        ? [
+            { label: 'days left', value: parts.days },
+            { label: 'hours', value: parts.hours },
+            { label: 'mins', value: parts.minutes },
+          ]
+        : [
+            { label: 'status', value: 'ON' },
+            { label: 'plan', value: 'OK' },
+            { label: 'access', value: 'LIVE' },
+          ],
+      buttonLabel: 'Manage Plan',
+    }
+  }
+
+  if (isExpired) {
+    return {
+      tone: 'danger',
+      isActive: false,
+      kicker: 'Trial Ended',
+      title: 'Subscribe now to keep Spizy active',
+      note: 'Choose monthly or yearly plan and pay securely with Mamo Pay.',
+      countdown: [
+        { label: 'days', value: '0' },
+        { label: 'hours', value: '0' },
+        { label: 'mins', value: '0' },
+      ],
+      buttonLabel: 'Subscribe Now',
+    }
+  }
 
   return {
-    days,
-    hours,
-    minutes,
-    isExpired,
-    title: isExpired ? 'Subscribe to keep restaurant tools active' : `${days} day${days === 1 ? '' : 's'} left in trial`,
-    note: isExpired
-      ? 'Trial is over. Subscribe with Mamo Pay to continue using Spizy after launch.'
-      : `Trial ends on ${formatDate(trialEnd)}. Subscribe now to avoid interruption.`,
-    activeNote: restaurant?.subscription_current_period_end
-      ? `Current period ends on ${formatDate(new Date(`${String(restaurant.subscription_current_period_end).slice(0, 10)}T23:59:59`))}.`
-      : 'Open Subscription to view invoice and renewal details.',
+    tone: isTrial ? 'trial' : 'warning',
+    isActive: false,
+    kicker: isTrial ? 'Free Trial Countdown' : 'Subscription Needed',
+    title: trialEnd
+      ? `Trial ends on ${formatDate(trialEnd)}`
+      : 'Start your Spizy subscription',
+    note: 'Upgrade to monthly or yearly plan. Payments are handled by Mamo Pay for Spizy subscription only.',
+    countdown: [
+      { label: 'days left', value: parts.days },
+      { label: 'hours', value: parts.hours },
+      { label: 'mins', value: parts.minutes },
+    ],
+    buttonLabel: 'Subscribe Now',
   }
 }
 
-function getTrialEndDate(restaurant) {
-  const explicitTrialEnd = restaurant?.subscription_trial_ends_at || restaurant?.trial_ends_at
-  if (explicitTrialEnd) {
-    const parsed = new Date(`${String(explicitTrialEnd).slice(0, 10)}T23:59:59`)
-    if (!Number.isNaN(parsed.getTime())) return parsed
-  }
+function getSubscriptionEndDate(restaurant) {
+  const directValue =
+    restaurant?.trial_ends_at ||
+    restaurant?.trial_end_at ||
+    restaurant?.trial_expires_at ||
+    restaurant?.subscription_trial_ends_at ||
+    restaurant?.subscription_current_period_end ||
+    restaurant?.current_period_end ||
+    restaurant?.subscription_grace_until
 
-  if (restaurant?.subscription_current_period_end) {
-    const parsed = new Date(`${String(restaurant.subscription_current_period_end).slice(0, 10)}T23:59:59`)
-    if (!Number.isNaN(parsed.getTime())) return parsed
-  }
+  const directDate = parseDate(directValue)
+  if (directDate) return directDate
 
-  const createdAt = restaurant?.created_at ? new Date(restaurant.created_at) : new Date()
-  if (!Number.isNaN(createdAt.getTime())) {
-    const fallback = new Date(createdAt)
-    fallback.setDate(fallback.getDate() + 14)
-    fallback.setHours(23, 59, 59, 999)
-    return fallback
-  }
+  const createdAt = parseDate(restaurant?.created_at)
+  if (!createdAt) return null
 
-  const fallback = new Date()
-  fallback.setDate(fallback.getDate() + 14)
-  fallback.setHours(23, 59, 59, 999)
+  const fallback = new Date(createdAt)
+  fallback.setDate(fallback.getDate() + fallbackTrialDays)
   return fallback
 }
 
-function formatDate(value) {
+function parseDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function getCountdownParts(ms) {
+  const totalMinutes = Math.floor(ms / 60000)
+  const days = Math.floor(totalMinutes / 1440)
+  const hours = Math.floor((totalMinutes % 1440) / 60)
+  const minutes = totalMinutes % 60
+
+  return {
+    days: String(days),
+    hours: String(hours).padStart(2, '0'),
+    minutes: String(minutes).padStart(2, '0'),
+  }
+}
+
+function formatDate(date) {
   try {
     return new Intl.DateTimeFormat('en-AE', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-    }).format(value)
+    }).format(date)
   } catch {
-    return 'trial end date'
+    return date.toISOString().slice(0, 10)
   }
+}
+
+function titleCase(value) {
+  return String(value || '')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 export default SubscriptionTrialHeaderBar

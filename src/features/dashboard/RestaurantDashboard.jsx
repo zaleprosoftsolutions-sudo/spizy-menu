@@ -7,7 +7,6 @@ import NutritionLabelsManagement from '../../restaurant/NutritionLabelsManagemen
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantOnboardingWizard from '../../restaurant/RestaurantOnboardingWizard'
 import SubscriptionBillingManagement from '../../restaurant/SubscriptionBillingManagement'
-import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import PWAMobilePolishManagement from '../../restaurant/PWAMobilePolishManagement'
 import OfflinePOSQueueManagement from '../../restaurant/OfflinePOSQueueManagement'
 import LaunchQAReadinessManagement from '../../restaurant/LaunchQAReadinessManagement'
@@ -15,6 +14,7 @@ import DeploymentMigrationCenterManagement from '../../restaurant/DeploymentMigr
 import ReceiptPrintCenterManagement from '../../restaurant/ReceiptPrintCenterManagement'
 import TaxInvoiceCenterManagement from '../../restaurant/TaxInvoiceCenterManagement'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
+import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
 import OrdersManagement from '../../restaurant/OrdersManagement'
 import CustomerPaymentsManagement from '../../restaurant/CustomerPaymentsManagement'
@@ -67,6 +67,7 @@ import DataImportManagement from '../../restaurant/DataImportManagement'
 import BranchesManagement from '../../restaurant/BranchesManagement'
 import { getLaunchVisibleSections, getSpizyLaunchModeLabel } from '../../restaurant/launchMode'
 import '../../restaurant/StaffAccessGuard.css'
+import '../../restaurant/RestaurantDashboardLaunchFix.css'
 
 
 const fullAccessRoles = new Set([
@@ -421,7 +422,13 @@ function RestaurantDashboard({ profile, restaurant }) {
   const activeSectionAllowed = visibleAllowedSections.includes(activeSection)
 
   return (
-    <div className="restaurant-layout">
+    <div className="restaurant-launch-dashboard-root">
+      <SubscriptionTrialHeaderBar
+        restaurant={restaurant}
+        onSubscribe={() => handleSectionChange('subscription-billing')}
+      />
+
+      <div className="restaurant-layout">
       <RestaurantSidebar
         restaurant={restaurant}
         activeSection={activeSectionAllowed ? activeSection : 'overview'}
@@ -440,11 +447,6 @@ function RestaurantDashboard({ profile, restaurant }) {
         )}
 
         <LaunchModePanel label={getSpizyLaunchModeLabel()} />
-
-        <SubscriptionTrialHeaderBar
-          restaurant={restaurant}
-          onOpenSection={handleSectionChange}
-        />
 
         {!activeSectionAllowed && (
           <StaffAccessGuardPanel
@@ -739,6 +741,7 @@ function RestaurantDashboard({ profile, restaurant }) {
           </>
         )}
       </div>
+    </div>
     </div>
   )
 }

@@ -1,204 +1,234 @@
-/* Spizy premium accordion sidebar - final readable layout */
-
-.restaurant-layout {
-  display: grid !important;
-  grid-template-columns: minmax(300px, 330px) minmax(0, 1fr) !important;
-  gap: clamp(18px, 2vw, 28px) !important;
-  align-items: start !important;
+/* Spizy launch sidebar v5 — overrides old App.css sidebar rules safely */
+.restaurant-sidebar.spizy-sidebar-accordion {
   width: 100% !important;
   min-width: 0 !important;
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.restaurant-workspace {
-  min-width: 0 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: visible !important;
-}
-
-.restaurant-sidebar.spizy-premium-sidebar,
-.spizy-premium-sidebar {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 330px !important;
+  height: 100% !important;
+  max-height: 100% !important;
   position: sticky !important;
-  top: 18px !important;
-  align-self: start !important;
-  max-height: calc(100vh - 36px) !important;
-  overflow: hidden !important;
+  top: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 14px !important;
+  overflow: hidden !important;
   padding: 14px !important;
   border-radius: 28px !important;
   background:
-    radial-gradient(circle at 0% 0%, rgba(255, 122, 24, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(12, 9, 7, 0.98), rgba(5, 5, 5, 0.98)) !important;
-  border: 1px solid rgba(255, 191, 77, 0.18) !important;
-  box-shadow:
-    0 24px 70px rgba(0, 0, 0, 0.36),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    radial-gradient(circle at top left, rgba(255, 122, 24, 0.16), transparent 32%),
+    linear-gradient(180deg, rgba(13, 10, 8, 0.98), rgba(4, 4, 4, 0.98)) !important;
+  border: 1px solid rgba(255, 191, 77, 0.2) !important;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34) !important;
 }
 
-.spizy-sidebar-brand-card {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
+.spizy-sidebar-tenant-card {
+  flex: 0 0 auto !important;
   padding: 14px !important;
   border-radius: 22px !important;
-  background:
-    radial-gradient(circle at top left, rgba(255, 122, 24, 0.18), transparent 40%),
-    rgba(255, 255, 255, 0.035) !important;
-  border: 1px solid rgba(255, 191, 77, 0.16) !important;
-  flex: 0 0 auto !important;
+  background: linear-gradient(135deg, rgba(255, 122, 24, 0.18), rgba(255, 191, 77, 0.05)) !important;
+  border: 1px solid rgba(255, 191, 77, 0.2) !important;
 }
 
-.spizy-premium-sidebar .restaurant-avatar {
-  width: 50px !important;
-  height: 50px !important;
-  flex: 0 0 auto !important;
-  border-radius: 17px !important;
-  display: grid !important;
-  place-items: center !important;
-  color: #1b0c02 !important;
-  font-weight: 1000 !important;
-  background: linear-gradient(135deg, #ffbf4d, #ff7a18) !important;
-}
-
-.spizy-sidebar-restaurant-copy {
-  min-width: 0 !important;
-}
-
-.spizy-sidebar-restaurant-copy strong {
-  display: block !important;
-  color: #fff8ed !important;
-  font-size: 15px !important;
-  line-height: 1.15 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.spizy-sidebar-restaurant-copy span {
-  display: block !important;
-  margin-top: 4px !important;
-  color: rgba(255, 248, 237, 0.66) !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  text-transform: capitalize !important;
+.spizy-sidebar-tenant-card strong {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spizy-sidebar-search {
-  flex: 0 0 auto !important;
-  display: grid !important;
-  grid-template-columns: auto 1fr !important;
-  align-items: center !important;
-  gap: 9px !important;
-  min-height: 46px !important;
-  padding: 0 13px !important;
-  border-radius: 18px !important;
-  border: 1px solid rgba(255, 191, 77, 0.14) !important;
-  background: rgba(0, 0, 0, 0.42) !important;
-  color: #ffbf4d !important;
+  flex: 0 0 auto;
+  margin: 14px 0 12px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(0, 0, 0, 0.54);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold, #ffbf4d);
 }
 
 .spizy-sidebar-search input {
-  width: 100% !important;
-  min-width: 0 !important;
+  width: 100%;
+  min-width: 0;
   border: 0 !important;
   outline: 0 !important;
   background: transparent !important;
   color: #fff8ed !important;
-  font: inherit !important;
-  font-size: 13px !important;
-  padding: 0 !important;
+  font: inherit;
+  font-size: 14px;
 }
 
 .spizy-sidebar-search input::placeholder {
-  color: rgba(255, 248, 237, 0.48) !important;
+  color: rgba(214, 199, 179, 0.7) !important;
 }
 
-.restaurant-nav.spizy-sidebar-scroll,
-.spizy-sidebar-scroll {
+.restaurant-nav.spizy-sidebar-scroll {
   flex: 1 1 auto !important;
   min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 4px 12px 0 !important;
+  display: block !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  padding: 2px 3px 8px 0 !important;
-  display: grid !important;
-  gap: 10px !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 191, 77, 0.38) rgba(255, 255, 255, 0.05) !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 191, 77, 0.48) rgba(255, 255, 255, 0.04);
 }
 
-.spizy-sidebar-scroll::-webkit-scrollbar {
-  width: 7px !important;
+.restaurant-nav.spizy-sidebar-scroll::-webkit-scrollbar {
+  width: 7px;
 }
 
-.spizy-sidebar-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-radius: 999px !important;
+.restaurant-nav.spizy-sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
 }
 
-.spizy-sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 191, 77, 0.34) !important;
-  border-radius: 999px !important;
+.restaurant-nav.spizy-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 191, 77, 0.42);
+  border-radius: 999px;
 }
 
-.restaurant-nav-group.spizy-sidebar-group,
-.spizy-sidebar-group {
-  display: grid !important;
-  gap: 8px !important;
+.restaurant-nav-group.spizy-sidebar-group {
+  display: block !important;
+  margin: 0 0 10px !important;
   padding: 0 !important;
-  margin: 0 !important;
   border: 0 !important;
 }
 
 .spizy-sidebar-group-toggle {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 18px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #fff8ed;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 9px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.spizy-sidebar-group.has-active .spizy-sidebar-group-toggle,
+.spizy-sidebar-group-toggle:hover {
+  border-color: rgba(255, 191, 77, 0.38);
+  background: linear-gradient(135deg, rgba(255, 122, 24, 0.16), rgba(255, 191, 77, 0.04));
+}
+
+.spizy-sidebar-group-toggle strong {
+  display: block;
+  color: #fff8ed !important;
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1.1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.spizy-sidebar-group-toggle small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(230, 216, 198, 0.76) !important;
+  font-size: 11px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spizy-sidebar-group-toggle em {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--gold, #ffbf4d);
+  background: rgba(255, 122, 24, 0.12);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.spizy-sidebar-group-toggle svg {
+  color: #fff8ed;
+  transition: transform 0.18s ease;
+}
+
+.spizy-sidebar-group-toggle svg.open {
+  transform: rotate(180deg);
+}
+
+.spizy-sidebar-item-list {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 0 10px;
+}
+
+.spizy-sidebar-accordion .restaurant-nav-button {
   width: 100% !important;
-  min-height: 56px !important;
-  border: 1px solid rgba(255, 191, 77, 0.16) !important;
-  border-radius: 18px !important;
-  padding: 10px 12px !important;
-  background: rgba(255, 255, 255, 0.035) !important;
-  color: #fff8ed !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  text-align: left !important;
-}
-
-.spizy-sidebar-group-toggle.open {
-  background: linear-gradient(135deg, rgba(255, 191, 77, 0.10), rgba(255, 122, 24, 0.075)) !important;
-  border-color: rgba(255, 191, 77, 0.28) !important;
-}
-
-.spizy-sidebar-group-copy {
   min-width: 0 !important;
+  min-height: 58px !important;
+  border: 1px solid transparent !important;
+  border-radius: 17px !important;
+  padding: 9px 10px !important;
+  background: transparent !important;
+  color: rgba(255, 248, 237, 0.86) !important;
   display: grid !important;
-  gap: 3px !important;
+  grid-template-columns: 42px minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+  align-items: center !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transform: none !important;
 }
 
-.spizy-sidebar-group-copy strong {
+.spizy-sidebar-accordion .restaurant-nav-button:hover,
+.spizy-sidebar-accordion .restaurant-nav-button.active {
+  background: linear-gradient(135deg, rgba(255, 122, 24, 0.18), rgba(255, 191, 77, 0.05)) !important;
+  border-color: rgba(255, 191, 77, 0.26) !important;
+}
+
+.spizy-sidebar-accordion .restaurant-nav-button.active {
+  box-shadow: inset 3px 0 0 rgba(255, 191, 77, 0.92);
+}
+
+.spizy-sidebar-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: var(--gold, #ffbf4d);
+  background: rgba(255, 122, 24, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.spizy-sidebar-icon svg {
+  color: var(--gold, #ffbf4d) !important;
+}
+
+.spizy-sidebar-copy {
+  min-width: 0;
+}
+
+.spizy-sidebar-copy strong {
   display: block !important;
   color: #fff8ed !important;
-  font-size: 12px !important;
-  line-height: 1.1 !important;
-  letter-spacing: 0.15em !important;
-  text-transform: uppercase !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.spizy-sidebar-group-copy small {
+.spizy-sidebar-copy small {
   display: block !important;
-  color: rgba(255, 248, 237, 0.56) !important;
+  margin-top: 4px !important;
+  color: rgba(230, 216, 198, 0.7) !important;
   font-size: 11px !important;
   line-height: 1.25 !important;
   white-space: nowrap !important;
@@ -206,248 +236,69 @@
   text-overflow: ellipsis !important;
 }
 
-.spizy-sidebar-group-actions {
-  flex: 0 0 auto !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  color: #fff8ed !important;
+.spizy-sidebar-accordion .restaurant-nav-button b {
+  padding: 5px 7px;
+  border-radius: 999px;
+  color: #b7ffd2;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  font-size: 9px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.spizy-sidebar-count {
-  min-width: 24px !important;
-  height: 24px !important;
-  padding: 0 7px !important;
-  display: inline-grid !important;
-  place-items: center !important;
-  border-radius: 999px !important;
-  color: #ffbf4d !important;
-  background: rgba(255, 191, 77, 0.08) !important;
-  border: 1px solid rgba(255, 191, 77, 0.18) !important;
-  font-size: 11px !important;
-  font-weight: 1000 !important;
-}
-
-.spizy-sidebar-group-toggle svg {
-  transition: transform 0.18s ease !important;
-}
-
-.spizy-sidebar-group-toggle.open svg {
-  transform: rotate(180deg) !important;
-}
-
-.spizy-sidebar-items {
-  display: grid !important;
-  gap: 6px !important;
-  padding: 0 0 4px 0 !important;
-}
-
-.restaurant-nav-button.spizy-sidebar-item,
-.spizy-sidebar-item {
-  width: 100% !important;
-  min-height: 54px !important;
-  display: grid !important;
-  grid-template-columns: 38px minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 10px !important;
-  border: 1px solid transparent !important;
-  border-radius: 17px !important;
-  padding: 9px 10px !important;
-  background: transparent !important;
-  color: rgba(255, 248, 237, 0.82) !important;
-  cursor: pointer !important;
-  text-align: left !important;
-  transform: none !important;
-}
-
-.spizy-sidebar-item:hover {
-  background: rgba(255, 122, 24, 0.08) !important;
-  border-color: rgba(255, 191, 77, 0.12) !important;
-  color: #fff8ed !important;
-}
-
-.spizy-sidebar-item.active {
-  background: linear-gradient(135deg, rgba(255, 191, 77, 0.16), rgba(255, 122, 24, 0.12)) !important;
-  border-color: rgba(255, 191, 77, 0.36) !important;
-  color: #fff8ed !important;
-}
-
-.spizy-sidebar-item-icon {
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 14px !important;
-  display: grid !important;
-  place-items: center !important;
-  color: #ffbf4d !important;
-  background: rgba(255, 191, 77, 0.08) !important;
-  border: 1px solid rgba(255, 191, 77, 0.10) !important;
-}
-
-.spizy-sidebar-item-copy {
-  min-width: 0 !important;
-  display: grid !important;
-  gap: 3px !important;
-}
-
-.spizy-sidebar-item-copy strong {
-  display: block !important;
-  color: inherit !important;
-  font-size: 13.5px !important;
-  line-height: 1.12 !important;
-  font-weight: 900 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.spizy-sidebar-item-copy small {
-  display: block !important;
-  color: rgba(255, 248, 237, 0.56) !important;
-  font-size: 11px !important;
-  line-height: 1.22 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.spizy-sidebar-badge {
-  max-width: 54px !important;
-  padding: 5px 7px !important;
-  border-radius: 999px !important;
-  color: #ffbf4d !important;
-  background: rgba(255, 191, 77, 0.08) !important;
-  border: 1px solid rgba(255, 191, 77, 0.14) !important;
-  font-size: 9px !important;
-  font-weight: 1000 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-}
-
-.spizy-sidebar-badge.core {
-  color: #86efac !important;
-  border-color: rgba(34, 197, 94, 0.24) !important;
-  background: rgba(34, 197, 94, 0.08) !important;
-}
-
-.spizy-sidebar-badge.launch {
-  color: #93c5fd !important;
-  border-color: rgba(59, 130, 246, 0.24) !important;
-  background: rgba(59, 130, 246, 0.08) !important;
-}
-
-.spizy-sidebar-badge.beta {
-  color: #fcd34d !important;
-  border-color: rgba(245, 158, 11, 0.24) !important;
-  background: rgba(245, 158, 11, 0.08) !important;
-}
-
-.spizy-sidebar-note {
-  flex: 0 0 auto !important;
-  margin: 0 !important;
+.restaurant-staff-mode-box {
+  flex: 0 0 auto;
+  margin-top: 10px !important;
   padding: 13px !important;
   border-radius: 18px !important;
-  display: grid !important;
-  gap: 4px !important;
-  background: rgba(255, 255, 255, 0.035) !important;
-  border: 1px solid rgba(255, 191, 77, 0.14) !important;
+  background: rgba(255, 122, 24, 0.1) !important;
+  border: 1px solid rgba(255, 191, 77, 0.16) !important;
 }
 
-.spizy-sidebar-note strong {
+.restaurant-staff-mode-box strong {
   color: #fff8ed !important;
-  font-size: 13px !important;
+  font-size: 13px;
 }
 
-.spizy-sidebar-note span {
-  color: rgba(255, 248, 237, 0.62) !important;
-  font-size: 12px !important;
-  line-height: 1.35 !important;
+.restaurant-staff-mode-box span {
+  display: block;
+  margin-top: 5px;
+  color: rgba(230, 216, 198, 0.78) !important;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
-.spizy-sidebar-note.launch {
-  background: rgba(255, 122, 24, 0.10) !important;
-  border-color: rgba(255, 191, 77, 0.22) !important;
-}
-
-.spizy-sidebar-foot {
-  flex: 0 0 auto !important;
-  margin: 0 !important;
+.restaurant-sidebar-foot {
+  flex: 0 0 auto;
+  margin-top: 10px !important;
+  min-height: 48px;
   padding: 12px !important;
   border-radius: 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 10px !important;
-  color: #ffbf4d !important;
-  background: rgba(0, 0, 0, 0.35) !important;
-  border: 1px solid rgba(255, 191, 77, 0.13) !important;
+  gap: 10px;
+  color: var(--gold, #ffbf4d) !important;
+  background: rgba(255, 122, 24, 0.08) !important;
+  border: 1px solid rgba(255, 191, 77, 0.12) !important;
 }
 
-.spizy-sidebar-foot span {
-  color: rgba(255, 248, 237, 0.72) !important;
-  font-size: 12px !important;
-  font-weight: 900 !important;
+.restaurant-sidebar-foot span {
+  color: #fff8ed !important;
+  font-size: 12px;
+  font-weight: 900;
 }
 
-.spizy-sidebar-empty {
-  padding: 16px !important;
-  border-radius: 18px !important;
-  color: rgba(255, 248, 237, 0.68) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 191, 77, 0.10) !important;
-  font-size: 13px !important;
-}
-
-@media (max-width: 1100px) {
-  .restaurant-layout {
-    grid-template-columns: minmax(270px, 300px) minmax(0, 1fr) !important;
-  }
-
-  .spizy-premium-sidebar {
-    max-width: 300px !important;
-  }
-
-  .spizy-sidebar-badge {
-    display: none !important;
-  }
-}
-
-@media (max-width: 920px) {
-  .restaurant-layout {
-    grid-template-columns: 1fr !important;
-  }
-
-  .restaurant-sidebar.spizy-premium-sidebar,
-  .spizy-premium-sidebar {
+@media (max-width: 980px) {
+  .restaurant-sidebar.spizy-sidebar-accordion {
     position: relative !important;
-    top: auto !important;
-    max-width: 100% !important;
+    height: auto !important;
     max-height: none !important;
-    overflow: visible !important;
   }
 
-  .restaurant-nav.spizy-sidebar-scroll,
-  .spizy-sidebar-scroll {
-    max-height: none !important;
-    overflow: visible !important;
-  }
-}
-
-@media (max-width: 520px) {
-  .restaurant-sidebar.spizy-premium-sidebar,
-  .spizy-premium-sidebar {
-    padding: 12px !important;
-    border-radius: 22px !important;
-  }
-
-  .spizy-sidebar-group-toggle {
-    min-height: 52px !important;
-  }
-
-  .spizy-sidebar-item {
-    grid-template-columns: 36px minmax(0, 1fr) !important;
-  }
-
-  .spizy-sidebar-badge {
-    display: none !important;
+  .restaurant-nav.spizy-sidebar-scroll {
+    max-height: 60vh !important;
   }
 }
