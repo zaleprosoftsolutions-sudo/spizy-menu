@@ -4,6 +4,7 @@ import {
   Award,
   ArrowLeftRight,
   BarChart3,
+  BadgePercent,
   BellRing,
   BookOpenCheck,
   Building2,
