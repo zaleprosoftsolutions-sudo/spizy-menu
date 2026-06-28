@@ -1,360 +1,453 @@
-/* Spizy premium accordion sidebar - layout fix */
+/* Spizy premium accordion sidebar - final readable layout */
+
 .restaurant-layout {
   display: grid !important;
-  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) !important;
-  gap: 22px !important;
+  grid-template-columns: minmax(300px, 330px) minmax(0, 1fr) !important;
+  gap: clamp(18px, 2vw, 28px) !important;
   align-items: start !important;
   width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
 .restaurant-workspace {
   min-width: 0 !important;
   width: 100% !important;
-  overflow: hidden !important;
-  position: relative !important;
-  z-index: 1 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
 }
 
-.restaurant-sidebar {
+.restaurant-sidebar.spizy-premium-sidebar,
+.spizy-premium-sidebar {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 330px !important;
   position: sticky !important;
   top: 18px !important;
-  width: 100% !important;
-  max-width: 320px !important;
-  min-width: 0 !important;
-  height: calc(100vh - 36px) !important;
+  align-self: start !important;
+  max-height: calc(100vh - 36px) !important;
+  overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  z-index: 2 !important;
-  border: 1px solid rgba(255, 174, 66, 0.24) !important;
-  border-radius: 24px !important;
-  background:
-    radial-gradient(circle at top left, rgba(255, 122, 24, 0.22), transparent 34%),
-    linear-gradient(180deg, rgba(31, 20, 12, 0.98), rgba(7, 7, 7, 0.98)) !important;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36) !important;
-  color: #fff !important;
-}
-
-.restaurant-sidebar-head,
-.spizy-sidebar-head {
-  display: flex !important;
-  align-items: center !important;
   gap: 14px !important;
-  margin: 16px 16px 12px !important;
   padding: 14px !important;
-  border-radius: 18px !important;
-  background: linear-gradient(135deg, rgba(255, 138, 31, 0.28), rgba(70, 36, 18, 0.3)) !important;
-  border: 1px solid rgba(255, 174, 66, 0.24) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 122, 24, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(12, 9, 7, 0.98), rgba(5, 5, 5, 0.98)) !important;
+  border: 1px solid rgba(255, 191, 77, 0.18) !important;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
-.restaurant-avatar,
-.spizy-sidebar-avatar {
-  width: 48px !important;
-  height: 48px !important;
-  min-width: 48px !important;
-  border-radius: 16px !important;
-  display: grid !important;
-  place-items: center !important;
-  background: linear-gradient(135deg, #ffb03b, #ff7a18) !important;
-  color: #120804 !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.02em !important;
-}
-
-.restaurant-sidebar-head strong,
-.spizy-sidebar-head strong {
-  display: block !important;
-  color: #fff !important;
-  font-size: 15px !important;
-  line-height: 1.2 !important;
-}
-
-.restaurant-sidebar-head span,
-.spizy-sidebar-head span {
-  display: block !important;
-  color: rgba(255, 255, 255, 0.64) !important;
-  font-size: 12px !important;
-  margin-top: 3px !important;
-}
-
-.spizy-sidebar-search-wrap {
-  padding: 0 16px 12px !important;
-}
-
-.spizy-sidebar-search {
-  width: 100% !important;
-  min-height: 44px !important;
-  border-radius: 15px !important;
-  border: 1px solid rgba(255, 174, 66, 0.2) !important;
-  background: rgba(0, 0, 0, 0.3) !important;
-  color: #fff !important;
-  padding: 0 14px !important;
-  outline: none !important;
-  box-sizing: border-box !important;
-}
-
-.spizy-sidebar-search::placeholder {
-  color: rgba(255, 255, 255, 0.46) !important;
-}
-
-.restaurant-nav,
-.spizy-sidebar-scroll {
-  flex: 1 1 auto !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 8px 12px 12px !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 174, 66, 0.5) rgba(255, 255, 255, 0.04) !important;
-}
-
-.restaurant-nav::-webkit-scrollbar,
-.spizy-sidebar-scroll::-webkit-scrollbar {
-  width: 7px !important;
-}
-
-.restaurant-nav::-webkit-scrollbar-thumb,
-.spizy-sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 174, 66, 0.52) !important;
-  border-radius: 999px !important;
-}
-
-.restaurant-nav-group,
-.spizy-sidebar-group {
-  margin: 0 0 10px !important;
-  padding: 0 !important;
-  border: 1px solid rgba(255, 174, 66, 0.16) !important;
-  border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.035) !important;
-  overflow: hidden !important;
-}
-
-.restaurant-nav-title,
-.spizy-sidebar-group-button {
-  width: 100% !important;
-  min-height: 48px !important;
+.spizy-sidebar-brand-card {
   display: flex !important;
   align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  padding: 11px 13px !important;
-  margin: 0 !important;
-  border: 0 !important;
-  background: rgba(0, 0, 0, 0.22) !important;
-  color: #fff !important;
-  text-align: left !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 24, 0.18), transparent 40%),
+    rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 191, 77, 0.16) !important;
+  flex: 0 0 auto !important;
 }
 
-.spizy-sidebar-group-title,
-.restaurant-nav-title {
-  font-size: 12px !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.12em !important;
-  text-transform: uppercase !important;
-  color: #ffcf72 !important;
-}
-
-.spizy-sidebar-group-subtitle {
-  display: block !important;
-  margin-top: 2px !important;
-  color: rgba(255, 255, 255, 0.5) !important;
-  font-size: 11px !important;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
-  font-weight: 600 !important;
-}
-
-.spizy-sidebar-group-meta {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-.spizy-sidebar-count {
-  display: inline-grid !important;
-  place-items: center !important;
-  min-width: 24px !important;
-  height: 24px !important;
-  border-radius: 999px !important;
-  background: rgba(255, 174, 66, 0.13) !important;
-  border: 1px solid rgba(255, 174, 66, 0.28) !important;
-  color: #ffcf72 !important;
-  font-size: 11px !important;
-  font-weight: 900 !important;
-}
-
-.spizy-sidebar-group-items {
-  display: grid !important;
-  gap: 5px !important;
-  padding: 8px !important;
-}
-
-.restaurant-nav-button,
-.spizy-sidebar-item {
-  width: 100% !important;
-  min-height: 48px !important;
-  display: grid !important;
-  grid-template-columns: 32px minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 8px 10px !important;
-  border-radius: 13px !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: rgba(255, 255, 255, 0.88) !important;
-  text-align: left !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
-}
-
-.restaurant-nav-button:hover,
-.spizy-sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 174, 66, 0.16) !important;
-}
-
-.restaurant-nav-button.active,
-.spizy-sidebar-item.active {
-  background: linear-gradient(135deg, rgba(255, 143, 31, 0.22), rgba(255, 174, 66, 0.08)) !important;
-  border-color: rgba(255, 174, 66, 0.42) !important;
-  box-shadow: inset 3px 0 0 #ff9f1a !important;
-}
-
-.restaurant-nav-button svg,
-.spizy-sidebar-item-icon {
-  width: 32px !important;
-  height: 32px !important;
-  min-width: 32px !important;
-  border-radius: 11px !important;
+.spizy-premium-sidebar .restaurant-avatar {
+  width: 50px !important;
+  height: 50px !important;
+  flex: 0 0 auto !important;
+  border-radius: 17px !important;
   display: grid !important;
   place-items: center !important;
-  color: #ffbf4d !important;
-  background: rgba(255, 174, 66, 0.1) !important;
-  padding: 7px !important;
-  box-sizing: border-box !important;
+  color: #1b0c02 !important;
+  font-weight: 1000 !important;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18) !important;
 }
 
-.spizy-sidebar-item-text,
-.restaurant-nav-button span {
+.spizy-sidebar-restaurant-copy {
   min-width: 0 !important;
-  display: block !important;
 }
 
-.restaurant-nav-button strong,
-.spizy-sidebar-item-title {
+.spizy-sidebar-restaurant-copy strong {
   display: block !important;
-  color: #fff !important;
-  font-size: 13px !important;
-  font-weight: 850 !important;
-  line-height: 1.2 !important;
+  color: #fff8ed !important;
+  font-size: 15px !important;
+  line-height: 1.15 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
-.restaurant-nav-button small,
-.spizy-sidebar-item-description {
+.spizy-sidebar-restaurant-copy span {
   display: block !important;
-  color: rgba(255, 255, 255, 0.52) !important;
+  margin-top: 4px !important;
+  color: rgba(255, 248, 237, 0.66) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  text-transform: capitalize !important;
+}
+
+.spizy-sidebar-search {
+  flex: 0 0 auto !important;
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center !important;
+  gap: 9px !important;
+  min-height: 46px !important;
+  padding: 0 13px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 191, 77, 0.14) !important;
+  background: rgba(0, 0, 0, 0.42) !important;
+  color: #ffbf4d !important;
+}
+
+.spizy-sidebar-search input {
+  width: 100% !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #fff8ed !important;
+  font: inherit !important;
+  font-size: 13px !important;
+  padding: 0 !important;
+}
+
+.spizy-sidebar-search input::placeholder {
+  color: rgba(255, 248, 237, 0.48) !important;
+}
+
+.restaurant-nav.spizy-sidebar-scroll,
+.spizy-sidebar-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 2px 3px 8px 0 !important;
+  display: grid !important;
+  gap: 10px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 191, 77, 0.38) rgba(255, 255, 255, 0.05) !important;
+}
+
+.spizy-sidebar-scroll::-webkit-scrollbar {
+  width: 7px !important;
+}
+
+.spizy-sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 999px !important;
+}
+
+.spizy-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 191, 77, 0.34) !important;
+  border-radius: 999px !important;
+}
+
+.restaurant-nav-group.spizy-sidebar-group,
+.spizy-sidebar-group {
+  display: grid !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+}
+
+.spizy-sidebar-group-toggle {
+  width: 100% !important;
+  min-height: 56px !important;
+  border: 1px solid rgba(255, 191, 77, 0.16) !important;
+  border-radius: 18px !important;
+  padding: 10px 12px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: #fff8ed !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  text-align: left !important;
+}
+
+.spizy-sidebar-group-toggle.open {
+  background: linear-gradient(135deg, rgba(255, 191, 77, 0.10), rgba(255, 122, 24, 0.075)) !important;
+  border-color: rgba(255, 191, 77, 0.28) !important;
+}
+
+.spizy-sidebar-group-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 3px !important;
+}
+
+.spizy-sidebar-group-copy strong {
+  display: block !important;
+  color: #fff8ed !important;
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.spizy-sidebar-group-copy small {
+  display: block !important;
+  color: rgba(255, 248, 237, 0.56) !important;
   font-size: 11px !important;
   line-height: 1.25 !important;
-  margin-top: 3px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.spizy-sidebar-group-actions {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #fff8ed !important;
+}
+
+.spizy-sidebar-count {
+  min-width: 24px !important;
+  height: 24px !important;
+  padding: 0 7px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  color: #ffbf4d !important;
+  background: rgba(255, 191, 77, 0.08) !important;
+  border: 1px solid rgba(255, 191, 77, 0.18) !important;
+  font-size: 11px !important;
+  font-weight: 1000 !important;
+}
+
+.spizy-sidebar-group-toggle svg {
+  transition: transform 0.18s ease !important;
+}
+
+.spizy-sidebar-group-toggle.open svg {
+  transform: rotate(180deg) !important;
+}
+
+.spizy-sidebar-items {
+  display: grid !important;
+  gap: 6px !important;
+  padding: 0 0 4px 0 !important;
+}
+
+.restaurant-nav-button.spizy-sidebar-item,
+.spizy-sidebar-item {
+  width: 100% !important;
+  min-height: 54px !important;
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 17px !important;
+  padding: 9px 10px !important;
+  background: transparent !important;
+  color: rgba(255, 248, 237, 0.82) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transform: none !important;
+}
+
+.spizy-sidebar-item:hover {
+  background: rgba(255, 122, 24, 0.08) !important;
+  border-color: rgba(255, 191, 77, 0.12) !important;
+  color: #fff8ed !important;
+}
+
+.spizy-sidebar-item.active {
+  background: linear-gradient(135deg, rgba(255, 191, 77, 0.16), rgba(255, 122, 24, 0.12)) !important;
+  border-color: rgba(255, 191, 77, 0.36) !important;
+  color: #fff8ed !important;
+}
+
+.spizy-sidebar-item-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #ffbf4d !important;
+  background: rgba(255, 191, 77, 0.08) !important;
+  border: 1px solid rgba(255, 191, 77, 0.10) !important;
+}
+
+.spizy-sidebar-item-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 3px !important;
+}
+
+.spizy-sidebar-item-copy strong {
+  display: block !important;
+  color: inherit !important;
+  font-size: 13.5px !important;
+  line-height: 1.12 !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.spizy-sidebar-item-copy small {
+  display: block !important;
+  color: rgba(255, 248, 237, 0.56) !important;
+  font-size: 11px !important;
+  line-height: 1.22 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
 .spizy-sidebar-badge {
-  padding: 3px 6px !important;
+  max-width: 54px !important;
+  padding: 5px 7px !important;
   border-radius: 999px !important;
+  color: #ffbf4d !important;
+  background: rgba(255, 191, 77, 0.08) !important;
+  border: 1px solid rgba(255, 191, 77, 0.14) !important;
   font-size: 9px !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.06em !important;
+  font-weight: 1000 !important;
   text-transform: uppercase !important;
-  background: rgba(255, 174, 66, 0.12) !important;
-  color: #ffcf72 !important;
-  border: 1px solid rgba(255, 174, 66, 0.2) !important;
+  letter-spacing: 0.04em !important;
 }
 
-.restaurant-staff-mode-box,
-.spizy-sidebar-mode-box {
-  margin: 10px 16px 12px !important;
-  padding: 12px 13px !important;
-  border-radius: 16px !important;
-  border: 1px solid rgba(255, 174, 66, 0.24) !important;
-  background: rgba(255, 122, 24, 0.12) !important;
-  color: #fff !important;
+.spizy-sidebar-badge.core {
+  color: #86efac !important;
+  border-color: rgba(34, 197, 94, 0.24) !important;
+  background: rgba(34, 197, 94, 0.08) !important;
 }
 
-.restaurant-staff-mode-box strong,
-.spizy-sidebar-mode-box strong {
-  display: block !important;
+.spizy-sidebar-badge.launch {
+  color: #93c5fd !important;
+  border-color: rgba(59, 130, 246, 0.24) !important;
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+.spizy-sidebar-badge.beta {
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.24) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+}
+
+.spizy-sidebar-note {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 13px !important;
+  border-radius: 18px !important;
+  display: grid !important;
+  gap: 4px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 191, 77, 0.14) !important;
+}
+
+.spizy-sidebar-note strong {
+  color: #fff8ed !important;
   font-size: 13px !important;
-  margin-bottom: 4px !important;
 }
 
-.restaurant-staff-mode-box span,
-.spizy-sidebar-mode-box span {
-  color: rgba(255, 255, 255, 0.62) !important;
+.spizy-sidebar-note span {
+  color: rgba(255, 248, 237, 0.62) !important;
   font-size: 12px !important;
   line-height: 1.35 !important;
 }
 
-.restaurant-sidebar-foot,
+.spizy-sidebar-note.launch {
+  background: rgba(255, 122, 24, 0.10) !important;
+  border-color: rgba(255, 191, 77, 0.22) !important;
+}
+
 .spizy-sidebar-foot {
-  margin: 0 16px 16px !important;
-  padding: 12px 14px !important;
-  border-radius: 15px !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   gap: 10px !important;
-  border: 1px solid rgba(255, 174, 66, 0.14) !important;
-  background: rgba(0, 0, 0, 0.28) !important;
-  color: rgba(255, 255, 255, 0.82) !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
+  color: #ffbf4d !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(255, 191, 77, 0.13) !important;
 }
 
-@media (max-width: 980px) {
+.spizy-sidebar-foot span {
+  color: rgba(255, 248, 237, 0.72) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.spizy-sidebar-empty {
+  padding: 16px !important;
+  border-radius: 18px !important;
+  color: rgba(255, 248, 237, 0.68) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 191, 77, 0.10) !important;
+  font-size: 13px !important;
+}
+
+@media (max-width: 1100px) {
   .restaurant-layout {
-    display: block !important;
+    grid-template-columns: minmax(270px, 300px) minmax(0, 1fr) !important;
   }
 
-  .restaurant-sidebar {
+  .spizy-premium-sidebar {
+    max-width: 300px !important;
+  }
+
+  .spizy-sidebar-badge {
+    display: none !important;
+  }
+}
+
+@media (max-width: 920px) {
+  .restaurant-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .restaurant-sidebar.spizy-premium-sidebar,
+  .spizy-premium-sidebar {
     position: relative !important;
     top: auto !important;
-    max-width: none !important;
-    width: 100% !important;
-    height: auto !important;
+    max-width: 100% !important;
     max-height: none !important;
-    margin-bottom: 18px !important;
+    overflow: visible !important;
   }
 
-  .restaurant-nav,
+  .restaurant-nav.spizy-sidebar-scroll,
   .spizy-sidebar-scroll {
-    max-height: 380px !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 }
 
-@media (max-width: 560px) {
-  .restaurant-sidebar {
-    border-radius: 18px !important;
+@media (max-width: 520px) {
+  .restaurant-sidebar.spizy-premium-sidebar,
+  .spizy-premium-sidebar {
+    padding: 12px !important;
+    border-radius: 22px !important;
   }
 
-  .restaurant-sidebar-head,
-  .spizy-sidebar-head {
-    margin: 12px 12px 10px !important;
+  .spizy-sidebar-group-toggle {
+    min-height: 52px !important;
   }
 
-  .spizy-sidebar-search-wrap,
-  .restaurant-nav,
-  .spizy-sidebar-scroll {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+  .spizy-sidebar-item {
+    grid-template-columns: 36px minmax(0, 1fr) !important;
+  }
+
+  .spizy-sidebar-badge {
+    display: none !important;
   }
 }
