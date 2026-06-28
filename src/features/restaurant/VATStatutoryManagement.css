@@ -1,0 +1,325 @@
+.vat-statutory-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vat-statutory-hero,
+.vat-statutory-panel,
+.vat-statutory-settings,
+.vat-statutory-period-card,
+.vat-statutory-warning,
+.vat-statutory-kpi-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, rgba(23, 23, 23, 0.96), rgba(10, 10, 10, 0.98));
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.vat-statutory-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+}
+
+.vat-statutory-hero h1,
+.vat-statutory-panel h2,
+.vat-statutory-settings h2 {
+  margin: 0;
+  color: #fff7ed;
+}
+
+.vat-statutory-hero p,
+.vat-statutory-panel p,
+.vat-statutory-kpi-card small,
+.vat-statutory-kpi-card span,
+.vat-statutory-form-grid label,
+.vat-statutory-period-card label,
+.vat-statutory-readiness-list span,
+.vat-statutory-return-grid span {
+  color: rgba(255, 247, 237, 0.68);
+}
+
+.vat-statutory-status {
+  min-width: 150px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 122, 24, 0.1);
+  color: #ffedd5;
+}
+
+.vat-statutory-status.good { background: rgba(34, 197, 94, 0.14); }
+.vat-statutory-status.warning { background: rgba(245, 158, 11, 0.14); }
+.vat-statutory-status.danger { background: rgba(239, 68, 68, 0.14); }
+.vat-statutory-status strong { font-size: 30px; }
+
+.vat-statutory-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  color: #fed7aa;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.vat-statutory-period-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) repeat(2, minmax(150px, 190px)) auto;
+  gap: 14px;
+  padding: 16px;
+  align-items: end;
+}
+
+.vat-statutory-period-card span,
+.vat-statutory-period-card strong {
+  display: block;
+}
+
+.vat-statutory-period-card strong {
+  color: #fff7ed;
+}
+
+.vat-statutory-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.vat-statutory-form-grid label,
+.vat-statutory-period-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.vat-statutory-form-grid input,
+.vat-statutory-form-grid select,
+.vat-statutory-period-card input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff7ed;
+  border-radius: 14px;
+  padding: 11px 12px;
+}
+
+.vat-statutory-settings,
+.vat-statutory-panel {
+  padding: 18px;
+}
+
+.vat-statutory-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.vat-statutory-period-card button,
+.vat-statutory-panel-head button,
+.vat-statutory-actions button,
+.vat-statutory-period-actions button,
+.vat-statutory-settings button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 15px;
+  background: linear-gradient(135deg, #ff7a18, #fbbf24);
+  color: #1f1303;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.vat-statutory-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.vat-statutory-kpi-card {
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.vat-statutory-kpi-card div {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #ffedd5;
+  background: rgba(255, 122, 24, 0.15);
+}
+
+.vat-statutory-kpi-card strong {
+  color: #fff7ed;
+  font-size: 22px;
+}
+
+.vat-statutory-kpi-card.gold div { background: rgba(245, 158, 11, 0.18); }
+.vat-statutory-kpi-card.blue div { background: rgba(56, 189, 248, 0.16); }
+.vat-statutory-kpi-card.green div { background: rgba(34, 197, 94, 0.16); }
+.vat-statutory-kpi-card.warning div { background: rgba(245, 158, 11, 0.18); }
+
+.vat-statutory-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.vat-statutory-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vat-statutory-category-grid article,
+.vat-statutory-return-grid div,
+.vat-statutory-readiness-list div {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045);
+  border-radius: 16px;
+  padding: 13px;
+}
+
+.vat-statutory-category-grid strong,
+.vat-statutory-return-grid strong,
+.vat-statutory-readiness-list strong {
+  color: #fff7ed;
+}
+
+.vat-statutory-category-grid span {
+  display: block;
+  margin-top: 5px;
+  color: #fbbf24;
+}
+
+.vat-statutory-readiness-list {
+  display: grid;
+  gap: 10px;
+}
+
+.vat-statutory-readiness-list div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.vat-statutory-readiness-list .ready { color: #86efac; }
+.vat-statutory-readiness-list .warning { color: #fed7aa; }
+
+.vat-statutory-period-actions,
+.vat-statutory-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.vat-statutory-period-actions { margin-top: 14px; }
+
+.vat-statutory-status-badge {
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #fff7ed;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+}
+
+.vat-statutory-status-badge.reviewed { background: rgba(56, 189, 248, 0.18); }
+.vat-statutory-status-badge.closed { background: rgba(34, 197, 94, 0.18); }
+
+.vat-statutory-return-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.vat-statutory-return-grid div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vat-statutory-return-grid .strong {
+  background: rgba(255, 122, 24, 0.14);
+}
+
+.vat-statutory-table-wrap {
+  overflow-x: auto;
+}
+
+.vat-statutory-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 780px;
+}
+
+.vat-statutory-table-wrap th,
+.vat-statutory-table-wrap td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 247, 237, 0.78);
+}
+
+.vat-statutory-table-wrap th {
+  color: #fed7aa;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media print {
+  .restaurant-sidebar,
+  .vat-statutory-hero,
+  .vat-statutory-period-card,
+  .vat-statutory-settings,
+  .vat-statutory-main-grid,
+  .vat-statutory-actions {
+    display: none !important;
+  }
+
+  .vat-statutory-panel,
+  .vat-statutory-shell {
+    box-shadow: none;
+    background: #fff;
+    color: #111;
+  }
+
+  .vat-statutory-table-wrap th,
+  .vat-statutory-table-wrap td,
+  .vat-statutory-panel h2,
+  .vat-statutory-return-grid strong,
+  .vat-statutory-return-grid span {
+    color: #111;
+  }
+}
+
+@media (max-width: 980px) {
+  .vat-statutory-hero,
+  .vat-statutory-main-grid,
+  .vat-statutory-period-card {
+    grid-template-columns: 1fr;
+  }
+
+  .vat-statutory-hero {
+    flex-direction: column;
+  }
+
+  .vat-statutory-form-grid,
+  .vat-statutory-kpi-grid,
+  .vat-statutory-return-grid,
+  .vat-statutory-category-grid {
+    grid-template-columns: 1fr;
+  }
+}

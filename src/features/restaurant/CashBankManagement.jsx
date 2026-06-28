@@ -283,7 +283,7 @@ function CashBankManagement({ restaurant }) {
       .maybeSingle()
 
     const { data: inputTaxData, error: inputTaxError } = await supabase
-      .from('restaurant_tax_input_records')
+      .from('restaurant_purchase_tax_records')
       .select('*')
       .eq('restaurant_id', restaurant.id)
       .eq('month_key', monthlyFinanceMonth)
@@ -1330,7 +1330,7 @@ function CashBankManagement({ restaurant }) {
         .eq('month_key', monthlyFinanceMonth)
         .maybeSingle(),
       supabase
-        .from('restaurant_tax_input_records')
+        .from('restaurant_purchase_tax_records')
         .select('*')
         .eq('restaurant_id', restaurant.id)
         .eq('month_key', monthlyFinanceMonth)
@@ -1398,7 +1398,7 @@ function CashBankManagement({ restaurant }) {
     setInputTaxLoading(true)
 
     const { data, error } = await supabase
-      .from('restaurant_tax_input_records')
+      .from('restaurant_purchase_tax_records')
       .select('*')
       .eq('restaurant_id', restaurant.id)
       .eq('month_key', monthlyFinanceMonth)
@@ -1473,7 +1473,7 @@ function CashBankManagement({ restaurant }) {
 
     const { data: userData } = await supabase.auth.getUser()
 
-    const { error } = await supabase.from('restaurant_tax_input_records').insert({
+    const { error } = await supabase.from('restaurant_purchase_tax_records').insert({
       restaurant_id: restaurant.id,
       month_key: monthKey,
       purchase_date: purchaseDate,
@@ -1526,7 +1526,7 @@ function CashBankManagement({ restaurant }) {
     const { data: userData } = await supabase.auth.getUser()
 
     const { error } = await supabase
-      .from('restaurant_tax_input_records')
+      .from('restaurant_purchase_tax_records')
       .update({
         is_voided: true,
         voided_at: new Date().toISOString(),
@@ -5792,6 +5792,10 @@ function formatReportKey(value) {
   return String(value || 'Unknown')
     .replaceAll('_', ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function formatSnapshotKey(value) {
+  return formatReportKey(value)
 }
 
 function buildCashBankStatementHtml({

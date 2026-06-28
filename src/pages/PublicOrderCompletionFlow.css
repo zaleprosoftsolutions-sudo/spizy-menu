@@ -1,0 +1,45 @@
+
+.public-live-order-badge span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 rgba(34, 197, 94, 0.55);
+  animation: spizy-live-order-pulse 1.25s infinite;
+}
+
+@keyframes spizy-live-order-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.58); }
+  70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.public-order-card.completion-requested {
+  border-color: rgba(34, 197, 94, 0.36);
+  box-shadow: 0 16px 44px rgba(34, 197, 94, 0.1);
+}
+
+.public-customer-completion-box {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.public-customer-completion-box p {
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.public-request-bill-button {
+  width: 100%;
+}
+
+.public-bill-requested-note {
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.12);
+  color: #dcfce7;
+}

@@ -1,0 +1,360 @@
+.tax-invoice-center-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #f8fafc;
+}
+
+.tax-invoice-center-hero,
+.tax-invoice-panel,
+.tax-invoice-kpi-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(145deg, rgba(24, 24, 27, 0.96), rgba(9, 9, 11, 0.96));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  border-radius: 24px;
+}
+
+.tax-invoice-center-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+}
+
+.tax-invoice-center-hero h1,
+.tax-invoice-panel h2 {
+  margin: 0;
+}
+
+.tax-invoice-center-hero p {
+  max-width: 760px;
+  color: #cbd5e1;
+}
+
+.tax-invoice-center-actions,
+.tax-invoice-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.tax-invoice-center-actions button,
+.tax-invoice-primary-button,
+.tax-invoice-filter-row select,
+.tax-invoice-filter-row label {
+  border: 1px solid rgba(251, 146, 60, 0.28);
+  background: rgba(15, 23, 42, 0.82);
+  color: #f8fafc;
+  border-radius: 14px;
+}
+
+.tax-invoice-center-actions button,
+.tax-invoice-primary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  cursor: pointer;
+}
+
+.tax-invoice-center-actions button:disabled,
+.tax-invoice-primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tax-invoice-primary-button {
+  justify-content: center;
+  width: 100%;
+  margin-top: 14px;
+  background: linear-gradient(135deg, #f97316, #facc15);
+  color: #111827;
+  font-weight: 800;
+}
+
+.tax-invoice-message {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 15px;
+  border-radius: 18px;
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  background: rgba(250, 204, 21, 0.1);
+  color: #fde68a;
+}
+
+.tax-invoice-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tax-invoice-kpi-card {
+  padding: 18px;
+}
+
+.tax-invoice-kpi-card div {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.12);
+  color: #fdba74;
+  margin-bottom: 12px;
+}
+
+.tax-invoice-kpi-card span,
+.tax-invoice-kpi-card small,
+.tax-invoice-panel-head p,
+.tax-invoice-form-grid span,
+.tax-invoice-bill-box span,
+.tax-invoice-paper-head span,
+.tax-invoice-paper-head small,
+.tax-invoice-check-card span {
+  color: #94a3b8;
+}
+
+.tax-invoice-kpi-card strong {
+  display: block;
+  margin: 4px 0;
+  font-size: 1.35rem;
+}
+
+.tax-invoice-layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  gap: 18px;
+}
+
+.tax-invoice-panel {
+  padding: 20px;
+}
+
+.tax-invoice-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.tax-invoice-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tax-invoice-form-grid label,
+.tax-invoice-filter-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.tax-invoice-span-two {
+  grid-column: span 2;
+}
+
+.tax-invoice-form-grid input,
+.tax-invoice-form-grid select,
+.tax-invoice-form-grid textarea,
+.tax-invoice-filter-row input,
+.tax-invoice-filter-row select {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(2, 6, 23, 0.72);
+  color: #f8fafc;
+  border-radius: 14px;
+  padding: 11px 12px;
+  outline: none;
+}
+
+.tax-invoice-filter-row label {
+  flex-direction: row;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.tax-invoice-filter-row label input {
+  border: 0;
+  background: transparent;
+  min-width: 240px;
+}
+
+.tax-invoice-preview-paper {
+  margin-top: 16px;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.tax-invoice-paper-head,
+.tax-invoice-bill-box,
+.tax-invoice-line,
+.tax-invoice-totals div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.tax-invoice-paper-head {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 14px;
+}
+
+.tax-invoice-paper-head > div,
+.tax-invoice-bill-box > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tax-invoice-paper-head > div:last-child,
+.tax-invoice-bill-box > div:last-child {
+  text-align: right;
+}
+
+.tax-invoice-bill-box {
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.tax-invoice-lines {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.tax-invoice-line {
+  grid-template-columns: 1fr 60px 110px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tax-invoice-line:last-child {
+  border-bottom: 0;
+}
+
+.tax-invoice-line.header {
+  background: #111827;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.tax-invoice-empty-line {
+  padding: 16px;
+  color: #64748b;
+}
+
+.tax-invoice-totals {
+  max-width: 360px;
+  margin: 16px 0 0 auto;
+}
+
+.tax-invoice-totals div {
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tax-invoice-totals .strong {
+  font-size: 1.08rem;
+}
+
+.tax-invoice-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tax-invoice-check-card {
+  display: flex;
+  gap: 12px;
+  padding: 13px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.tax-invoice-check-card.ready svg {
+  color: #86efac;
+}
+
+.tax-invoice-check-card.warning svg {
+  color: #fbbf24;
+}
+
+.tax-invoice-check-card div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tax-invoice-table-wrap {
+  overflow-x: auto;
+}
+
+.tax-invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 860px;
+}
+
+.tax-invoice-table th,
+.tax-invoice-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.tax-invoice-table th {
+  color: #fbbf24;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tax-invoice-table td {
+  color: #e5e7eb;
+}
+
+@media (max-width: 980px) {
+  .tax-invoice-center-hero,
+  .tax-invoice-panel-head {
+    flex-direction: column;
+  }
+
+  .tax-invoice-kpi-grid,
+  .tax-invoice-layout-grid,
+  .tax-invoice-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tax-invoice-span-two {
+    grid-column: span 1;
+  }
+}
+
+@media print {
+  .restaurant-sidebar,
+  .tax-invoice-center-actions,
+  .tax-invoice-form-grid,
+  .tax-invoice-primary-button,
+  .tax-invoice-filter-row {
+    display: none !important;
+  }
+
+  .tax-invoice-center-shell,
+  .tax-invoice-panel,
+  .tax-invoice-center-hero {
+    background: #fff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+}

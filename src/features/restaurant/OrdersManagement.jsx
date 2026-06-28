@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import './OrdersManagement.css'
+import './OrdersCompletionFlow.css'
 
 const statusOptions = [
   { value: 'order_received', label: 'Order received' },
@@ -889,6 +890,12 @@ function OrdersManagement({ restaurant }) {
                         </option>
                       ))}
                     </select>
+                    {order.status === 'bill_requested' && (
+                      <div className="orders-completion-request-chip">
+                        <BellRing size={14} />
+                        Customer finished / bill requested
+                      </div>
+                    )}
                   </td>
 
                   <td>
@@ -955,7 +962,7 @@ function OrdersManagement({ restaurant }) {
                           disabled={updatingOrderId === order.id}
                         >
                           <CheckCircle2 size={15} />
-                          Complete
+                          Complete Bill
                         </button>
                       )}
                     </div>
@@ -1286,9 +1293,9 @@ function OrderDetailsModal({
         <PaymentGatewayReferenceBox order={order} />
 
         {order.status === 'bill_requested' && (
-          <div className="orders-bill-request-alert">
-            Customer requested bill completion. Confirm the payment status first,
-            then complete the order when the restaurant is ready to close the bill.
+          <div className="orders-bill-request-alert completion-request">
+            <BellRing size={16} />
+            <span>Customer marked this table bill as finished. Confirm payment collection, print the bill if needed, then tap <strong>Complete Bill</strong>.</span>
           </div>
         )}
 
@@ -1409,7 +1416,7 @@ function OrderDetailsModal({
               disabled={updatingOrderId === order.id}
             >
               <CheckCircle2 size={16} />
-              Complete
+              Complete Bill
             </button>
           )}
         </div>
@@ -1629,7 +1636,11 @@ function CompleteOrderModal({
           <div>
             <p className="section-kicker">Complete bill</p>
             <h2>{order.order_code || order.public_order_number}</h2>
-            <span>Collect payment, print if needed, then close the bill as paid.</span>
+            <span>
+              {order.status === 'bill_requested'
+                ? 'Customer has finished and requested bill completion. Confirm payment, print if needed, then close the bill.'
+                : 'Collect payment, print if needed, then close the bill as paid.'}
+            </span>
           </div>
 
           <button type="button" onClick={onClose}>
@@ -1638,6 +1649,13 @@ function CompleteOrderModal({
         </div>
 
         <PaymentGuidanceBox order={order} compact />
+
+        {order.status === 'bill_requested' && (
+          <div className="complete-customer-request-box">
+            <BellRing size={16} />
+            <span>Customer completion request is active for this bill.</span>
+          </div>
+        )}
 
         <div className="complete-payment-grid">
           <label>
@@ -1735,7 +1753,7 @@ function CompleteOrderModal({
             disabled={completing}
           >
             <CheckCircle2 size={16} />
-            {completing ? 'Completing...' : 'Complete & Paid'}
+            {completing ? 'Completing...' : 'Complete Bill & Mark Paid'}
           </button>
         </div>
       </div>

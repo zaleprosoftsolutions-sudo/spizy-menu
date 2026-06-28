@@ -1,0 +1,331 @@
+.spizy-notification-shell {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.spizy-notification-hero,
+.spizy-notification-panel,
+.spizy-notification-note-box,
+.spizy-notification-warning,
+.spizy-notification-loading {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at top left, rgba(255, 122, 24, 0.14), transparent 32%),
+    linear-gradient(135deg, rgba(18, 18, 22, 0.96), rgba(8, 8, 12, 0.98));
+  border-radius: 24px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.26);
+}
+
+.spizy-notification-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem;
+}
+
+.spizy-notification-hero h1,
+.spizy-notification-panel h2,
+.spizy-rule-card h3,
+.spizy-live-alert h3 {
+  color: #fff;
+  margin: 0;
+}
+
+.spizy-notification-hero p,
+.spizy-notification-panel span,
+.spizy-rule-card p,
+.spizy-live-alert p,
+.spizy-notification-note-box span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.spizy-notification-hero-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.spizy-notification-primary,
+.spizy-notification-secondary,
+.spizy-live-alert-actions button {
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.spizy-notification-primary {
+  padding: 0.8rem 1rem;
+  background: linear-gradient(135deg, #ff7a18, #ffbf4d);
+  color: #171008;
+}
+
+.spizy-notification-secondary {
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+
+.spizy-notification-primary:disabled,
+.spizy-notification-secondary:disabled,
+.spizy-live-alert-actions button:disabled,
+.spizy-rule-toggle:disabled,
+.spizy-rule-card select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spizy-notification-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.spizy-notification-kpi {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.055);
+  border-radius: 22px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.spizy-notification-kpi > div {
+  width: 42px;
+  height: 42px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffbf4d;
+}
+
+.spizy-notification-kpi span,
+.spizy-notification-kpi small {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.spizy-notification-kpi strong {
+  color: #fff;
+  font-size: 1.45rem;
+}
+
+.spizy-notification-kpi.green > div { color: #22c55e; }
+.spizy-notification-kpi.warning > div { color: #ffbf4d; }
+.spizy-notification-kpi.danger > div { color: #ef4444; }
+.spizy-notification-kpi.blue > div { color: #38bdf8; }
+.spizy-notification-kpi.gold > div { color: #f59e0b; }
+
+.spizy-notification-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+  gap: 1rem;
+}
+
+.spizy-notification-panel {
+  padding: 1rem;
+}
+
+.spizy-notification-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.spizy-notification-panel-head select,
+.spizy-rule-card select {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.24);
+  color: #fff;
+  padding: 0.7rem 0.8rem;
+  outline: none;
+}
+
+.spizy-live-alert-list,
+.spizy-rule-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.spizy-live-alert {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.055);
+  border-radius: 20px;
+  padding: 0.9rem;
+}
+
+.spizy-live-alert.high { border-color: rgba(239, 68, 68, 0.35); }
+.spizy-live-alert.medium { border-color: rgba(245, 158, 11, 0.35); }
+.spizy-live-alert.low { border-color: rgba(56, 189, 248, 0.28); }
+
+.spizy-live-alert-icon,
+.spizy-rule-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(255, 122, 24, 0.14);
+  color: #ffbf4d;
+  display: grid;
+  place-items: center;
+}
+
+.spizy-live-alert-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.spizy-live-alert-title-row span,
+.spizy-severity {
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.spizy-live-alert strong {
+  display: block;
+  color: #ffbf4d;
+  margin-top: 0.35rem;
+}
+
+.spizy-live-alert-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+.spizy-live-alert-actions button {
+  padding: 0.58rem 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.spizy-live-alert-actions button:first-child {
+  background: linear-gradient(135deg, #ff7a18, #ffbf4d);
+  color: #171008;
+}
+
+.spizy-rule-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.052);
+  border-radius: 20px;
+  padding: 0.9rem;
+}
+
+.spizy-rule-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.spizy-rule-toggle {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.spizy-rule-toggle.enabled {
+  background: rgba(34, 197, 94, 0.13);
+  color: #86efac;
+}
+
+.spizy-rule-card label {
+  display: grid;
+  gap: 0.35rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-top: 0.8rem;
+}
+
+.spizy-notification-warning,
+.spizy-notification-note-box,
+.spizy-notification-loading,
+.spizy-notification-empty {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.spizy-notification-warning {
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.spizy-notification-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.spizy-notification-empty.compact {
+  justify-content: flex-start;
+}
+
+.spizy-notification-table-wrap {
+  overflow-x: auto;
+}
+
+.spizy-notification-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.spizy-notification-table th,
+.spizy-notification-table td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.spizy-notification-table th {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.spizy-severity.high { background: rgba(239, 68, 68, 0.18); color: #fecaca; }
+.spizy-severity.medium { background: rgba(245, 158, 11, 0.18); color: #fde68a; }
+.spizy-severity.low { background: rgba(56, 189, 248, 0.16); color: #bae6fd; }
+
+@media (max-width: 980px) {
+  .spizy-notification-hero,
+  .spizy-notification-panel-head {
+    flex-direction: column;
+  }
+
+  .spizy-notification-kpi-grid,
+  .spizy-notification-main-grid {
+    grid-template-columns: 1fr;
+  }
+}

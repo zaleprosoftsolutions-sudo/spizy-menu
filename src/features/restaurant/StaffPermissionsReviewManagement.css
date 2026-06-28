@@ -1,0 +1,287 @@
+.staff-permissions-review-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.staff-permissions-hero,
+.staff-permissions-panel,
+.staff-permissions-kpi-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(145deg, rgba(21, 18, 15, 0.96), rgba(32, 24, 17, 0.94));
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.staff-permissions-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+}
+
+.staff-permissions-hero h1,
+.staff-permissions-panel h2 {
+  margin: 4px 0 8px;
+  color: #fff7ed;
+}
+
+.staff-permissions-hero p,
+.staff-permissions-panel span,
+.staff-permissions-kpi-card small {
+  color: rgba(255, 237, 213, 0.72);
+}
+
+.staff-permissions-hero-actions,
+.staff-permissions-filters,
+.staff-permissions-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.staff-permissions-hero-actions button,
+.staff-permissions-preset-row button,
+.staff-permission-toggle,
+.staff-permissions-filters input,
+.staff-permissions-filters select {
+  border: 1px solid rgba(255, 183, 77, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff7ed;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.staff-permissions-hero-actions button,
+.staff-permissions-preset-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.staff-permissions-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  border-radius: 18px;
+  color: #fff7ed;
+}
+
+.staff-permissions-message.success {
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.staff-permissions-message.error {
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.staff-permissions-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.staff-permissions-kpi-card {
+  padding: 17px;
+}
+
+.staff-permissions-kpi-card div {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(255, 122, 24, 0.14);
+  color: #ffbf4d;
+}
+
+.staff-permissions-kpi-card span,
+.staff-permissions-kpi-card small {
+  display: block;
+  margin-top: 8px;
+}
+
+.staff-permissions-kpi-card strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 28px;
+  color: #fff7ed;
+}
+
+.staff-permissions-kpi-card.good div {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.staff-permissions-kpi-card.warning div {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.staff-permissions-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
+  gap: 16px;
+}
+
+.staff-permissions-panel {
+  padding: 20px;
+}
+
+.staff-permissions-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.staff-permissions-panel-head.compact {
+  margin-bottom: 10px;
+}
+
+.staff-permissions-table-wrap {
+  overflow-x: auto;
+}
+
+.staff-permissions-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.staff-permissions-table th {
+  color: rgba(255, 237, 213, 0.55);
+  font-size: 12px;
+  text-align: left;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.staff-permissions-table td {
+  background: rgba(255, 255, 255, 0.055);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 10px;
+  vertical-align: top;
+}
+
+.staff-permissions-table td:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px 0 0 16px;
+  min-width: 210px;
+}
+
+.staff-permissions-table td:last-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0 16px 16px 0;
+  min-width: 240px;
+}
+
+.staff-permissions-table strong,
+.staff-permissions-table span {
+  display: block;
+}
+
+.staff-permissions-table strong {
+  color: #fff7ed;
+}
+
+.staff-permissions-table span {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.staff-permissions-table tr.inactive {
+  opacity: 0.55;
+}
+
+.staff-permission-toggle {
+  min-width: 58px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.staff-permission-toggle.enabled {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.13);
+  color: #bbf7d0;
+}
+
+.staff-permissions-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.staff-permissions-preset-list,
+.staff-permissions-section-map {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.staff-permissions-preset-list article,
+.staff-permissions-section-map article {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.staff-permissions-preset-list strong,
+.staff-permissions-preset-list span,
+.staff-permissions-preset-list small,
+.staff-permissions-section-map span,
+.staff-permissions-section-map strong {
+  display: block;
+}
+
+.staff-permissions-preset-list strong,
+.staff-permissions-section-map h3,
+.staff-permissions-section-map strong {
+  color: #fff7ed;
+}
+
+.staff-permissions-preset-list span,
+.staff-permissions-section-map span {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.staff-permissions-preset-list small {
+  margin-top: 8px;
+  color: #ffbf4d;
+}
+
+.staff-permissions-section-map h3 {
+  margin: 10px 0 8px;
+  font-size: 14px;
+}
+
+.staff-permissions-loading,
+.staff-permissions-empty {
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  color: rgba(255, 237, 213, 0.72);
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .staff-permissions-kpi-grid,
+  .staff-permissions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-permissions-hero,
+  .staff-permissions-panel-head {
+    flex-direction: column;
+  }
+}

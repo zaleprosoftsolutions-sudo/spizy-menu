@@ -39,6 +39,7 @@ import './PublicComboDeals.css'
 import './PublicMenuSchedule.css'
 import './PublicPaymentGateways.css'
 import './PublicPaymentStatusPolish.css'
+import './PublicOrderCompletionFlow.css'
 
 const phoneCountryOptions = [
   { code: '+971', label: 'UAE' },
@@ -1886,7 +1887,7 @@ function PublicMenuPage() {
       return
     }
 
-    showPublicMessage('Bill request sent to restaurant.')
+    showPublicMessage('Order completion request sent to restaurant.')
     await loadCustomerOrders()
   }
 
@@ -4264,7 +4265,7 @@ function PublicOrdersModal({
             <p className="public-menu-label">My Orders</p>
             <h2>Order history</h2>
             <span>
-              Track live table bills, bill requests and completed orders.
+              Track live table bills, completion requests and completed orders.
             </span>
           </div>
 
@@ -4306,7 +4307,7 @@ function PublicOrdersModal({
             {ongoingOrders.length > 0 && (
               <PublicOrdersSection
                 title="Live table orders"
-                subtitle="Ongoing bills from this device/session."
+                subtitle="Ongoing bills from this device/session with live status."
                 orders={ongoingOrders}
                 currency={currency}
                 onRequestBill={onRequestBill}
@@ -4387,7 +4388,7 @@ function PublicOrderCard({
     <article
       className={`public-order-card polished ${
         isLive ? 'live' : 'past'
-      } ${order.status === 'bill_requested' ? 'bill-requested' : ''}`}
+      } ${order.status === 'bill_requested' ? 'bill-requested completion-requested' : ''}`}
     >
       <div className="public-order-card-head">
         <div>
@@ -4404,7 +4405,7 @@ function PublicOrderCard({
           {isLive && (
             <div className="public-live-order-badge">
               <span />
-              {order.status === 'bill_requested' ? 'Bill requested' : 'Live order'}
+              {order.status === 'bill_requested' ? 'Completion requested' : 'Ongoing / Live order'}
             </div>
           )}
 
@@ -4452,19 +4453,22 @@ function PublicOrderCard({
       {order.order_type === 'dine_in' &&
         isLive &&
         order.status !== 'bill_requested' && (
-          <button
-            type="button"
-            className="public-request-bill-button"
-            onClick={() => onRequestBill(order)}
-            disabled={loading}
-          >
-            Complete Order / Request Bill
-          </button>
+          <div className="public-customer-completion-box">
+            <p>Finished dining? Send a completion request so the restaurant can close your bill.</p>
+            <button
+              type="button"
+              className="public-request-bill-button"
+              onClick={() => onRequestBill(order)}
+              disabled={loading}
+            >
+              Complete Order / Request Bill
+            </button>
+          </div>
         )}
 
       {order.status === 'bill_requested' && (
         <div className="public-bill-requested-note">
-          Bill request sent. Restaurant will complete the bill after payment.
+          Completion request sent. The restaurant can now verify payment and complete this bill.
         </div>
       )}
 
@@ -5203,6 +5207,40 @@ async function createPublicStripeCheckoutSession({
 
   if (!data?.success) {
     throw new Error(data?.message || data?.error || 'Unable to open Stripe checkout.')
+  }
+
+  return data
+}
+
+async function createPublicPayPalCheckoutOrder({
+  restaurantId,
+  restaurantSlug,
+  orderId,
+  orderCode,
+  orderReference,
+  customerSessionId,
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    'create-paypal-checkout-order',
+    {
+      body: {
+        restaurant_id: restaurantId,
+        restaurant_slug: restaurantSlug,
+        order_id: orderId || null,
+        order_code: orderCode || null,
+        order_reference: orderReference || null,
+        customer_session_id: customerSessionId || null,
+        origin: window.location.origin,
+      },
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message || 'Unable to open PayPal checkout.')
+  }
+
+  if (!data?.success) {
+    throw new Error(data?.message || data?.error || 'Unable to open PayPal checkout.')
   }
 
   return data

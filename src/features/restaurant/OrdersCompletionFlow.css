@@ -1,0 +1,47 @@
+
+.orders-completion-request-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.orders-bill-request-alert.completion-request,
+.complete-customer-request-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.14), rgba(245, 158, 11, 0.1));
+  color: #ecfdf5;
+}
+
+.orders-bill-request-alert.completion-request strong {
+  color: #ffffff;
+}
+
+.complete-customer-request-box {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 0.88rem;
+}
+
+.orders-table tr.bill-requested-row td:first-child strong::after {
+  content: 'Customer finished';
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  color: #bbf7d0;
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
