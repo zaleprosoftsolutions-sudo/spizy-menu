@@ -1,0 +1,161 @@
+.cash-bank-setup-panel {
+  padding: 20px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 18rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(10, 10, 10, 0.96));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.24);
+}
+
+.cash-bank-setup-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cash-bank-setup-head h3 {
+  margin: 4px 0 7px;
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-setup-head span,
+.cash-bank-setup-step span,
+.cash-bank-setup-score span {
+  color: #d4d4d4;
+  line-height: 1.45;
+}
+
+.cash-bank-setup-score {
+  min-width: 140px;
+  padding: 14px;
+  border-radius: 22px;
+  text-align: center;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.cash-bank-setup-score strong {
+  display: block;
+  color: #ffbf4d;
+  font-size: 28px;
+  letter-spacing: -0.06em;
+}
+
+.cash-bank-setup-score span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cash-bank-setup-progress {
+  height: 10px;
+  margin: 16px 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cash-bank-setup-progress span {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff9f1c, #fbbf24, #86efac);
+}
+
+.cash-bank-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cash-bank-setup-step {
+  min-height: 132px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.cash-bank-setup-step.done {
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.cash-bank-setup-step.warning:not(.done) {
+  border-color: rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.055);
+}
+
+.cash-bank-setup-step-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #ffbf4d;
+  background: rgba(255, 191, 77, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.cash-bank-setup-step.done .cash-bank-setup-step-icon {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+.cash-bank-setup-step strong {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 5px;
+  line-height: 1.25;
+}
+
+.cash-bank-setup-step span {
+  display: block;
+  font-size: 12px;
+}
+
+.cash-bank-setup-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1280px) {
+  .cash-bank-setup-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-setup-head,
+  .cash-bank-setup-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-setup-score {
+    min-width: 0;
+  }
+
+  .cash-bank-setup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-setup-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

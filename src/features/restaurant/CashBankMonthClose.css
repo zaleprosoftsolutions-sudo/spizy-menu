@@ -1,0 +1,147 @@
+.cash-bank-month-close-panel {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 18rem),
+    rgba(8, 8, 8, 0.58);
+  display: grid;
+  gap: 16px;
+}
+
+.cash-bank-month-close-panel.closed {
+  border-color: rgba(34, 197, 94, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 18rem),
+    rgba(8, 8, 8, 0.58);
+}
+
+.cash-bank-month-close-panel.reopened {
+  border-color: rgba(248, 113, 113, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.12), transparent 18rem),
+    rgba(8, 8, 8, 0.58);
+}
+
+.cash-bank-month-close-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.cash-bank-month-close-head h3 {
+  margin: 4px 0 7px;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-month-close-head span,
+.cash-bank-month-close-status span,
+.cash-bank-month-close-metric small {
+  color: #cfcfcf;
+  line-height: 1.45;
+}
+
+.cash-bank-month-close-status {
+  min-width: 180px;
+  padding: 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.24);
+  display: grid;
+  gap: 5px;
+  text-align: right;
+}
+
+.cash-bank-month-close-status strong {
+  color: #fbbf24;
+  font-size: 18px;
+}
+
+.closed .cash-bank-month-close-status strong {
+  color: #86efac;
+}
+
+.reopened .cash-bank-month-close-status strong {
+  color: #fca5a5;
+}
+
+.cash-bank-month-close-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-month-close-metric {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  display: grid;
+  gap: 6px;
+}
+
+.cash-bank-month-close-metric.warning {
+  border-color: rgba(248, 113, 113, 0.18);
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.cash-bank-month-close-metric span {
+  color: #f6d28d;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-month-close-metric strong {
+  color: #ffffff;
+  font-size: 18px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-month-close-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cash-bank-month-close-actions .danger-soft {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+@media (max-width: 980px) {
+  .cash-bank-month-close-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .cash-bank-month-close-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-month-close-status {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .cash-bank-month-close-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-month-close-actions {
+    justify-content: stretch;
+  }
+
+  .cash-bank-month-close-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

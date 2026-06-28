@@ -1,0 +1,231 @@
+.cash-bank-audit-panel {
+  padding: 20px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 18rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.24);
+}
+
+.cash-bank-audit-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cash-bank-audit-head h3 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-audit-head span,
+.cash-bank-ledger-subtitle {
+  display: block;
+  margin-top: 7px;
+  color: #cfcfcf;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.cash-bank-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-audit-metric {
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  display: grid;
+  gap: 7px;
+}
+
+.cash-bank-audit-metric span {
+  color: #f6d28d;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-audit-metric strong {
+  color: #ffffff;
+  font-size: 21px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-audit-metric small {
+  color: #cfcfcf;
+  line-height: 1.4;
+}
+
+.cash-bank-audit-metric.positive {
+  border-color: rgba(34, 197, 94, 0.18);
+  background: rgba(34, 197, 94, 0.055);
+}
+
+.cash-bank-audit-metric.positive strong {
+  color: #86efac;
+}
+
+.cash-bank-audit-metric.negative,
+.cash-bank-audit-metric.warning {
+  border-color: rgba(248, 113, 113, 0.16);
+  background: rgba(248, 113, 113, 0.045);
+}
+
+.cash-bank-audit-metric.negative strong,
+.cash-bank-audit-metric.warning strong {
+  color: #fca5a5;
+}
+
+.cash-bank-ledger-tools {
+  flex-wrap: wrap;
+}
+
+.cash-bank-ledger-tools select {
+  min-height: 48px;
+  min-width: 150px;
+}
+
+.cash-bank-ledger-row.source-day-closing {
+  border-left: 3px solid rgba(34, 197, 94, 0.64);
+}
+
+.cash-bank-ledger-row.source-reversed {
+  border-left: 3px solid rgba(248, 113, 113, 0.64);
+}
+
+.cash-bank-ledger-row.source-system {
+  border-left: 3px solid rgba(147, 197, 253, 0.6);
+}
+
+.cash-bank-source-badge {
+  width: fit-content;
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px !important;
+  font-weight: 1000;
+  letter-spacing: 0.01em;
+}
+
+.cash-bank-source-badge.source-day-closing {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.cash-bank-source-badge.source-reversed {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.18);
+}
+
+.cash-bank-source-badge.source-system {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+}
+
+.cash-bank-source-badge.source-manual {
+  color: #f6d28d;
+  background: rgba(255, 191, 77, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-audit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-audit-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-audit-head button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cash-bank-audit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-ledger-tools select {
+    width: 100%;
+  }
+}
+
+
+.cash-bank-audit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cash-bank-statement-strip {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+
+.cash-bank-statement-strip span {
+  color: #cfcfcf;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-statement-strip strong {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .cash-bank-audit-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cash-bank-audit-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cash-bank-statement-strip {
+    align-items: stretch;
+  }
+
+  .cash-bank-statement-strip span,
+  .cash-bank-statement-strip strong {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,131 @@
+.cash-bank-command-panel {
+  padding: 20px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 191, 77, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.26);
+}
+
+.cash-bank-command-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cash-bank-command-head h3 {
+  margin: 4px 0 6px;
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-command-head span {
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.cash-bank-command-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-command-grid button {
+  min-height: 132px;
+  padding: 16px;
+  border: 1px solid rgba(255, 191, 77, 0.13);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.08), transparent 10rem),
+    rgba(255, 255, 255, 0.035);
+  color: #ffffff;
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.cash-bank-command-grid button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 191, 77, 0.34);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.16), transparent 10rem),
+    rgba(255, 191, 77, 0.08);
+}
+
+.cash-bank-command-grid svg {
+  color: #ffbf4d;
+}
+
+.cash-bank-command-grid strong {
+  color: #ffffff;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+}
+
+.cash-bank-command-grid span {
+  color: #cfcfcf;
+  line-height: 1.45;
+  font-size: 12px;
+}
+
+.cash-bank-command-flow {
+  margin-top: 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 191, 77, 0.13);
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.24);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  color: #ffffff;
+}
+
+.cash-bank-command-flow span {
+  color: #f6d28d;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-command-flow strong {
+  font-size: 12px;
+}
+
+.cash-bank-command-flow em {
+  color: #ffbf4d;
+  font-style: normal;
+  font-weight: 1000;
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-command-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .cash-bank-command-panel {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .cash-bank-command-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-command-grid button {
+    min-height: 112px;
+  }
+}

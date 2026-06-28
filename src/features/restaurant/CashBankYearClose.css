@@ -1,0 +1,93 @@
+.cash-bank-year-close-card {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.1), transparent 18rem),
+    rgba(8, 8, 8, 0.38);
+  display: grid;
+  gap: 16px;
+}
+
+.cash-bank-year-close-card.closed {
+  border-color: rgba(34, 197, 94, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 18rem),
+    rgba(8, 8, 8, 0.38);
+}
+
+.cash-bank-year-close-card.reopened {
+  border-color: rgba(248, 113, 113, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.1), transparent 18rem),
+    rgba(8, 8, 8, 0.38);
+}
+
+.cash-bank-year-close-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cash-bank-year-close-head h3 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-year-close-head span {
+  color: #d6d6d6;
+  line-height: 1.45;
+}
+
+.cash-bank-year-close-head > svg {
+  color: #ffbf4d;
+  flex: 0 0 auto;
+}
+
+.cash-bank-year-close-card.closed .cash-bank-year-close-head > svg {
+  color: #86efac;
+}
+
+.cash-bank-year-close-card.reopened .cash-bank-year-close-head > svg {
+  color: #fca5a5;
+}
+
+.cash-bank-year-close-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-year-close-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-year-close-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-year-close-head,
+  .cash-bank-year-close-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-year-close-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-year-close-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

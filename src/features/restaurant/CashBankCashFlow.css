@@ -1,0 +1,189 @@
+.cash-bank-cash-flow-panel {
+  padding: 20px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 18rem),
+    radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.1), transparent 18rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.26);
+}
+
+.cash-bank-cash-flow-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cash-bank-cash-flow-head h3 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-cash-flow-head span,
+.cash-bank-cash-flow-card span,
+.cash-bank-cash-flow-metric span,
+.cash-bank-cash-flow-metric small,
+.cash-bank-cash-flow-health span {
+  color: #cfcfcf;
+  line-height: 1.5;
+}
+
+.cash-bank-cash-flow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cash-bank-cash-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-cash-flow-metric {
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background: rgba(5, 5, 5, 0.36);
+  display: grid;
+  gap: 7px;
+}
+
+.cash-bank-cash-flow-metric.positive {
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.cash-bank-cash-flow-metric.warning {
+  border-color: rgba(248, 113, 113, 0.2);
+  background: rgba(248, 113, 113, 0.055);
+}
+
+.cash-bank-cash-flow-metric span {
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #f6d28d;
+}
+
+.cash-bank-cash-flow-metric strong {
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-cash-flow-metric.positive strong {
+  color: #86efac;
+}
+
+.cash-bank-cash-flow-metric.warning strong {
+  color: #fca5a5;
+}
+
+.cash-bank-cash-flow-health {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(255, 191, 77, 0.08);
+  display: grid;
+  gap: 5px;
+}
+
+.cash-bank-cash-flow-health strong {
+  color: #ffffff;
+}
+
+.cash-bank-cash-flow-health.healthy {
+  border-color: rgba(34, 197, 94, 0.22);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.cash-bank-cash-flow-health.review {
+  border-color: rgba(251, 191, 36, 0.24);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.cash-bank-cash-flow-health.warning {
+  border-color: rgba(248, 113, 113, 0.22);
+  background: rgba(248, 113, 113, 0.07);
+}
+
+.cash-bank-cash-flow-health.empty {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.cash-bank-cash-flow-split {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-cash-flow-card {
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(5, 5, 5, 0.34);
+  display: grid;
+  gap: 10px;
+}
+
+.cash-bank-cash-flow-card h4 {
+  margin: 0;
+  color: #f6d28d;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+
+.cash-bank-cash-flow-card div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.cash-bank-cash-flow-card strong {
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.cash-bank-cash-flow-card .total {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cash-bank-cash-flow-card .total strong {
+  color: #86efac;
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-cash-flow-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-cash-flow-head,
+  .cash-bank-cash-flow-card div {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-cash-flow-actions,
+  .cash-bank-cash-flow-actions button {
+    width: 100%;
+  }
+
+  .cash-bank-cash-flow-grid,
+  .cash-bank-cash-flow-split {
+    grid-template-columns: 1fr;
+  }
+}

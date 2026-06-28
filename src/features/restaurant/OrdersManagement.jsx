@@ -2046,6 +2046,27 @@ function getNormalizedGateway(order) {
   return String(order?.payment_gateway || order?.gateway || '').toLowerCase()
 }
 
+function getPaymentGatewayKey(order) {
+  return String(
+    order?.payment_gateway ||
+      order?.gateway ||
+      order?.gateway_provider ||
+      order?.payment_provider ||
+      order?.online_payment_gateway ||
+      '',
+  )
+    .trim()
+    .toLowerCase()
+}
+
+function getGatewayDisplayName(gateway) {
+  return formatGatewayLabel(String(gateway || '').toLowerCase())
+}
+
+function isOrderPartiallyRefunded(order) {
+  return isPartialRefund(order)
+}
+
 function getNormalizedDeliveryPaymentType(order) {
   return String(
     order?.delivery_payment_type ||

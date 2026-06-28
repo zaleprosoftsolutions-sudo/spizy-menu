@@ -1,64 +1,34 @@
-# Spizy Menu — Day Closing to Cash & Bank Posting
+# Spizy Menu - VAT Period Close Foundation
 
-This package connects the Day Closing payment snapshot to the Cash & Bank ledger.
+This package adds a VAT period close workflow inside Cash & Bank → Tax / VAT.
 
-## Included
+## Files included
 
-- `src/features/restaurant/DayClosingManagement.jsx`
-- `src/features/restaurant/DayClosingPaymentSnapshot.css`
 - `src/features/restaurant/CashBankManagement.jsx`
-- `supabase/sql/20260628_day_closing_cash_bank_posting.sql`
-- `supabase/functions/post-day-closing-to-cash-bank/index.ts`
+- `src/features/restaurant/CashBankVatClose.css`
+- `supabase/sql/20260628_vat_period_close_foundation.sql`
 
 ## What it adds
 
-1. **Post to Cash & Bank** button inside Day Closing.
-2. Duplicate posting protection per restaurant/date.
-3. Posts ledger entries for:
-   - cash + COD collections
-   - card machine collections
-   - online gateway collections
-   - refund adjustments
-   - cash surplus/shortage adjustment
-4. Auto-creates default Cash & Bank accounts if missing:
-   - Main Cash Drawer
-   - Card Machine Settlement
-   - Online Gateway Clearing
-5. Cash & Bank ledger now shows entries as “Posted from Day Closing”.
-6. Adds SQL-safe source/reference fields to account transactions.
-7. Uses `rm.role::text` in policies to avoid enum empty-string errors.
+- VAT Period Close panel inside Tax / VAT
+- Mark Reviewed button
+- Close VAT Period button
+- Reopen Period button
+- VAT close status in Tax CSV
+- VAT close status in printable Tax report
+- New table: `restaurant_tax_vat_period_closings`
+- Safe RLS policies using `rm.role::text`
 
-## Install
+## Required setup
 
-From your project root:
-
-```bash
-unzip -o ~/Downloads/spizy_day_closing_cash_bank_posting.zip -d .
-```
-
-## Run SQL
-
-Run this in Supabase SQL editor:
+Run this SQL in Supabase:
 
 ```text
-supabase/sql/20260628_day_closing_cash_bank_posting.sql
+supabase/sql/20260628_vat_period_close_foundation.sql
 ```
 
-## Deploy Edge Function
-
-```bash
-supabase functions deploy post-day-closing-to-cash-bank
-```
-
-## Usage flow
-
-1. Open Day Closing.
-2. Choose the closing date.
-3. Click **Payment Snapshot**.
-4. Save Draft or Close Day.
-5. Click **Post to Cash & Bank**.
-6. Open Cash & Bank and confirm the ledger entries.
+No Edge Function is required.
 
 ## Important
 
-This does not move money through gateways. It only posts accounting/ledger records inside Spizy. Customer gateway payments still belong to each restaurant’s own connected gateway account.
+This remains a management VAT estimate workflow. It is not final statutory VAT filing. Later you can add TRN, VAT filing boxes, item-level taxes, accountant approval and official return export.

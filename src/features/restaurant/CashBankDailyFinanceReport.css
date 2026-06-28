@@ -1,0 +1,47 @@
+.cash-bank-daily-report-button {
+  white-space: nowrap;
+}
+
+.cash-bank-daily-report-strip {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.22);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cash-bank-daily-report-strip span {
+  color: #d6d6d6;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-daily-report-strip strong {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  color: #f6d28d;
+  background: rgba(255, 191, 77, 0.1);
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .cash-bank-daily-report-strip {
+    align-items: stretch;
+  }
+
+  .cash-bank-daily-report-strip span,
+  .cash-bank-daily-report-strip strong {
+    width: 100%;
+    justify-content: center;
+  }
+}

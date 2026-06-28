@@ -1,0 +1,237 @@
+.cash-bank-tax-panel {
+  padding: 20px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 18rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.26);
+}
+
+.cash-bank-tax-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cash-bank-tax-head h3 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-tax-head span,
+.cash-bank-tax-context span,
+.cash-bank-tax-metric small,
+.cash-bank-tax-health span,
+.cash-bank-tax-row span,
+.cash-bank-tax-row small,
+.cash-bank-tax-empty span {
+  color: #d0d0d0;
+  line-height: 1.5;
+}
+
+.cash-bank-tax-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: end;
+}
+
+.cash-bank-tax-actions label {
+  min-width: 132px;
+}
+
+.cash-bank-tax-actions input {
+  min-height: 44px;
+}
+
+.cash-bank-tax-context {
+  margin-bottom: 16px;
+  padding: 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background: rgba(0, 0, 0, 0.26);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.cash-bank-tax-context strong {
+  color: #f6d28d;
+}
+
+.cash-bank-tax-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-tax-metric {
+  min-height: 126px;
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 191, 77, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+}
+
+.cash-bank-tax-metric span {
+  color: #f6d28d;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-tax-metric strong {
+  color: #ffffff;
+  font-size: 19px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-tax-metric.positive {
+  border-color: rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.055);
+}
+
+.cash-bank-tax-metric.positive strong {
+  color: #86efac;
+}
+
+.cash-bank-tax-metric.warning {
+  border-color: rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.055);
+}
+
+.cash-bank-tax-metric.warning strong {
+  color: #fbbf24;
+}
+
+.cash-bank-tax-health {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.06);
+  display: grid;
+  gap: 5px;
+}
+
+.cash-bank-tax-health.warning {
+  border-color: rgba(251, 191, 36, 0.18);
+  background: rgba(251, 191, 36, 0.065);
+}
+
+.cash-bank-tax-health strong {
+  color: #86efac;
+}
+
+.cash-bank-tax-health.warning strong {
+  color: #fbbf24;
+}
+
+.cash-bank-tax-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.cash-bank-tax-row,
+.cash-bank-tax-empty {
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.cash-bank-tax-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.cash-bank-tax-row.good {
+  border-color: rgba(34, 197, 94, 0.14);
+}
+
+.cash-bank-tax-row.warning {
+  border-color: rgba(251, 191, 36, 0.16);
+}
+
+.cash-bank-tax-row.urgent {
+  border-color: rgba(248, 113, 113, 0.16);
+}
+
+.cash-bank-tax-row strong {
+  color: #ffffff;
+}
+
+.cash-bank-tax-row-values {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cash-bank-tax-row-values span {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+}
+
+.cash-bank-tax-row-values strong {
+  margin-left: 5px;
+  color: #f6d28d;
+}
+
+.cash-bank-tax-empty {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: #ffbf4d;
+}
+
+.cash-bank-tax-empty div {
+  display: grid;
+  gap: 4px;
+}
+
+@media (max-width: 1280px) {
+  .cash-bank-tax-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-tax-head,
+  .cash-bank-tax-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-tax-actions,
+  .cash-bank-tax-row-values {
+    justify-content: stretch;
+  }
+
+  .cash-bank-tax-actions button,
+  .cash-bank-tax-actions label,
+  .cash-bank-tax-row-values span {
+    width: 100%;
+  }
+
+  .cash-bank-tax-grid {
+    grid-template-columns: 1fr;
+  }
+}

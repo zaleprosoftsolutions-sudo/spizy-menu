@@ -1,0 +1,138 @@
+.cash-bank-vat-close-panel {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 191, 77, 0.15);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(24, 24, 24, 0.96), rgba(8, 8, 8, 0.96));
+  display: grid;
+  gap: 16px;
+}
+
+.cash-bank-vat-close-panel.closed {
+  border-color: rgba(34, 197, 94, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 18rem),
+    linear-gradient(180deg, rgba(24, 24, 24, 0.96), rgba(8, 8, 8, 0.96));
+}
+
+.cash-bank-vat-close-panel.reopened {
+  border-color: rgba(248, 113, 113, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.10), transparent 18rem),
+    linear-gradient(180deg, rgba(24, 24, 24, 0.96), rgba(8, 8, 8, 0.96));
+}
+
+.cash-bank-vat-close-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cash-bank-vat-close-head h3 {
+  margin: 4px 0 8px;
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-vat-close-head span,
+.cash-bank-vat-close-status span,
+.cash-bank-vat-close-metric small {
+  color: #d6d6d6;
+  line-height: 1.5;
+}
+
+.cash-bank-vat-close-status {
+  min-width: 190px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  display: grid;
+  gap: 4px;
+  text-align: right;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.cash-bank-vat-close-status strong {
+  color: #ffbf4d;
+  font-size: 16px;
+}
+
+.closed .cash-bank-vat-close-status strong {
+  color: #86efac;
+}
+
+.reopened .cash-bank-vat-close-status strong {
+  color: #fca5a5;
+}
+
+.cash-bank-vat-close-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-vat-close-metric {
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  display: grid;
+  gap: 7px;
+}
+
+.cash-bank-vat-close-metric span {
+  color: #f6d28d;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cash-bank-vat-close-metric strong {
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-vat-close-metric.warning {
+  border-color: rgba(248, 113, 113, 0.18);
+  background: rgba(248, 113, 113, 0.055);
+}
+
+.cash-bank-vat-close-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-vat-close-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-vat-close-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-vat-close-status {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .cash-bank-vat-close-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-vat-close-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

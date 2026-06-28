@@ -9,6 +9,7 @@ import {
   FileText,
   Printer,
   RefreshCw,
+  RotateCcw,
   Save,
   WalletCards,
 } from 'lucide-react'
@@ -38,7 +39,7 @@ const defaultClosingForm = {
 }
 
 function DayClosingManagement({ restaurant }) {
-  const { showToast } = useAppFeedback()
+  const { confirmAction, showToast } = useAppFeedback()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => getTodayInputDate())
@@ -50,6 +51,7 @@ function DayClosingManagement({ restaurant }) {
   const [snapshotLoading, setSnapshotLoading] = useState(false)
   const [cashBankPosting, setCashBankPosting] = useState(null)
   const [postingCashBank, setPostingCashBank] = useState(false)
+  const [reversingCashBank, setReversingCashBank] = useState(false)
   const [form, setForm] = useState(defaultClosingForm)
 
   const currency = restaurant?.currency || 'AED'
@@ -362,6 +364,61 @@ function DayClosingManagement({ restaurant }) {
     })
   }
 
+  const reverseCashBankPosting = async () => {
+    if (!restaurant?.id || cashBankPosting?.status !== 'posted') return
+
+    const confirmed = await confirmAction({
+      title: 'Reverse Cash & Bank posting?',
+      message:
+        'This will void the Day Closing ledger entries for this date and mark the posting as reversed. You can post again after correcting the closing or snapshot.',
+      confirmText: 'Reverse posting',
+      cancelText: 'Keep posted',
+      danger: true,
+    })
+
+    if (!confirmed) return
+
+    setReversingCashBank(true)
+
+    const { data, error } = await supabase.functions.invoke(
+      'reverse-day-closing-cash-bank-posting',
+      {
+        body: {
+          restaurant_id: restaurant.id,
+          closing_date: selectedDate,
+          reason: 'Reversed from Day Closing screen before correction/reposting.',
+        },
+      },
+    )
+
+    setReversingCashBank(false)
+
+    if (error || data?.error) {
+      showToast({
+        type: 'error',
+        title: 'Cash & Bank reversal failed',
+        message:
+          data?.error ||
+          error?.message ||
+          'Unable to reverse this Day Closing posting.',
+      })
+      return
+    }
+
+    setCashBankPosting(data?.posting || null)
+
+    if (data?.snapshot) setPaymentSnapshot(data.snapshot)
+    if (data?.closing) setExistingClosing(data.closing)
+
+    showToast({
+      type: 'success',
+      title: 'Posting reversed',
+      message:
+        data?.message ||
+        'Cash & Bank entries from this Day Closing were voided and the day is ready for correction.',
+    })
+  }
+
   const exportCsv = () => {
     const lines = [
       ['Metric', 'Amount'],
@@ -385,8 +442,10 @@ function DayClosingManagement({ restaurant }) {
       ['Snapshot online pending', Number(paymentSnapshot?.online_pending || 0).toFixed(2)],
       ['Snapshot refunds', Number(paymentSnapshot?.refund_total || 0).toFixed(2)],
       ['Snapshot net collected', Number(paymentSnapshot?.net_collected || 0).toFixed(2)],
+      ['Cash & Bank posting status', formatPostingStatus(cashBankPosting?.status)],
       ['Cash & Bank posted', cashBankPosting?.status === 'posted' ? 'Yes' : 'No'],
       ['Cash & Bank net posted', Number(cashBankPosting?.net_posted || 0).toFixed(2)],
+      ['Cash & Bank reversed at', cashBankPosting?.reversed_at || ''],
     ]
 
     const csv = lines
@@ -488,7 +547,7 @@ function DayClosingManagement({ restaurant }) {
             type="button"
             className="secondary-button day-cash-bank-post-button"
             onClick={postClosingToCashBank}
-            disabled={loading || postingCashBank || !paymentSnapshot?.id}
+            disabled={loading || postingCashBank || !paymentSnapshot?.id || cashBankPosting?.status === 'posted'}
           >
             <WalletCards size={17} />
             {postingCashBank
@@ -497,6 +556,18 @@ function DayClosingManagement({ restaurant }) {
                 ? 'Posted to Cash & Bank'
                 : 'Post to Cash & Bank'}
           </button>
+
+          {cashBankPosting?.status === 'posted' && (
+            <button
+              type="button"
+              className="secondary-button day-cash-bank-reverse-button"
+              onClick={reverseCashBankPosting}
+              disabled={loading || reversingCashBank}
+            >
+              <RotateCcw size={17} />
+              {reversingCashBank ? 'Reversing...' : 'Reverse Posting'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -517,21 +588,19 @@ function DayClosingManagement({ restaurant }) {
         </span>
       </div>
 
-      <div className={`day-cash-bank-posting-strip ${cashBankPosting?.status === 'posted' ? 'posted' : ''}`}>
+      <div
+        className={`day-cash-bank-posting-strip ${cashBankPosting?.status === 'posted' ? 'posted' : ''} ${cashBankPosting?.status === 'reversed' ? 'reversed' : ''}`}
+      >
         <div>
-          <strong>{cashBankPosting?.status === 'posted' ? 'Cash & Bank posted' : 'Cash & Bank not posted'}</strong>
-          <span>
-            {cashBankPosting?.posted_at
-              ? `Posted ${formatDateTime(cashBankPosting.posted_at)}. Duplicate posting is blocked for this closing date.`
-              : paymentSnapshot
-                ? 'Ready to post this day’s cash, card, online and refund entries to Cash & Bank.'
-                : 'Create a payment snapshot first to enable Cash & Bank posting.'}
-          </span>
+          <strong>{getPostingStripTitle(cashBankPosting)}</strong>
+          <span>{getPostingStripMessage({ cashBankPosting, paymentSnapshot })}</span>
         </div>
 
-        {cashBankPosting?.net_posted !== undefined && (
+        {cashBankPosting?.status === 'reversed' ? (
+          <strong>Reversed</strong>
+        ) : cashBankPosting?.net_posted !== undefined ? (
           <strong>{formatMoney(currency, cashBankPosting.net_posted)}</strong>
-        )}
+        ) : null}
       </div>
 
       <div className="day-closing-summary-grid">
@@ -1061,6 +1130,38 @@ function getSnapshotUpdatedLabel(snapshot) {
 }
 
 
+
+function formatPostingStatus(status) {
+  if (status === 'posted') return 'Posted'
+  if (status === 'reversed') return 'Reversed'
+  if (status === 'posting') return 'Posting'
+  return 'Not posted'
+}
+
+function getPostingStripTitle(posting) {
+  if (posting?.status === 'posted') return 'Cash & Bank posted'
+  if (posting?.status === 'reversed') return 'Cash & Bank posting reversed'
+  return 'Cash & Bank not posted'
+}
+
+function getPostingStripMessage({ cashBankPosting, paymentSnapshot }) {
+  if (cashBankPosting?.status === 'posted') {
+    return cashBankPosting?.posted_at
+      ? `Posted ${formatDateTime(cashBankPosting.posted_at)}. Duplicate posting is blocked unless you reverse it first.`
+      : 'Posted to Cash & Bank. Duplicate posting is blocked unless you reverse it first.'
+  }
+
+  if (cashBankPosting?.status === 'reversed') {
+    return cashBankPosting?.reversed_at
+      ? `Reversed ${formatDateTime(cashBankPosting.reversed_at)}. Correct the closing or snapshot, then post again.`
+      : 'Posting was reversed. Correct the closing or snapshot, then post again.'
+  }
+
+  return paymentSnapshot
+    ? 'Ready to post this day’s cash, card, online and refund entries to Cash & Bank.'
+    : 'Create a payment snapshot first to enable Cash & Bank posting.'
+}
+
 function buildZReportHtml({
   restaurant,
   selectedDate,
@@ -1258,9 +1359,10 @@ function buildZReportHtml({
 
         <div class="section">
           <div class="section-title">Cash & Bank Posting</div>
-          ${printRow('Posting status', cashBankPosting?.status === 'posted' ? 'Posted' : 'Not posted')}
+          ${printRow('Posting status', formatPostingStatus(cashBankPosting?.status))}
           ${printRow('Net posted', formatMoney(currency, cashBankPosting?.net_posted || 0))}
           ${cashBankPosting?.posted_at ? printRow('Posted at', formatDateTime(cashBankPosting.posted_at)) : ''}
+          ${cashBankPosting?.reversed_at ? printRow('Reversed at', formatDateTime(cashBankPosting.reversed_at)) : ''}
         </div>
 
         ${form.notes?.trim() ? `<div class="note"><strong>Manager notes</strong><br/>${escapeHtml(form.notes.trim())}</div>` : ''}

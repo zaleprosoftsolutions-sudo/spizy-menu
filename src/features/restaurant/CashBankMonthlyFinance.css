@@ -1,0 +1,216 @@
+
+.cash-bank-monthly-finance-panel {
+  padding: 20px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.1), transparent 20rem),
+    linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(12, 12, 12, 0.96));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.26);
+}
+
+.cash-bank-monthly-finance-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cash-bank-monthly-finance-head h3 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-monthly-finance-head span,
+.cash-bank-monthly-finance-health span,
+.cash-bank-monthly-finance-row span,
+.cash-bank-monthly-finance-row small,
+.cash-bank-monthly-finance-metric small {
+  color: #cfcfcf;
+  line-height: 1.5;
+}
+
+.cash-bank-monthly-finance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: min(720px, 100%);
+}
+
+.cash-bank-monthly-finance-actions label {
+  min-width: 170px;
+}
+
+.cash-bank-monthly-finance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cash-bank-monthly-finance-metric {
+  min-height: 122px;
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+}
+
+.cash-bank-monthly-finance-metric span {
+  color: #f6d28d;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cash-bank-monthly-finance-metric strong {
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.cash-bank-monthly-finance-metric.positive strong {
+  color: #86efac;
+}
+
+.cash-bank-monthly-finance-metric.warning {
+  border-color: rgba(251, 191, 36, 0.22);
+  background: rgba(251, 191, 36, 0.07);
+}
+
+.cash-bank-monthly-finance-metric.warning strong {
+  color: #fbbf24;
+}
+
+.cash-bank-monthly-finance-health {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(251, 191, 36, 0.16);
+  background: rgba(251, 191, 36, 0.08);
+  display: grid;
+  gap: 5px;
+}
+
+.cash-bank-monthly-finance-health strong {
+  color: #fbbf24;
+  font-size: 15px;
+}
+
+.cash-bank-monthly-finance-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.cash-bank-monthly-finance-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.cash-bank-monthly-finance-row.healthy {
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.055);
+}
+
+.cash-bank-monthly-finance-row.warning {
+  border-color: rgba(251, 191, 36, 0.18);
+  background: rgba(251, 191, 36, 0.055);
+}
+
+.cash-bank-monthly-finance-row strong {
+  color: #ffffff;
+}
+
+.cash-bank-monthly-finance-row > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cash-bank-monthly-finance-values {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cash-bank-monthly-finance-values span {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 12px;
+}
+
+.cash-bank-monthly-finance-values strong {
+  margin-left: 4px;
+}
+
+.cash-bank-monthly-finance-empty {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px dashed rgba(255, 191, 77, 0.18);
+  background: rgba(255, 191, 77, 0.08);
+  color: #ffbf4d;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cash-bank-monthly-finance-empty div {
+  display: grid;
+  gap: 4px;
+}
+
+.cash-bank-monthly-finance-empty strong {
+  color: #ffffff;
+}
+
+@media (max-width: 1180px) {
+  .cash-bank-monthly-finance-head {
+    flex-direction: column;
+  }
+
+  .cash-bank-monthly-finance-actions {
+    justify-content: flex-start;
+  }
+
+  .cash-bank-monthly-finance-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .cash-bank-monthly-finance-actions,
+  .cash-bank-monthly-finance-row,
+  .cash-bank-monthly-finance-values {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cash-bank-monthly-finance-actions label,
+  .cash-bank-monthly-finance-actions button {
+    width: 100%;
+  }
+
+  .cash-bank-monthly-finance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-bank-monthly-finance-values {
+    justify-content: flex-start;
+  }
+}
