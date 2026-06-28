@@ -7,6 +7,7 @@ import NutritionLabelsManagement from '../../restaurant/NutritionLabelsManagemen
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantOnboardingWizard from '../../restaurant/RestaurantOnboardingWizard'
 import SubscriptionBillingManagement from '../../restaurant/SubscriptionBillingManagement'
+import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import PWAMobilePolishManagement from '../../restaurant/PWAMobilePolishManagement'
 import OfflinePOSQueueManagement from '../../restaurant/OfflinePOSQueueManagement'
 import LaunchQAReadinessManagement from '../../restaurant/LaunchQAReadinessManagement'
@@ -439,6 +440,11 @@ function RestaurantDashboard({ profile, restaurant }) {
         )}
 
         <LaunchModePanel label={getSpizyLaunchModeLabel()} />
+
+        <SubscriptionTrialHeaderBar
+          restaurant={restaurant}
+          onOpenSection={handleSectionChange}
+        />
 
         {!activeSectionAllowed && (
           <StaffAccessGuardPanel

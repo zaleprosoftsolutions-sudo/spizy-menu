@@ -102,7 +102,7 @@ const restaurantNavGroups = [
       { id: 'cash-bank', label: 'Cash & Bank', description: 'Accounts and money ledger', icon: Landmark, badge: 'Core' },
       { id: 'finance', label: 'Finance', description: 'Profit, dues and cash flow', icon: BarChart3 },
       { id: 'reports', label: 'Reports', description: 'Sales analytics', icon: BarChart3, badge: 'Core' },
-      { id: 'subscription-billing', label: 'Subscription', description: 'Mamo Pay billing', icon: CreditCard, badge: 'Launch' },
+      { id: 'subscription-billing', label: 'Subscription & Plans', description: 'Trial, current plan and Mamo Pay', icon: CreditCard, badge: 'Core' },
       { id: 'receipt-print', label: 'Receipt / KOT Print', description: 'Thermal receipt and kitchen tickets', icon: Printer, badge: 'Launch' },
       { id: 'tax-invoices', label: 'Tax & Invoices', description: 'VAT/GST and invoice print', icon: FileText },
     ],

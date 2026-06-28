@@ -3880,3 +3880,18 @@ body,
     display: none !important;
   }
 }
+
+/* --- Spizy launch subscription header/sticky top polish --- */
+.dashboard-top,
+.spizy-dashboard-top,
+.restaurant-dashboard-top,
+.dashboard-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 60 !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.restaurant-workspace {
+  align-self: start;
+}
