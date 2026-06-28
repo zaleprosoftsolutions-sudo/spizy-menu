@@ -423,11 +423,6 @@ function RestaurantDashboard({ profile, restaurant }) {
 
   return (
     <div className="restaurant-launch-dashboard-root">
-      <SubscriptionTrialHeaderBar
-        restaurant={restaurant}
-        onSubscribe={() => handleSectionChange('subscription-billing')}
-      />
-
       <div className="restaurant-layout">
       <RestaurantSidebar
         restaurant={restaurant}
@@ -438,6 +433,11 @@ function RestaurantDashboard({ profile, restaurant }) {
       />
 
       <div className="restaurant-workspace">
+        <SubscriptionTrialHeaderBar
+          restaurant={restaurant}
+          onSubscribe={() => handleSectionChange('subscription-billing')}
+        />
+
         {staffAccess.isLimited && staffAccess.message && (
           <StaffAccessGuardPanel
             title="Staff access needs setup"

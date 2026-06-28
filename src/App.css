@@ -3721,177 +3721,119 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
-/* --------------------------------------------------------------------------
-   Spizy restaurant dashboard final layout override
-   Added to prevent old global App.css rules from compressing the new sidebar.
-   -------------------------------------------------------------------------- */
-
-html,
-body,
-#root {
-  height: auto !important;
-  min-height: 100% !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-}
-
-.app-shell {
-  overflow-x: hidden !important;
-  overflow-y: visible !important;
-}
-
-.dashboard-page {
-  display: block !important;
-  place-items: initial !important;
-  align-items: initial !important;
-  justify-items: initial !important;
-  overflow: visible !important;
-  min-height: 100vh !important;
-}
-
-.dashboard-card {
-  overflow: visible !important;
-  height: auto !important;
-  max-height: none !important;
-}
-
-.restaurant-layout {
-  display: grid !important;
-  grid-template-columns: minmax(300px, 330px) minmax(0, 1fr) !important;
-  gap: clamp(18px, 2vw, 28px) !important;
-  align-items: start !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.restaurant-workspace {
-  min-width: 0 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: visible !important;
-}
-
-.restaurant-sidebar.spizy-premium-sidebar,
-.spizy-premium-sidebar {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 330px !important;
-  position: sticky !important;
-  top: 18px !important;
-  align-self: start !important;
-  max-height: calc(100vh - 36px) !important;
+/* === SPIZY LAUNCH PRO SCROLL + STICKY OVERRIDE (2026-06-29) === */
+body:has(.restaurant-launch-dashboard-root),
+body:has(.superadmin-pro-shell) {
   overflow: hidden !important;
+}
+
+body:has(.restaurant-launch-dashboard-root) .dashboard-page,
+body:has(.superadmin-pro-shell) .dashboard-page {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+  display: block !important;
+  place-items: stretch !important;
+  padding: clamp(10px, 1.5vw, 22px) !important;
+}
+
+body:has(.restaurant-launch-dashboard-root) .dashboard-card,
+body:has(.superadmin-pro-shell) .dashboard-card {
+  width: 100% !important;
+  max-width: none !important;
+  height: calc(100vh - clamp(20px, 3vw, 44px)) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: clamp(14px, 1.6vw, 24px) !important;
   display: flex !important;
   flex-direction: column !important;
-}
-
-.restaurant-nav.spizy-sidebar-scroll,
-.spizy-sidebar-scroll {
-  display: grid !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-.spizy-sidebar-group-toggle,
-.spizy-sidebar-item,
-.spizy-sidebar-search,
-.spizy-sidebar-brand-card,
-.spizy-sidebar-note,
-.spizy-sidebar-foot {
-  box-sizing: border-box !important;
-}
-
-.spizy-sidebar-group-toggle {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  white-space: normal !important;
-}
-
-.spizy-sidebar-item {
-  display: grid !important;
-  grid-template-columns: 38px minmax(0, 1fr) auto !important;
-  align-items: center !important;
-}
-
-.spizy-sidebar-group-copy,
-.spizy-sidebar-item-copy,
-.spizy-sidebar-restaurant-copy {
-  min-width: 0 !important;
-}
-
-.spizy-sidebar-group-copy strong,
-.spizy-sidebar-group-copy small,
-.spizy-sidebar-item-copy strong,
-.spizy-sidebar-item-copy small,
-.spizy-sidebar-restaurant-copy strong,
-.spizy-sidebar-restaurant-copy span {
-  white-space: nowrap !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
 }
 
-@media (max-width: 1100px) {
-  .restaurant-layout {
-    grid-template-columns: minmax(270px, 300px) minmax(0, 1fr) !important;
-  }
-
-  .spizy-premium-sidebar {
-    max-width: 300px !important;
-  }
-}
-
-@media (max-width: 920px) {
-  .restaurant-layout {
-    grid-template-columns: 1fr !important;
-  }
-
-  .restaurant-sidebar.spizy-premium-sidebar,
-  .spizy-premium-sidebar {
-    position: relative !important;
-    top: auto !important;
-    max-width: 100% !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-  .restaurant-nav.spizy-sidebar-scroll,
-  .spizy-sidebar-scroll {
-    max-height: none !important;
-    overflow: visible !important;
-  }
-}
-
-@media (max-width: 520px) {
-  .restaurant-layout {
-    gap: 14px !important;
-  }
-
-  .spizy-sidebar-item {
-    grid-template-columns: 36px minmax(0, 1fr) !important;
-  }
-
-  .spizy-sidebar-badge {
-    display: none !important;
-  }
-}
-
-/* --- Spizy launch subscription header/sticky top polish --- */
-.dashboard-top,
-.spizy-dashboard-top,
-.restaurant-dashboard-top,
-.dashboard-header {
+body:has(.restaurant-launch-dashboard-root) .dashboard-top,
+body:has(.superadmin-pro-shell) .dashboard-top {
   position: sticky !important;
   top: 0 !important;
-  z-index: 60 !important;
+  z-index: 1000 !important;
+  flex: 0 0 auto !important;
+  padding: 0 0 16px !important;
+  background: linear-gradient(180deg, rgba(12, 8, 6, 0.99), rgba(12, 8, 6, 0.92)) !important;
   backdrop-filter: blur(18px) !important;
 }
 
-.restaurant-workspace {
-  align-self: start;
+.restaurant-launch-dashboard-root,
+.superadmin-pro-shell {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+.restaurant-launch-dashboard-root .restaurant-layout {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
+  grid-template-columns: clamp(310px, 24vw, 390px) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+.restaurant-launch-dashboard-root .restaurant-sidebar,
+.superadmin-pro-sidebar {
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.restaurant-launch-dashboard-root .restaurant-workspace,
+.superadmin-pro-workspace {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+.restaurant-launch-dashboard-root .subscription-trial-header-bar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 60 !important;
+  display: grid !important;
+}
+
+@media (max-width: 980px) {
+  body:has(.restaurant-launch-dashboard-root),
+  body:has(.superadmin-pro-shell) {
+    overflow: auto !important;
+  }
+
+  body:has(.restaurant-launch-dashboard-root) .dashboard-page,
+  body:has(.superadmin-pro-shell) .dashboard-page,
+  body:has(.restaurant-launch-dashboard-root) .dashboard-card,
+  body:has(.superadmin-pro-shell) .dashboard-card {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
+
+  .restaurant-launch-dashboard-root .restaurant-layout,
+  .superadmin-pro-shell {
+    height: auto !important;
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
+  }
+
+  .restaurant-launch-dashboard-root .restaurant-sidebar,
+  .restaurant-launch-dashboard-root .restaurant-workspace,
+  .superadmin-pro-sidebar,
+  .superadmin-pro-workspace {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .restaurant-launch-dashboard-root .restaurant-workspace,
+  .superadmin-pro-workspace {
+    overflow: visible !important;
+  }
 }

@@ -129,9 +129,7 @@ function getSubscriptionEndDate(restaurant) {
   if (directDate) return directDate
 
   const createdAt = parseDate(restaurant?.created_at)
-  if (!createdAt) return null
-
-  const fallback = new Date(createdAt)
+  const fallback = new Date(createdAt || new Date())
   fallback.setDate(fallback.getDate() + fallbackTrialDays)
   return fallback
 }
