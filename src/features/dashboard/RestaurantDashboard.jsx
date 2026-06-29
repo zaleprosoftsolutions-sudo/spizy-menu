@@ -7,6 +7,7 @@ import NutritionLabelsManagement from '../../restaurant/NutritionLabelsManagemen
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantOnboardingWizard from '../../restaurant/RestaurantOnboardingWizard'
 import SubscriptionBillingManagement from '../../restaurant/SubscriptionBillingManagement'
+import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import PWAMobilePolishManagement from '../../restaurant/PWAMobilePolishManagement'
 import OfflinePOSQueueManagement from '../../restaurant/OfflinePOSQueueManagement'
 import LaunchQAReadinessManagement from '../../restaurant/LaunchQAReadinessManagement'
@@ -14,7 +15,6 @@ import DeploymentMigrationCenterManagement from '../../restaurant/DeploymentMigr
 import ReceiptPrintCenterManagement from '../../restaurant/ReceiptPrintCenterManagement'
 import TaxInvoiceCenterManagement from '../../restaurant/TaxInvoiceCenterManagement'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
-import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
 import OrdersManagement from '../../restaurant/OrdersManagement'
 import CustomerPaymentsManagement from '../../restaurant/CustomerPaymentsManagement'
@@ -68,7 +68,6 @@ import BranchesManagement from '../../restaurant/BranchesManagement'
 import { getLaunchVisibleSections, getSpizyLaunchModeLabel } from '../../restaurant/launchMode'
 import '../../restaurant/StaffAccessGuard.css'
 import '../../restaurant/RestaurantDashboardLaunchFix.css'
-
 
 const fullAccessRoles = new Set([
   'super_admin',
@@ -154,27 +153,20 @@ const sectionPermissionMap = {
 
 function normalizeStaffPermissions(value) {
   if (!value || typeof value !== 'object') return defaultStaffPermissions
-
-  return {
-    ...defaultStaffPermissions,
-    ...value,
-  }
+  return { ...defaultStaffPermissions, ...value }
 }
 
 function shouldLimitByStaffPermissions(profile) {
   if (fullAccessRoles.has(profile?.role)) return false
-
   return profile?.role === 'restaurant_staff'
 }
 
 function hasSectionPermission(section, accessState) {
   if (!accessState?.isLimited) return true
-
   if (section === 'overview') return true
   if (!accessState?.staff?.is_active) return false
 
   const requiredPermissions = sectionPermissionMap[section] || ['settings']
-
   if (requiredPermissions.includes('always')) return true
 
   return requiredPermissions.some(
@@ -251,7 +243,6 @@ const restaurantSections = [
 
 function getSafeSection(section) {
   if (!section) return 'overview'
-
   return restaurantSections.includes(section) ? section : 'overview'
 }
 
@@ -272,11 +263,10 @@ function RestaurantDashboard({ profile, restaurant }) {
 
   const [activeSection, setActiveSection] = useState(urlSection)
 
-  const allowedSections = useMemo(() => {
-    return restaurantSections.filter((section) =>
-      hasSectionPermission(section, staffAccess),
-    )
-  }, [staffAccess])
+  const allowedSections = useMemo(
+    () => restaurantSections.filter((section) => hasSectionPermission(section, staffAccess)),
+    [staffAccess],
+  )
 
   const visibleAllowedSections = useMemo(
     () => getLaunchVisibleSections(allowedSections),
@@ -293,7 +283,6 @@ function RestaurantDashboard({ profile, restaurant }) {
 
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('section', nextSection)
-
     setSearchParams(nextParams, { replace: true })
   }
 
@@ -394,7 +383,6 @@ function RestaurantDashboard({ profile, restaurant }) {
   useEffect(() => {
     if (staffAccess.loading) return
     if (visibleAllowedSections.includes(activeSection)) return
-
     handleSectionChange('overview')
   }, [activeSection, staffAccess.loading, visibleAllowedSections])
 
@@ -422,8 +410,7 @@ function RestaurantDashboard({ profile, restaurant }) {
   const activeSectionAllowed = visibleAllowedSections.includes(activeSection)
 
   return (
-    <div className="restaurant-launch-dashboard-root">
-      <div className="restaurant-layout">
+    <div className="restaurant-layout spizy-pro-restaurant-layout">
       <RestaurantSidebar
         restaurant={restaurant}
         activeSection={activeSectionAllowed ? activeSection : 'overview'}
@@ -432,7 +419,7 @@ function RestaurantDashboard({ profile, restaurant }) {
         staffAccess={staffAccess}
       />
 
-      <div className="restaurant-workspace">
+      <div className="restaurant-workspace spizy-pro-restaurant-workspace">
         <SubscriptionTrialHeaderBar
           restaurant={restaurant}
           onSubscribe={() => handleSectionChange('subscription-billing')}
@@ -457,308 +444,80 @@ function RestaurantDashboard({ profile, restaurant }) {
 
         {activeSectionAllowed && (
           <>
-                  {activeSection === 'overview' && (
-                    <RestaurantOverview
-                      profile={profile}
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'onboarding' && (
-                    <RestaurantOnboardingWizard
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'subscription-billing' && (
-                    <SubscriptionBillingManagement
-                      restaurant={restaurant}
-                      profile={profile}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'pwa-mobile' && (
-                    <PWAMobilePolishManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'offline-pos' && (
-                    <OfflinePOSQueueManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'launch-qa' && (
-                    <LaunchQAReadinessManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'deployment-center' && (
-                    <DeploymentMigrationCenterManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'receipt-print' && (
-                    <ReceiptPrintCenterManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'tax-invoice-center' && (
-                    <TaxInvoiceCenterManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'pos' && <NewOrderPOS restaurant={restaurant} />}
-
-                  {activeSection === 'alerts' && (
-                    <NotificationsCenter
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'notification-center' && (
-                    <RestaurantNotificationsManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {activeSection === 'notification-providers' && (
-                    <NotificationProviderSettingsManagement
-                      restaurant={restaurant}
-                      onOpenSection={handleSectionChange}
-                    />
-                  )}
-
-                  {(activeSection === 'products' ||
-                    activeSection === 'menu' ||
-                    activeSection === 'categories') && (
-                    <ProductsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'menu-schedule' && (
-                    <MenuScheduleManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'nutrition-labels' && (
-                    <NutritionLabelsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'qr' && (
-                    <TablesQRManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'orders' && (
-                    <OrdersManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'customer-payments' && (
-                    <CustomerPaymentsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'refund-automation' && (
-                    <GatewayRefundAutomationManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'day-closing' && (
-                    <DayClosingManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'floor' && (
-                    <TableFloorManagement restaurant={restaurant} onOpenSection={handleSectionChange} />
-                  )}
-
-                  {activeSection === 'inventory' && (
-                    <InventoryManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'branch-stock' && (
-                    <BranchStockTransfersManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'recipes' && (
-                    <RecipesManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'cogs' && (
-                    <COGSManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'modifiers' && (
-                    <ModifierGroupsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'purchases' && (
-                    <PurchasesManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'supplier-payments' && (
-                    <SupplierPaymentsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'expenses' && (
-                    <ExpensesManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'expense-reports' && (
-                    <ExpenseCategoryReportsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'finance' && (
-                    <FinanceManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'cash-bank' && (
-                    <CashBankManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'tax-invoices' && (
-                    <TaxInvoicesManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'vat-statutory' && (
-                    <VATStatutoryManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'advanced-reports' && (
-                    <AdvancedSalesReportsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'kitchen' && (
-                    <KitchenDisplay restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'delivery' && (
-                    <DeliveryManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'delivery-zones' && (
-                    <DeliveryZonesManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'reservations' && (
-                    <ReservationsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'service-requests' && (
-                    <ServiceRequestsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'customers' && (
-                    <CustomersManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'loyalty-tiers' && (
-                    <LoyaltyTiersManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'gift-vouchers' && (
-                    <GiftVouchersManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'combo-deals' && (
-                    <ComboDealsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'crm' && (
-                    <CustomerCRMManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'discounts' && (
-                    <DiscountsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'campaigns' && (
-                    <CampaignsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'marketing' && (
-                    <MarketingBroadcastManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'staff' && <StaffManagement restaurant={restaurant} />}
-
-                  {activeSection === 'permissions-review' && (
-                    <StaffPermissionsReviewManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'attendance' && (
-                    <StaffAttendanceManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'shift-closing' && (
-                    <StaffShiftClosingManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'payroll' && (
-                    <PayrollManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'reviews' && (
-                    <ReviewsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'reports' && (
-                    <ReportsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'printers' && (
-                    <PrintSettingsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'activity-logs' && (
-                    <ActivityLogsManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'data-export' && (
-                    <DataExportManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'data-import' && (
-                    <DataImportManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'branches' && (
-                    <BranchesManagement restaurant={restaurant} />
-                  )}
-
-                  {activeSection === 'settings' && (
-                    <SettingsManagement restaurant={restaurant} />
-                  )}
-
+            {activeSection === 'overview' && (
+              <RestaurantOverview profile={profile} restaurant={restaurant} onOpenSection={handleSectionChange} />
+            )}
+            {activeSection === 'onboarding' && <RestaurantOnboardingWizard restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'subscription-billing' && <SubscriptionBillingManagement restaurant={restaurant} profile={profile} onOpenSection={handleSectionChange} />}
+            {activeSection === 'pwa-mobile' && <PWAMobilePolishManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'offline-pos' && <OfflinePOSQueueManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'launch-qa' && <LaunchQAReadinessManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'deployment-center' && <DeploymentMigrationCenterManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'receipt-print' && <ReceiptPrintCenterManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'tax-invoice-center' && <TaxInvoiceCenterManagement restaurant={restaurant} />}
+            {activeSection === 'pos' && <NewOrderPOS restaurant={restaurant} />}
+            {activeSection === 'alerts' && <NotificationsCenter restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'notification-center' && <RestaurantNotificationsManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'notification-providers' && <NotificationProviderSettingsManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {(activeSection === 'products' || activeSection === 'menu' || activeSection === 'categories') && <ProductsManagement restaurant={restaurant} />}
+            {activeSection === 'menu-schedule' && <MenuScheduleManagement restaurant={restaurant} />}
+            {activeSection === 'nutrition-labels' && <NutritionLabelsManagement restaurant={restaurant} />}
+            {activeSection === 'qr' && <TablesQRManagement restaurant={restaurant} />}
+            {activeSection === 'orders' && <OrdersManagement restaurant={restaurant} />}
+            {activeSection === 'customer-payments' && <CustomerPaymentsManagement restaurant={restaurant} />}
+            {activeSection === 'refund-automation' && <GatewayRefundAutomationManagement restaurant={restaurant} />}
+            {activeSection === 'day-closing' && <DayClosingManagement restaurant={restaurant} />}
+            {activeSection === 'floor' && <TableFloorManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
+            {activeSection === 'inventory' && <InventoryManagement restaurant={restaurant} />}
+            {activeSection === 'branch-stock' && <BranchStockTransfersManagement restaurant={restaurant} />}
+            {activeSection === 'recipes' && <RecipesManagement restaurant={restaurant} />}
+            {activeSection === 'cogs' && <COGSManagement restaurant={restaurant} />}
+            {activeSection === 'modifiers' && <ModifierGroupsManagement restaurant={restaurant} />}
+            {activeSection === 'purchases' && <PurchasesManagement restaurant={restaurant} />}
+            {activeSection === 'supplier-payments' && <SupplierPaymentsManagement restaurant={restaurant} />}
+            {activeSection === 'expenses' && <ExpensesManagement restaurant={restaurant} />}
+            {activeSection === 'expense-reports' && <ExpenseCategoryReportsManagement restaurant={restaurant} />}
+            {activeSection === 'finance' && <FinanceManagement restaurant={restaurant} />}
+            {activeSection === 'cash-bank' && <CashBankManagement restaurant={restaurant} />}
+            {activeSection === 'tax-invoices' && <TaxInvoicesManagement restaurant={restaurant} />}
+            {activeSection === 'vat-statutory' && <VATStatutoryManagement restaurant={restaurant} />}
+            {activeSection === 'advanced-reports' && <AdvancedSalesReportsManagement restaurant={restaurant} />}
+            {activeSection === 'kitchen' && <KitchenDisplay restaurant={restaurant} />}
+            {activeSection === 'delivery' && <DeliveryManagement restaurant={restaurant} />}
+            {activeSection === 'delivery-zones' && <DeliveryZonesManagement restaurant={restaurant} />}
+            {activeSection === 'reservations' && <ReservationsManagement restaurant={restaurant} />}
+            {activeSection === 'service-requests' && <ServiceRequestsManagement restaurant={restaurant} />}
+            {activeSection === 'customers' && <CustomersManagement restaurant={restaurant} />}
+            {activeSection === 'loyalty-tiers' && <LoyaltyTiersManagement restaurant={restaurant} />}
+            {activeSection === 'gift-vouchers' && <GiftVouchersManagement restaurant={restaurant} />}
+            {activeSection === 'combo-deals' && <ComboDealsManagement restaurant={restaurant} />}
+            {activeSection === 'crm' && <CustomerCRMManagement restaurant={restaurant} />}
+            {activeSection === 'discounts' && <DiscountsManagement restaurant={restaurant} />}
+            {activeSection === 'campaigns' && <CampaignsManagement restaurant={restaurant} />}
+            {activeSection === 'marketing' && <MarketingBroadcastManagement restaurant={restaurant} />}
+            {activeSection === 'staff' && <StaffManagement restaurant={restaurant} />}
+            {activeSection === 'permissions-review' && <StaffPermissionsReviewManagement restaurant={restaurant} />}
+            {activeSection === 'attendance' && <StaffAttendanceManagement restaurant={restaurant} />}
+            {activeSection === 'shift-closing' && <StaffShiftClosingManagement restaurant={restaurant} />}
+            {activeSection === 'payroll' && <PayrollManagement restaurant={restaurant} />}
+            {activeSection === 'reviews' && <ReviewsManagement restaurant={restaurant} />}
+            {activeSection === 'reports' && <ReportsManagement restaurant={restaurant} />}
+            {activeSection === 'printers' && <PrintSettingsManagement restaurant={restaurant} />}
+            {activeSection === 'activity-logs' && <ActivityLogsManagement restaurant={restaurant} />}
+            {activeSection === 'data-export' && <DataExportManagement restaurant={restaurant} />}
+            {activeSection === 'data-import' && <DataImportManagement restaurant={restaurant} />}
+            {activeSection === 'branches' && <BranchesManagement restaurant={restaurant} />}
+            {activeSection === 'settings' && <SettingsManagement restaurant={restaurant} />}
           </>
         )}
       </div>
-    </div>
     </div>
   )
 }
 
 function LaunchModePanel({ label }) {
   if (label !== 'Launch-safe mode active') return null
-
-  return (
-    <section className="staff-access-guard compact spizy-launch-mode-panel">
-      <div className="staff-access-lock">🚀</div>
-      <div>
-        <p className="pricing-label">Launch Mode</p>
-        <h2>{label}</h2>
-        <span>Beta/foundation modules are hidden from the sidebar for launch stability. Set VITE_SPIZY_SHOW_BETA_MODULES=true after launch to show every module again.</span>
-      </div>
-    </section>
-  )
+  return null
 }
 
 function StaffAccessGuardPanel({ title, message, compact = false }) {

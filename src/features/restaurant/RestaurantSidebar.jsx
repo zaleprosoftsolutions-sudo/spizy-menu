@@ -3,14 +3,13 @@ import {
   Archive,
   Award,
   ArrowLeftRight,
-  BarChart3,
   BadgePercent,
+  BarChart3,
   BellRing,
   BookOpenCheck,
   Building2,
   CalendarCheck,
   ChefHat,
-  ChevronDown,
   CircleAlert,
   CircleDollarSign,
   ClipboardCheck,
@@ -49,14 +48,13 @@ import {
   Utensils,
   WalletCards,
   WifiOff,
+  X,
 } from 'lucide-react'
 import { getLaunchVisibleSections, getSpizyLaunchModeLabel } from './launchMode'
 import './RestaurantSidebar.css'
 
-const sidebarStorageKeys = {
-  openGroups: 'spizy.restaurant.sidebar.openGroups.launch.v5',
-  scrollTop: 'spizy.restaurant.sidebar.scrollTop.launch.v5',
-}
+const STORAGE_OPEN_GROUPS = 'spizy.restaurant.sidebar.openGroups.v5'
+const STORAGE_SCROLL_TOP = 'spizy.restaurant.sidebar.scrollTop.v5'
 
 const restaurantNavGroups = [
   {
@@ -65,146 +63,130 @@ const restaurantNavGroups = [
     subtitle: 'Orders, POS and closing',
     defaultOpen: true,
     items: [
-      { id: 'overview', label: 'Dashboard', description: 'Restaurant overview', icon: LayoutDashboard, badge: 'Core' },
-      { id: 'subscription-billing', label: 'Subscription & Plans', description: 'Trial, Mamo Pay and upgrades', icon: CreditCard, badge: 'Plan' },
-      { id: 'pos', label: 'New Order / POS', description: 'Counter order screen', icon: ShoppingCart, badge: 'Core' },
-      { id: 'orders', label: 'Orders', description: 'Table and delivery orders', icon: ReceiptText, badge: 'Core' },
-      { id: 'kitchen', label: 'Kitchen Display', description: 'Live preparation board', icon: ChefHat, badge: 'Core' },
-      { id: 'customer-payments', label: 'Customer Payments', description: 'COD and unpaid collections', icon: CircleDollarSign, badge: 'Core' },
-      { id: 'day-closing', label: 'Day Closing', description: 'Cash drawer and Z report', icon: ClipboardCheck, badge: 'Core' },
+      { id: 'overview', label: 'Dashboard', description: 'Restaurant overview', icon: LayoutDashboard, tag: 'Core' },
+      { id: 'subscription-billing', label: 'Subscription & Plans', description: 'Trial, Mamo Pay and upgrades', icon: CreditCard, tag: 'Billing' },
+      { id: 'pos', label: 'New Order / POS', description: 'Counter order screen', icon: ShoppingCart, tag: 'Core' },
+      { id: 'orders', label: 'Orders', description: 'Table and delivery orders', icon: ReceiptText, tag: 'Core' },
+      { id: 'kitchen', label: 'Kitchen Display', description: 'Live preparation board', icon: ChefHat, tag: 'Core' },
+      { id: 'customer-payments', label: 'Customer Payments', description: 'COD and unpaid collections', icon: CircleDollarSign, tag: 'Core' },
+      { id: 'day-closing', label: 'Day Closing', description: 'Cash drawer and Z report', icon: ClipboardCheck, tag: 'Core' },
     ],
   },
   {
-    id: 'menu_setup',
+    id: 'floor_delivery',
+    title: 'Floor & Delivery',
+    subtitle: 'Tables, delivery and requests',
+    defaultOpen: false,
+    items: [
+      { id: 'floor', label: 'Floor Plan', description: 'Live table status map', icon: LayoutGrid, tag: 'Core' },
+      { id: 'delivery', label: 'Delivery', description: 'Dispatch and COD tracking', icon: Truck, tag: 'Core' },
+      { id: 'delivery-zones', label: 'Delivery Zones', description: 'Area fees and minimum orders', icon: MapPin, tag: 'Core' },
+      { id: 'reservations', label: 'Reservations', description: 'Bookings and table holds', icon: CalendarCheck, tag: 'Core' },
+      { id: 'service-requests', label: 'Service Requests', description: 'Table calls and guest help', icon: BellRing, tag: 'Core' },
+    ],
+  },
+  {
+    id: 'menu_qr',
     title: 'Menu & QR Setup',
     subtitle: 'Products, menu and tables',
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
-      { id: 'products', label: 'Products / Items', description: 'Categories, prices and images', icon: Utensils, badge: 'Core' },
-      { id: 'qr', label: 'Tables & QR', description: 'Live QR menus', icon: QrCode, badge: 'Core' },
-      { id: 'floor', label: 'Floor Plan', description: 'Live table status map', icon: LayoutGrid },
-      { id: 'delivery', label: 'Delivery', description: 'Dispatch and COD tracking', icon: Truck },
-      { id: 'delivery-zones', label: 'Delivery Zones', description: 'Area fees and minimum orders', icon: MapPin },
-      { id: 'menu-schedule', label: 'Menu Schedule', description: 'Availability and happy hours', icon: Clock },
-      { id: 'modifiers', label: 'Modifiers & Add-ons', description: 'Toppings, sauces and choices', icon: ListPlus },
-      { id: 'nutrition-labels', label: 'Nutrition & Allergens', description: 'Dietary labels and warnings', icon: Tags },
+      { id: 'products', label: 'Products / Items', description: 'Categories, prices and images', icon: Utensils, tag: 'Core' },
+      { id: 'qr', label: 'Tables & QR', description: 'Live QR menus', icon: QrCode, tag: 'Core' },
+      { id: 'menu-schedule', label: 'Menu Schedule', description: 'Availability and happy hours', icon: Clock, tag: 'Core' },
+      { id: 'nutrition-labels', label: 'Nutrition & Allergens', description: 'Dietary labels and warnings', icon: Tags, tag: 'Core' },
+      { id: 'modifiers', label: 'Modifiers & Add-ons', description: 'Toppings, sauces and choices', icon: ListPlus, tag: 'Core' },
     ],
   },
   {
-    id: 'finance',
+    id: 'finance_reports',
     title: 'Finance & Reports',
-    subtitle: 'Money, reports and tax',
+    subtitle: 'Money, reports and billing',
     defaultOpen: false,
     items: [
-      { id: 'cash-bank', label: 'Cash & Bank', description: 'Accounts and money ledger', icon: Landmark, badge: 'Core' },
-      { id: 'reports', label: 'Reports', description: 'Sales analytics', icon: BarChart3, badge: 'Core' },
-      { id: 'receipt-print', label: 'Receipt / KOT Print', description: 'Thermal receipt and kitchen tickets', icon: Printer, badge: 'Launch' },
-      { id: 'finance', label: 'Finance', description: 'Profit, dues and cash flow', icon: WalletCards },
-      { id: 'expenses', label: 'Expenses', description: 'Bills, petty cash and costs', icon: WalletCards },
-      { id: 'tax-invoices', label: 'Tax & Invoices', description: 'VAT/GST and invoice print', icon: FileText },
-      { id: 'tax-invoice-center', label: 'Tax Invoice Center', description: 'VAT invoice records and preview', icon: FileText, badge: 'Beta' },
-      { id: 'vat-statutory', label: 'VAT Statutory', description: 'TRN, VAT boxes and filing pack', icon: ClipboardCheck, badge: 'Beta' },
-      { id: 'advanced-reports', label: 'Advanced Reports', description: 'Product, table and gateway reports', icon: BarChart3, badge: 'Beta' },
-      { id: 'expense-reports', label: 'Expense Reports', description: 'Rent, salary and cost reports', icon: BarChart3, badge: 'Beta' },
+      { id: 'cash-bank', label: 'Cash & Bank', description: 'Accounts and money ledger', icon: Landmark, tag: 'Core' },
+      { id: 'finance', label: 'Finance', description: 'Profit, dues and cash flow', icon: CalculatorIcon, tag: 'Core' },
+      { id: 'expenses', label: 'Expenses', description: 'Bills, petty cash and costs', icon: WalletCards, tag: 'Core' },
+      { id: 'reports', label: 'Reports', description: 'Sales analytics', icon: BarChart3, tag: 'Core' },
+      { id: 'tax-invoices', label: 'Tax & Invoices', description: 'VAT/GST and invoice print', icon: FileText, tag: 'Core' },
+      { id: 'receipt-print', label: 'Receipt / KOT Print', description: 'Thermal receipt and tickets', icon: Printer, tag: 'Core' },
     ],
   },
   {
-    id: 'stock',
+    id: 'stock_costing',
     title: 'Stock & Costing',
-    subtitle: 'Inventory, COGS and purchases',
+    subtitle: 'Inventory and purchases',
     defaultOpen: false,
     items: [
-      { id: 'inventory', label: 'Inventory', description: 'Stock, low stock and wastage', icon: Archive },
-      { id: 'recipes', label: 'Recipes & Costing', description: 'Ingredients, cost and margin', icon: BookOpenCheck },
-      { id: 'cogs', label: 'COGS & Margin', description: 'Food cost and gross profit', icon: BarChart3, badge: 'Beta' },
-      { id: 'purchases', label: 'Purchases', description: 'Suppliers, bills and stock-in', icon: PackageCheck },
-      { id: 'supplier-payments', label: 'Supplier Payments', description: 'Pay supplier dues and advances', icon: HandCoins },
-      { id: 'branch-stock', label: 'Branch Stock', description: 'Branch stock and transfers', icon: ArrowLeftRight },
+      { id: 'inventory', label: 'Inventory', description: 'Stock, low stock and wastage', icon: Archive, tag: 'Core' },
+      { id: 'branch-stock', label: 'Branch Stock', description: 'Branch stock and transfers', icon: ArrowLeftRight, tag: 'Core' },
+      { id: 'recipes', label: 'Recipes & Costing', description: 'Ingredients, cost and margin', icon: BookOpenCheck, tag: 'Core' },
+      { id: 'purchases', label: 'Purchases', description: 'Suppliers, bills and stock-in', icon: PackageCheck, tag: 'Core' },
+      { id: 'supplier-payments', label: 'Supplier Payments', description: 'Pay supplier dues and advances', icon: HandCoins, tag: 'Core' },
+      { id: 'cogs', label: 'COGS & Margin', description: 'Food cost and gross profit', icon: BarChart3, tag: 'Beta' },
     ],
   },
   {
-    id: 'customers_growth',
+    id: 'growth',
     title: 'Customers & Growth',
-    subtitle: 'Rewards, campaigns and reviews',
+    subtitle: 'Customers and marketing',
     defaultOpen: false,
     items: [
-      { id: 'customers', label: 'Customers & Rewards', description: 'Customers and repeat orders', icon: Users },
-      { id: 'discounts', label: 'Discounts', description: 'Coupons and offers', icon: BadgePercent },
-      { id: 'campaigns', label: 'Campaigns', description: 'Banner and countdown', icon: Megaphone },
-      { id: 'reviews', label: 'Reviews', description: 'Customer feedback', icon: Star },
-      { id: 'reservations', label: 'Reservations', description: 'Bookings and table holds', icon: CalendarCheck },
-      { id: 'service-requests', label: 'Service Requests', description: 'Table calls and guest help', icon: BellRing },
-      { id: 'loyalty-tiers', label: 'Loyalty Tiers', description: 'VIP tiers and membership', icon: Award },
-      { id: 'gift-vouchers', label: 'Gift Vouchers', description: 'Store credit and gift cards', icon: Gift },
-      { id: 'combo-deals', label: 'Combo Deals', description: 'Meal bundles and offers', icon: PackageCheck },
-      { id: 'crm', label: 'CRM Notes', description: 'Tags, notes and follow-ups', icon: MessageCircle },
-      { id: 'marketing', label: 'Marketing Broadcast', description: 'WhatsApp and customer messages', icon: MessageCircle },
+      { id: 'customers', label: 'Customers & Rewards', description: 'Customers, points and repeats', icon: Users, tag: 'Core' },
+      { id: 'loyalty-tiers', label: 'Loyalty Tiers', description: 'VIP tiers and membership', icon: Award, tag: 'Core' },
+      { id: 'gift-vouchers', label: 'Gift Vouchers', description: 'Store credit and gift cards', icon: Gift, tag: 'Core' },
+      { id: 'combo-deals', label: 'Combo Deals', description: 'Meal bundles and offers', icon: PackageCheck, tag: 'Core' },
+      { id: 'crm', label: 'CRM Notes', description: 'Tags, notes and follow-ups', icon: MessageCircle, tag: 'Core' },
+      { id: 'discounts', label: 'Discounts', description: 'Coupons and offers', icon: BadgePercent, tag: 'Core' },
+      { id: 'campaigns', label: 'Campaigns', description: 'Banner and countdown', icon: Megaphone, tag: 'Core' },
+      { id: 'marketing', label: 'Marketing Broadcast', description: 'WhatsApp and customer messages', icon: MessageCircle, tag: 'Core' },
+      { id: 'reviews', label: 'Reviews', description: 'Customer feedback', icon: Star, tag: 'Core' },
     ],
   },
   {
-    id: 'team_admin',
+    id: 'admin',
     title: 'Team & Admin',
     subtitle: 'Staff, printers and settings',
     defaultOpen: false,
     items: [
-      { id: 'staff', label: 'Staff', description: 'Staff permissions', icon: UserCog, badge: 'Core' },
-      { id: 'settings', label: 'Settings', description: 'Restaurant profile', icon: Settings, badge: 'Core' },
-      { id: 'printers', label: 'Printers', description: 'Receipts and KOT print', icon: Printer, badge: 'Core' },
-      { id: 'permissions-review', label: 'Permissions Review', description: 'Role access audit', icon: ShieldCheck },
-      { id: 'attendance', label: 'Attendance', description: 'Shifts and clock-in', icon: Clock },
-      { id: 'shift-closing', label: 'Shift Closing', description: 'Cash drawer handover', icon: ClipboardCheck },
-      { id: 'payroll', label: 'Payroll', description: 'Salary and payouts', icon: WalletCards },
-      { id: 'branches', label: 'Branches', description: 'Locations and maps', icon: Building2 },
-      { id: 'activity-logs', label: 'Activity Logs', description: 'Audit trail and changes', icon: History },
-      { id: 'data-export', label: 'Data Export', description: 'CSV backup center', icon: Download },
-      { id: 'data-import', label: 'Data Import', description: 'Bulk CSV upload center', icon: Upload },
+      { id: 'staff', label: 'Staff', description: 'Staff permissions', icon: UserCog, tag: 'Core' },
+      { id: 'permissions-review', label: 'Permissions Review', description: 'Role access audit', icon: ShieldCheck, tag: 'Core' },
+      { id: 'attendance', label: 'Attendance', description: 'Shifts and clock-in', icon: Clock, tag: 'Core' },
+      { id: 'shift-closing', label: 'Shift Closing', description: 'Cash drawer handover', icon: ClipboardCheck, tag: 'Core' },
+      { id: 'payroll', label: 'Payroll', description: 'Salary and payouts', icon: WalletCards, tag: 'Core' },
+      { id: 'printers', label: 'Printers', description: 'Receipts and KOT print', icon: Printer, tag: 'Core' },
+      { id: 'data-export', label: 'Data Export', description: 'CSV backup center', icon: Download, tag: 'Core' },
+      { id: 'data-import', label: 'Data Import', description: 'Bulk CSV upload center', icon: Upload, tag: 'Core' },
+      { id: 'activity-logs', label: 'Activity Logs', description: 'Audit trail and changes', icon: History, tag: 'Core' },
+      { id: 'branches', label: 'Branches', description: 'Locations and maps', icon: Building2, tag: 'Core' },
+      { id: 'settings', label: 'Settings', description: 'Restaurant profile', icon: Settings, tag: 'Core' },
     ],
   },
   {
     id: 'launch_more',
     title: 'Launch & More Tools',
-    subtitle: 'QA, deploy and beta utilities',
+    subtitle: 'QA, deploy and beta tools',
     defaultOpen: false,
     items: [
-      { id: 'onboarding', label: 'Onboarding', description: 'Launch setup wizard', icon: ClipboardCheck, badge: 'Launch' },
-      { id: 'launch-qa', label: 'Launch QA', description: 'Production test checklist', icon: ClipboardCheck, badge: 'Launch' },
-      { id: 'deployment-center', label: 'Deploy Center', description: 'SQL, functions and secrets', icon: Code2, badge: 'Launch' },
-      { id: 'pwa-mobile', label: 'Mobile / PWA', description: 'Install, offline and print readiness', icon: LayoutGrid, badge: 'Launch' },
-      { id: 'alerts', label: 'Alerts Center', description: 'Live action alerts', icon: CircleAlert },
-      { id: 'notification-center', label: 'Reminder Center', description: 'Notification rules and reminders', icon: BellRing },
-      { id: 'notification-providers', label: 'Notification Providers', description: 'Email, WhatsApp and push setup', icon: Send, badge: 'Beta' },
-      { id: 'refund-automation', label: 'Refund Automation', description: 'Gateway refund readiness', icon: RotateCcw, badge: 'Beta' },
-      { id: 'offline-pos', label: 'Offline POS Queue', description: 'Draft orders before sync', icon: WifiOff, badge: 'Beta' },
+      { id: 'onboarding', label: 'Onboarding', description: 'Launch setup wizard', icon: ClipboardCheck, tag: 'Core' },
+      { id: 'pwa-mobile', label: 'Mobile / PWA', description: 'Install, offline and print readiness', icon: LayoutGrid, tag: 'Core' },
+      { id: 'launch-qa', label: 'Launch QA', description: 'Production test checklist', icon: ClipboardCheck, tag: 'Core' },
+      { id: 'deployment-center', label: 'Deploy Center', description: 'SQL, functions and secrets', icon: Code2, tag: 'Core' },
+      { id: 'alerts', label: 'Alerts Center', description: 'Live action alerts', icon: CircleAlert, tag: 'Core' },
+      { id: 'notification-center', label: 'Reminder Center', description: 'Notification rules and reminders', icon: BellRing, tag: 'Core' },
+      { id: 'notification-providers', label: 'Notification Providers', description: 'Email, WhatsApp and push setup', icon: Send, tag: 'Beta' },
+      { id: 'offline-pos', label: 'Offline POS Queue', description: 'Draft orders before sync', icon: WifiOff, tag: 'Beta' },
+      { id: 'refund-automation', label: 'Refund Automation', description: 'Gateway refund readiness', icon: RotateCcw, tag: 'Beta' },
+      { id: 'expense-reports', label: 'Expense Reports', description: 'Rent, salary and cost reports', icon: BarChart3, tag: 'Beta' },
+      { id: 'tax-invoice-center', label: 'Tax Invoice Center', description: 'VAT invoice records and preview', icon: FileText, tag: 'Beta' },
+      { id: 'vat-statutory', label: 'VAT Statutory', description: 'TRN, VAT boxes and filing pack', icon: ClipboardCheck, tag: 'Beta' },
+      { id: 'advanced-reports', label: 'Advanced Reports', description: 'Product, table and gateway reports', icon: BarChart3, tag: 'Beta' },
     ],
   },
 ]
 
-function getDefaultOpenGroups(activeSection) {
-  const defaults = {}
-
-  restaurantNavGroups.forEach((group) => {
-    defaults[group.id] = Boolean(
-      group.defaultOpen || group.items.some((item) => item.id === activeSection),
-    )
-  })
-
-  return defaults
-}
-
-function readStoredOpenGroups(activeSection) {
-  if (typeof window === 'undefined') return getDefaultOpenGroups(activeSection)
-
-  try {
-    const stored = window.localStorage.getItem(sidebarStorageKeys.openGroups)
-    if (!stored) return getDefaultOpenGroups(activeSection)
-
-    return {
-      ...getDefaultOpenGroups(activeSection),
-      ...JSON.parse(stored),
-    }
-  } catch {
-    return getDefaultOpenGroups(activeSection)
-  }
+function CalculatorIcon(props) {
+  return <BarChart3 {...props} />
 }
 
 function RestaurantSidebar({
@@ -215,79 +197,74 @@ function RestaurantSidebar({
   staffAccess = null,
 }) {
   const scrollRef = useRef(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [openGroups, setOpenGroups] = useState(() => readStoredOpenGroups(activeSection))
+  const [search, setSearch] = useState('')
+  const [openGroups, setOpenGroups] = useState(() => getInitialOpenGroups(activeSection))
 
-  const launchVisibleSections = getLaunchVisibleSections(allowedSections)
+  const visibleSections = useMemo(
+    () => getLaunchVisibleSections(allowedSections),
+    [allowedSections],
+  )
+  const visibleSectionSet = useMemo(() => new Set(visibleSections), [visibleSections])
   const launchModeLabel = getSpizyLaunchModeLabel()
 
-  const visibleNavGroups = useMemo(() => {
-    const keyword = searchTerm.trim().toLowerCase()
+  const filteredGroups = useMemo(() => {
+    const keyword = search.trim().toLowerCase()
 
     return restaurantNavGroups
       .map((group) => {
         const items = group.items.filter((item) => {
-          const isAllowed =
-            launchVisibleSections.length === 0 || launchVisibleSections.includes(item.id)
-
-          if (!isAllowed) return false
+          if (!visibleSectionSet.has(item.id)) return false
           if (!keyword) return true
 
-          return [item.label, item.description, group.title]
-            .join(' ')
-            .toLowerCase()
-            .includes(keyword)
+          return [item.label, item.description, group.title, group.subtitle]
+            .some((value) => String(value || '').toLowerCase().includes(keyword))
         })
 
         return { ...group, items }
       })
       .filter((group) => group.items.length > 0)
-  }, [launchVisibleSections, searchTerm])
+  }, [search, visibleSectionSet])
 
   useEffect(() => {
-    setOpenGroups((current) => {
-      const next = { ...current }
+    const activeGroup = restaurantNavGroups.find((group) =>
+      group.items.some((item) => item.id === activeSection),
+    )
 
-      restaurantNavGroups.forEach((group) => {
-        if (group.items.some((item) => item.id === activeSection)) {
-          next[group.id] = true
-        }
-      })
+    if (!activeGroup) return
 
-      return next
-    })
+    setOpenGroups((current) => ({ ...current, [activeGroup.id]: true }))
   }, [activeSection])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(sidebarStorageKeys.openGroups, JSON.stringify(openGroups))
+    if (!search.trim()) return
+
+    setOpenGroups((current) => {
+      const next = { ...current }
+      filteredGroups.forEach((group) => {
+        next[group.id] = true
+      })
+      return next
+    })
+  }, [filteredGroups, search])
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_OPEN_GROUPS, JSON.stringify(openGroups))
   }, [openGroups])
 
   useEffect(() => {
     const element = scrollRef.current
-    if (!element || typeof window === 'undefined') return undefined
+    if (!element) return undefined
 
-    const savedPosition = Number(window.localStorage.getItem(sidebarStorageKeys.scrollTop) || 0)
-    if (savedPosition > 0) element.scrollTop = savedPosition
+    const savedScroll = Number(window.localStorage.getItem(STORAGE_SCROLL_TOP) || 0)
+    if (savedScroll > 0) element.scrollTop = savedScroll
 
-    const savePosition = () => {
-      window.localStorage.setItem(sidebarStorageKeys.scrollTop, String(element.scrollTop || 0))
+    const handleScroll = () => {
+      window.localStorage.setItem(STORAGE_SCROLL_TOP, String(element.scrollTop || 0))
     }
 
-    element.addEventListener('scroll', savePosition, { passive: true })
-
-    return () => element.removeEventListener('scroll', savePosition)
+    element.addEventListener('scroll', handleScroll, { passive: true })
+    return () => element.removeEventListener('scroll', handleScroll)
   }, [])
-
-  useEffect(() => {
-    if (!searchTerm.trim()) return
-
-    const next = {}
-    visibleNavGroups.forEach((group) => {
-      next[group.id] = true
-    })
-    setOpenGroups((current) => ({ ...current, ...next }))
-  }, [searchTerm, visibleNavGroups])
 
   const staffLabel = staffAccess?.isLimited
     ? staffAccess?.staff?.staff_name || 'Staff access'
@@ -298,8 +275,8 @@ function RestaurantSidebar({
   }
 
   return (
-    <aside className="restaurant-sidebar spizy-sidebar-accordion">
-      <div className="restaurant-sidebar-head spizy-sidebar-tenant-card">
+    <aside className="restaurant-sidebar pro-restaurant-sidebar">
+      <div className="restaurant-sidebar-head pro-sidebar-head">
         <div className="restaurant-avatar">
           {restaurant?.name?.slice(0, 2)?.toUpperCase() || 'SP'}
         </div>
@@ -310,92 +287,116 @@ function RestaurantSidebar({
         </div>
       </div>
 
-      <label className="spizy-sidebar-search">
+      <div className="pro-sidebar-search">
         <Search size={16} />
         <input
-          type="search"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           placeholder="Search menu..."
         />
-      </label>
+        {search && (
+          <button type="button" onClick={() => setSearch('')} aria-label="Clear search">
+            <X size={15} />
+          </button>
+        )}
+      </div>
 
-      <nav className="restaurant-nav spizy-sidebar-scroll" ref={scrollRef}>
-        {visibleNavGroups.map((group) => {
-          const isOpen = openGroups[group.id]
-          const activeInside = group.items.some((item) => item.id === activeSection)
+      <nav className="restaurant-nav pro-sidebar-scroll" ref={scrollRef}>
+        {filteredGroups.map((group) => {
+          const isOpen = openGroups[group.id] !== false
+          const isActiveGroup = group.items.some((item) => item.id === activeSection)
 
           return (
-            <section
-              className={`restaurant-nav-group spizy-sidebar-group ${activeInside ? 'has-active' : ''}`}
-              key={group.id}
-            >
+            <div className={`restaurant-nav-group pro-nav-group ${isActiveGroup ? 'active-group' : ''}`} key={group.id}>
               <button
                 type="button"
-                className="spizy-sidebar-group-toggle"
+                className="pro-nav-group-button"
                 onClick={() => toggleGroup(group.id)}
-                aria-expanded={isOpen}
               >
                 <span>
                   <strong>{group.title}</strong>
                   <small>{group.subtitle}</small>
                 </span>
                 <em>{group.items.length}</em>
-                <ChevronDown size={16} className={isOpen ? 'open' : ''} />
+                <b>{isOpen ? '⌃' : '⌄'}</b>
               </button>
 
               {isOpen && (
-                <div className="spizy-sidebar-item-list">
+                <div className="pro-nav-items">
                   {group.items.map((item) => {
                     const Icon = item.icon
                     const isActive = activeSection === item.id
+                    const tagTone = String(item.tag || '').toLowerCase()
 
                     return (
                       <button
                         type="button"
                         key={item.id}
-                        className={`restaurant-nav-button ${isActive ? 'active' : ''}`}
+                        className={`restaurant-nav-button pro-nav-button ${isActive ? 'active' : ''}`}
                         onClick={() => onSectionChange(item.id)}
                       >
-                        <span className="spizy-sidebar-icon">
-                          <Icon size={18} />
-                        </span>
-                        <span className="spizy-sidebar-copy">
+                        <div className="pro-nav-icon"><Icon size={18} /></div>
+                        <span>
                           <strong>{item.label}</strong>
                           <small>{item.description}</small>
                         </span>
-                        {item.badge && <b>{item.badge}</b>}
+                        {item.tag && <i className={`pro-nav-tag ${tagTone}`}>{item.tag}</i>}
                       </button>
                     )
                   })}
                 </div>
               )}
-            </section>
+            </div>
           )
         })}
+
+        {filteredGroups.length === 0 && (
+          <div className="pro-sidebar-empty">No menu found for “{search}”.</div>
+        )}
       </nav>
 
       {staffAccess?.isLimited && (
-        <div className="restaurant-staff-mode-box">
+        <div className="restaurant-staff-mode-box pro-mini-sidebar-note">
           <strong>{staffAccess.staff?.staff_role || 'Staff mode'}</strong>
           <span>Only permitted modules are shown.</span>
         </div>
       )}
 
-      {launchModeLabel === 'Launch-safe mode active' && (
-        <div className="restaurant-staff-mode-box launch-safe">
-          <strong>Launch-safe mode</strong>
-          <span>Beta tools hidden for tomorrow's launch.</span>
-        </div>
-      )}
-
-      <div className="restaurant-sidebar-foot">
+      <div className="restaurant-sidebar-foot pro-sidebar-foot">
         <Store size={16} />
         <span>Spizy restaurant OS</span>
+        {launchModeLabel === 'Launch-safe mode active' && <small>Launch</small>}
         <Tags size={16} />
       </div>
     </aside>
   )
+}
+
+function getInitialOpenGroups(activeSection) {
+  const saved = parseSavedOpenGroups()
+  const hasSaved = saved && Object.keys(saved).length > 0
+
+  if (hasSaved) return saved
+
+  const next = restaurantNavGroups.reduce((acc, group) => {
+    acc[group.id] = group.defaultOpen === true
+    return acc
+  }, {})
+
+  const activeGroup = restaurantNavGroups.find((group) =>
+    group.items.some((item) => item.id === activeSection),
+  )
+  if (activeGroup) next[activeGroup.id] = true
+
+  return next
+}
+
+function parseSavedOpenGroups() {
+  try {
+    return JSON.parse(window.localStorage.getItem(STORAGE_OPEN_GROUPS) || '{}')
+  } catch {
+    return {}
+  }
 }
 
 export default RestaurantSidebar

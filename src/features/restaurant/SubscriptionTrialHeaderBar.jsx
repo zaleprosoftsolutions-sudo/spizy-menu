@@ -1,173 +1,166 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CreditCard, Sparkles, TimerReset } from 'lucide-react'
+import { Clock3, CreditCard, Sparkles } from 'lucide-react'
 import './SubscriptionTrialHeaderBar.css'
-
-const fallbackTrialDays = 7
 
 function SubscriptionTrialHeaderBar({ restaurant, onSubscribe }) {
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 30000)
+    const timer = window.setInterval(() => setNow(new Date()), 60000)
     return () => window.clearInterval(timer)
   }, [])
 
-  const subscriptionInfo = useMemo(
-    () => buildSubscriptionInfo({ restaurant, now }),
-    [restaurant, now],
+  const trialInfo = useMemo(
+    () => buildTrialInfo({ restaurant, now }),
+    [now, restaurant],
   )
 
   return (
-    <section className={`subscription-trial-header-bar ${subscriptionInfo.tone}`}>
-      <div className="subscription-trial-main">
+    <section className={`subscription-trial-header-bar ${trialInfo.tone}`}>
+      <div className="subscription-trial-left">
         <div className="subscription-trial-icon">
-          {subscriptionInfo.isActive ? <Sparkles size={20} /> : <TimerReset size={20} />}
+          {trialInfo.isActiveSubscription ? <Sparkles size={18} /> : <Clock3 size={18} />}
         </div>
 
         <div>
-          <span>{subscriptionInfo.kicker}</span>
-          <strong>{subscriptionInfo.title}</strong>
-          <small>{subscriptionInfo.note}</small>
+          <span>{trialInfo.kicker}</span>
+          <strong>{trialInfo.title}</strong>
         </div>
       </div>
 
-      <div className="subscription-countdown-wrap">
-        {subscriptionInfo.countdown.map((item) => (
-          <div className="subscription-countdown-box" key={item.label}>
-            <strong>{item.value}</strong>
-            <span>{item.label}</span>
-          </div>
-        ))}
+      <div className="subscription-trial-countdown" aria-label="Subscription countdown">
+        <CountdownCell label="Days" value={trialInfo.days} />
+        <CountdownCell label="Hours" value={trialInfo.hours} />
+        <CountdownCell label="Mins" value={trialInfo.minutes} />
       </div>
 
-      <button type="button" className="subscription-header-button" onClick={onSubscribe}>
+      <button
+        type="button"
+        className="subscription-trial-cta"
+        onClick={onSubscribe}
+      >
         <CreditCard size={17} />
-        {subscriptionInfo.buttonLabel}
+        {trialInfo.buttonLabel}
       </button>
     </section>
   )
 }
 
-function buildSubscriptionInfo({ restaurant, now }) {
-  const status = String(restaurant?.subscription_status || 'trialing').toLowerCase()
-  const plan = String(restaurant?.subscription_plan || restaurant?.plan || 'QR Menu').replace(/[_-]+/g, ' ')
-  const activeStatuses = new Set(['active', 'paid', 'subscribed'])
-  const trialStatuses = new Set(['trialing', 'trial', 'free_trial'])
-  const trialEnd = getSubscriptionEndDate(restaurant)
-  const isActive = activeStatuses.has(status)
-  const isTrial = trialStatuses.has(status) || (!isActive && trialEnd)
-  const remainingMs = trialEnd ? trialEnd.getTime() - now.getTime() : 0
-  const isExpired = remainingMs <= 0 && !isActive
-  const parts = getCountdownParts(Math.max(remainingMs, 0))
+function CountdownCell({ label, value }) {
+  return (
+    <div className="subscription-countdown-cell">
+      <strong>{String(Math.max(Number(value || 0), 0)).padStart(2, '0')}</strong>
+      <span>{label}</span>
+    </div>
+  )
+}
 
-  if (isActive) {
+function buildTrialInfo({ restaurant, now }) {
+  const status = String(restaurant?.subscription_status || 'trialing').toLowerCase()
+  const plan = restaurant?.subscription_plan || restaurant?.plan || 'trial'
+  const activeUntil = getDateFromRestaurant(restaurant, [
+    'subscription_current_period_end',
+    'current_period_end',
+    'subscription_ends_at',
+    'plan_expires_at',
+  ])
+  const trialEnd = getDateFromRestaurant(restaurant, [
+    'trial_ends_at',
+    'trial_end_at',
+    'subscription_trial_ends_at',
+    'trial_until',
+  ]) || getFallbackTrialEnd(restaurant)
+
+  const isActiveSubscription = ['active', 'paid', 'subscribed'].includes(status)
+  const targetDate = isActiveSubscription ? activeUntil : trialEnd
+  const diff = targetDate ? Math.max(targetDate.getTime() - now.getTime(), 0) : 0
+  const days = Math.floor(diff / 86400000)
+  const hours = Math.floor((diff % 86400000) / 3600000)
+  const minutes = Math.floor((diff % 3600000) / 60000)
+
+  if (isActiveSubscription) {
     return {
       tone: 'active',
-      isActive: true,
+      isActiveSubscription: true,
       kicker: 'Subscription Active',
-      title: `${titleCase(plan)} plan is active`,
-      note: trialEnd ? `Current period ends ${formatDate(trialEnd)}.` : 'Your restaurant subscription is active.',
-      countdown: trialEnd
-        ? [
-            { label: 'days left', value: parts.days },
-            { label: 'hours', value: parts.hours },
-            { label: 'mins', value: parts.minutes },
-          ]
-        : [
-            { label: 'status', value: 'ON' },
-            { label: 'plan', value: 'OK' },
-            { label: 'access', value: 'LIVE' },
-          ],
+      title: activeUntil
+        ? `${formatPlan(plan)} active until ${formatDate(activeUntil)}`
+        : `${formatPlan(plan)} subscription is active`,
+      days,
+      hours,
+      minutes,
       buttonLabel: 'Manage Plan',
     }
   }
 
-  if (isExpired) {
+  if (diff <= 0) {
     return {
-      tone: 'danger',
-      isActive: false,
+      tone: 'expired',
+      isActiveSubscription: false,
       kicker: 'Trial Ended',
-      title: 'Subscribe now to keep Spizy active',
-      note: 'Choose monthly or yearly plan and pay securely with Mamo Pay.',
-      countdown: [
-        { label: 'days', value: '0' },
-        { label: 'hours', value: '0' },
-        { label: 'mins', value: '0' },
-      ],
+      title: 'Subscribe now to keep Spizy Menu active',
+      days: 0,
+      hours: 0,
+      minutes: 0,
       buttonLabel: 'Subscribe Now',
     }
   }
 
   return {
-    tone: isTrial ? 'trial' : 'warning',
-    isActive: false,
-    kicker: isTrial ? 'Free Trial Countdown' : 'Subscription Needed',
-    title: trialEnd
-      ? `Trial ends on ${formatDate(trialEnd)}`
-      : 'Start your Spizy subscription',
-    note: 'Upgrade to monthly or yearly plan. Payments are handled by Mamo Pay for Spizy subscription only.',
-    countdown: [
-      { label: 'days left', value: parts.days },
-      { label: 'hours', value: parts.hours },
-      { label: 'mins', value: parts.minutes },
-    ],
+    tone: 'trial',
+    isActiveSubscription: false,
+    kicker: 'Trial Countdown',
+    title: `Trial ends ${formatDate(targetDate)} — subscribe before expiry`,
+    days,
+    hours,
+    minutes,
     buttonLabel: 'Subscribe Now',
   }
 }
 
-function getSubscriptionEndDate(restaurant) {
-  const directValue =
-    restaurant?.trial_ends_at ||
-    restaurant?.trial_end_at ||
-    restaurant?.trial_expires_at ||
-    restaurant?.subscription_trial_ends_at ||
-    restaurant?.subscription_current_period_end ||
-    restaurant?.current_period_end ||
-    restaurant?.subscription_grace_until
-
-  const directDate = parseDate(directValue)
-  if (directDate) return directDate
-
-  const createdAt = parseDate(restaurant?.created_at)
-  const fallback = new Date(createdAt || new Date())
-  fallback.setDate(fallback.getDate() + fallbackTrialDays)
-  return fallback
-}
-
-function parseDate(value) {
-  if (!value) return null
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-function getCountdownParts(ms) {
-  const totalMinutes = Math.floor(ms / 60000)
-  const days = Math.floor(totalMinutes / 1440)
-  const hours = Math.floor((totalMinutes % 1440) / 60)
-  const minutes = totalMinutes % 60
-
-  return {
-    days: String(days),
-    hours: String(hours).padStart(2, '0'),
-    minutes: String(minutes).padStart(2, '0'),
+function getDateFromRestaurant(restaurant, keys) {
+  for (const key of keys) {
+    const value = restaurant?.[key]
+    if (!value) continue
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime())) return date
   }
+
+  return null
 }
 
-function formatDate(date) {
+function getFallbackTrialEnd(restaurant) {
+  const createdValue = restaurant?.created_at || restaurant?.inserted_at
+  if (!createdValue) return addDays(new Date(), 3)
+
+  const createdDate = new Date(createdValue)
+  if (Number.isNaN(createdDate.getTime())) return addDays(new Date(), 3)
+
+  return addDays(createdDate, 14)
+}
+
+function addDays(date, days) {
+  const nextDate = new Date(date)
+  nextDate.setDate(nextDate.getDate() + days)
+  return nextDate
+}
+
+function formatPlan(value) {
+  return String(value || 'plan')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function formatDate(value) {
   try {
     return new Intl.DateTimeFormat('en-AE', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-    }).format(date)
+    }).format(value)
   } catch {
-    return date.toISOString().slice(0, 10)
+    return 'soon'
   }
-}
-
-function titleCase(value) {
-  return String(value || '')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 export default SubscriptionTrialHeaderBar

@@ -1,4 +1,4 @@
-const launchHiddenSections = new Set([
+const betaHiddenInLaunch = new Set([
   'offline-pos',
   'refund-automation',
   'cogs',
@@ -9,35 +9,93 @@ const launchHiddenSections = new Set([
   'notification-providers',
 ])
 
-export function isSpizyLaunchModeEnabled() {
-  const env = import.meta?.env || {}
+const launchCoreSections = new Set([
+  'overview',
+  'onboarding',
+  'subscription-billing',
+  'pwa-mobile',
+  'launch-qa',
+  'deployment-center',
+  'receipt-print',
+  'pos',
+  'alerts',
+  'notification-center',
+  'orders',
+  'customer-payments',
+  'day-closing',
+  'floor',
+  'kitchen',
+  'delivery',
+  'delivery-zones',
+  'reservations',
+  'service-requests',
+  'products',
+  'menu-schedule',
+  'nutrition-labels',
+  'menu',
+  'categories',
+  'qr',
+  'inventory',
+  'branch-stock',
+  'recipes',
+  'modifiers',
+  'purchases',
+  'supplier-payments',
+  'expenses',
+  'finance',
+  'cash-bank',
+  'tax-invoices',
+  'customers',
+  'loyalty-tiers',
+  'gift-vouchers',
+  'combo-deals',
+  'crm',
+  'discounts',
+  'campaigns',
+  'marketing',
+  'staff',
+  'permissions-review',
+  'attendance',
+  'shift-closing',
+  'payroll',
+  'reviews',
+  'reports',
+  'printers',
+  'activity-logs',
+  'data-export',
+  'data-import',
+  'branches',
+  'settings',
+])
 
-  if (String(env.VITE_SPIZY_SHOW_BETA_MODULES || '').toLowerCase() === 'true') {
-    return false
+function getEnvValue(key) {
+  try {
+    return import.meta.env?.[key]
+  } catch {
+    return undefined
   }
+}
 
-  const launchFlag = String(env.VITE_SPIZY_LAUNCH_MODE || '').toLowerCase()
+export function isSpizyLaunchSafeMode() {
+  const launchMode = String(getEnvValue('VITE_SPIZY_LAUNCH_MODE') ?? 'true').toLowerCase()
+  const showBeta = String(getEnvValue('VITE_SPIZY_SHOW_BETA_MODULES') ?? 'false').toLowerCase()
 
-  if (launchFlag === 'false') return false
-  if (launchFlag === 'true') return true
+  if (showBeta === 'true') return false
+  if (launchMode === 'false') return false
 
   return true
 }
 
-export function isSpizyBetaSection(section) {
-  return launchHiddenSections.has(section)
+export function getSpizyLaunchModeLabel() {
+  return isSpizyLaunchSafeMode() ? 'Launch-safe mode active' : 'All modules visible'
 }
 
 export function getLaunchVisibleSections(sections = []) {
-  if (!isSpizyLaunchModeEnabled()) return sections
+  const safeSections = Array.isArray(sections) ? sections : []
 
-  return sections.filter((section) => !launchHiddenSections.has(section))
+  if (!isSpizyLaunchSafeMode()) return safeSections
+
+  return safeSections.filter(
+    (section) => launchCoreSections.has(section) && !betaHiddenInLaunch.has(section),
+  )
 }
-
-export function getSpizyLaunchModeLabel() {
-  return isSpizyLaunchModeEnabled()
-    ? 'Launch-safe mode active'
-    : 'All modules visible'
-}
-
-export const spizyLaunchHiddenSectionIds = Array.from(launchHiddenSections)

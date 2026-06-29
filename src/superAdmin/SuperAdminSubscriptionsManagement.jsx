@@ -1,448 +1,191 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  CalendarDays,
-  CheckCircle2,
-  CreditCard,
-  Download,
-  RefreshCw,
-  ShieldCheck,
-  TrendingUp,
-  XCircle,
-} from 'lucide-react'
-import { supabase } from '../../lib/supabaseClient'
+import { CreditCard, RefreshCcw, ShieldCheck } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 import './SuperAdminSubscriptionsManagement.css'
 
-const statusOptions = [
-  { value: 'trialing', label: 'Trialing' },
-  { value: 'active', label: 'Active' },
-  { value: 'past_due', label: 'Past due' },
-  { value: 'expired', label: 'Expired' },
-  { value: 'suspended', label: 'Suspended' },
-  { value: 'cancelled', label: 'Cancelled' },
-]
-
-const planOptions = [
-  { value: 'qr_menu_monthly', label: 'QR Menu Monthly', cycle: 'monthly' },
-  { value: 'qr_menu_yearly', label: 'QR Menu Yearly', cycle: 'yearly' },
-]
-
 function SuperAdminSubscriptionsManagement({ onStatsRefresh }) {
-  const [loading, setLoading] = useState(true)
-  const [savingId, setSavingId] = useState('')
-  const [message, setMessage] = useState(null)
   const [restaurants, setRestaurants] = useState([])
   const [attempts, setAttempts] = useState([])
-  const [invoices, setInvoices] = useState([])
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [loading, setLoading] = useState(true)
+  const [updatingId, setUpdatingId] = useState('')
+  const [message, setMessage] = useState('')
 
-  const loadSubscriptions = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
+    setMessage('')
 
-    const { data, error } = await supabase.functions.invoke(
-      'manage-spizy-subscriptions',
-      { body: { action: 'list' } },
-    )
+    const [restaurantResult, attemptsResult] = await Promise.all([
+      supabase
+        .from('restaurants')
+        .select('id, name, slug, owner_email, subscription_status, subscription_plan, subscription_current_period_start, subscription_current_period_end, subscription_grace_until, created_at')
+        .order('created_at', { ascending: false })
+        .limit(300),
+      supabase
+        .from('spizy_subscription_payment_attempts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50),
+    ])
 
+    if (restaurantResult.error) setMessage(restaurantResult.error.message)
+    setRestaurants(restaurantResult.data || [])
+    setAttempts(attemptsResult.data || [])
     setLoading(false)
-
-    if (error || data?.error) {
-      setMessage({
-        type: 'error',
-        text:
-          data?.error ||
-          error?.message ||
-          'Unable to load subscription management data.',
-      })
-      return
-    }
-
-    setRestaurants(data?.restaurants || [])
-    setAttempts(data?.attempts || [])
-    setInvoices(data?.invoices || [])
-    setMessage(null)
   }, [])
 
   useEffect(() => {
-    loadSubscriptions()
-  }, [loadSubscriptions])
+    loadData()
+  }, [loadData])
 
-  const summary = useMemo(() => {
-    const total = restaurants.length
-    const active = restaurants.filter((item) => item.subscription_status === 'active').length
-    const trialing = restaurants.filter((item) => item.subscription_status === 'trialing').length
-    const risk = restaurants.filter((item) =>
-      ['past_due', 'expired', 'suspended', 'cancelled'].includes(item.subscription_status),
-    ).length
-    const monthlyRevenue = restaurants
-      .filter((item) => item.subscription_status === 'active')
-      .reduce((totalAmount, item) => {
-        if (item.subscription_plan === 'qr_menu_yearly') return totalAmount + 41.58
-        return totalAmount + 50
-      }, 0)
+  const stats = useMemo(() => {
+    const trial = restaurants.filter((restaurant) => String(restaurant.subscription_status || '').toLowerCase().includes('trial')).length
+    const active = restaurants.filter((restaurant) => ['active', 'paid', 'subscribed'].includes(String(restaurant.subscription_status || '').toLowerCase())).length
+    const expired = restaurants.filter((restaurant) => ['expired', 'suspended', 'cancelled', 'past_due'].includes(String(restaurant.subscription_status || '').toLowerCase())).length
+    const yearly = restaurants.filter((restaurant) => String(restaurant.subscription_plan || '').toLowerCase().includes('year')).length
 
-    return { total, active, trialing, risk, monthlyRevenue }
+    return { trial, active, expired, yearly }
   }, [restaurants])
 
-  const filteredRestaurants = useMemo(() => {
-    const keyword = search.trim().toLowerCase()
+  const runAction = async (restaurant, action) => {
+    setUpdatingId(`${restaurant.id}-${action}`)
+    setMessage('')
 
-    return restaurants.filter((restaurant) => {
-      if (statusFilter !== 'all' && restaurant.subscription_status !== statusFilter) {
-        return false
-      }
-
-      if (!keyword) return true
-
-      return [
-        restaurant.name,
-        restaurant.slug,
-        restaurant.owner_email,
-        restaurant.subscription_status,
-        restaurant.subscription_plan,
-      ].some((value) =>
-        String(value || '')
-          .toLowerCase()
-          .includes(keyword),
-      )
+    const { data, error } = await supabase.functions.invoke('manage-spizy-subscriptions', {
+      body: {
+        action,
+        restaurant_id: restaurant.id,
+      },
     })
-  }, [restaurants, search, statusFilter])
-
-  const updateRestaurantSubscription = async ({ restaurant, status, planKey, periodDays }) => {
-    if (!restaurant?.id) return
-
-    setSavingId(restaurant.id)
-
-    const now = new Date()
-    const end = new Date(now)
-    end.setDate(now.getDate() + Number(periodDays || 30))
-
-    const plan = planOptions.find((item) => item.value === planKey) || planOptions[0]
-
-    const { data, error } = await supabase.functions.invoke(
-      'manage-spizy-subscriptions',
-      {
-        body: {
-          action: 'update_subscription',
-          restaurant_id: restaurant.id,
-          subscription_status: status,
-          subscription_plan: plan.value,
-          subscription_current_period_start: formatDateInput(now),
-          subscription_current_period_end: formatDateInput(end),
-          subscription_grace_until: formatDateInput(addDays(end, 5)),
-        },
-      },
-    )
-
-    setSavingId('')
 
     if (error || data?.error) {
-      setMessage({
-        type: 'error',
-        text: data?.error || error?.message || 'Unable to update subscription.',
-      })
-      return
+      setMessage(data?.error || error?.message || 'Subscription update failed.')
+    } else {
+      setMessage('Subscription updated successfully.')
+      await loadData()
+      if (onStatsRefresh) onStatsRefresh()
     }
 
-    setMessage({ type: 'success', text: 'Subscription updated successfully.' })
-    await loadSubscriptions()
-    if (onStatsRefresh) onStatsRefresh()
-  }
-
-  const extendTrial = async (restaurant, days = 7) => {
-    if (!restaurant?.id) return
-
-    setSavingId(restaurant.id)
-
-    const { data, error } = await supabase.functions.invoke(
-      'manage-spizy-subscriptions',
-      {
-        body: {
-          action: 'extend_trial',
-          restaurant_id: restaurant.id,
-          days,
-        },
-      },
-    )
-
-    setSavingId('')
-
-    if (error || data?.error) {
-      setMessage({
-        type: 'error',
-        text: data?.error || error?.message || 'Unable to extend trial.',
-      })
-      return
-    }
-
-    setMessage({ type: 'success', text: `Trial extended by ${days} days.` })
-    await loadSubscriptions()
-    if (onStatsRefresh) onStatsRefresh()
-  }
-
-  const exportCsv = () => {
-    const rows = [
-      ['Restaurant', 'Slug', 'Owner Email', 'Status', 'Plan', 'Period End', 'Grace Until'],
-      ...filteredRestaurants.map((restaurant) => [
-        restaurant.name || '',
-        restaurant.slug || '',
-        restaurant.owner_email || '',
-        restaurant.subscription_status || '',
-        restaurant.subscription_plan || '',
-        restaurant.subscription_current_period_end || '',
-        restaurant.subscription_grace_until || '',
-      ]),
-    ]
-
-    downloadCsv(`spizy-subscriptions-${formatDateInput(new Date())}.csv`, rows)
+    setUpdatingId('')
   }
 
   return (
-    <section className="super-subscriptions-shell">
-      <div className="super-subscriptions-hero">
+    <section className="super-subscription-management management-section">
+      <div className="management-header">
         <div>
           <p className="pricing-label">Super Admin</p>
-          <h1>Subscription management</h1>
-          <p>
-            Manage restaurant trials, monthly/yearly plans, grace periods and manual
-            status changes. Mamo Pay remains only for Spizy SaaS subscription billing.
-          </p>
+          <h2>Subscription Management</h2>
+          <span>Manage trial, monthly, yearly, expired and manually extended restaurant subscriptions.</span>
         </div>
 
-        <div className="super-subscriptions-actions">
-          <button type="button" onClick={exportCsv} disabled={loading || filteredRestaurants.length === 0}>
-            <Download size={17} />
-            Export
-          </button>
-          <button type="button" onClick={loadSubscriptions} disabled={loading}>
-            <RefreshCw size={17} />
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
-        </div>
+        <button type="button" className="tiny-button" onClick={loadData} disabled={loading}>
+          <RefreshCcw size={15} />
+          Refresh
+        </button>
       </div>
 
-      {message && <div className={`super-subscriptions-message ${message.type}`}>{message.text}</div>}
-
-      <div className="super-subscriptions-kpis">
-        <Kpi icon={<CreditCard size={20} />} label="Active" value={summary.active} note="Paid restaurants" />
-        <Kpi icon={<CalendarDays size={20} />} label="Trial" value={summary.trialing} note="Trial restaurants" />
-        <Kpi icon={<XCircle size={20} />} label="Needs action" value={summary.risk} note="Expired / suspended" />
-        <Kpi icon={<TrendingUp size={20} />} label="Est. MRR" value={`AED ${summary.monthlyRevenue.toFixed(2)}`} note="Monthly equivalent" />
+      <div className="super-sub-kpis">
+        <SubKpi icon={<CreditCard size={20} />} label="Active" value={stats.active} />
+        <SubKpi icon={<ShieldCheck size={20} />} label="Trials" value={stats.trial} />
+        <SubKpi icon={<CreditCard size={20} />} label="Yearly" value={stats.yearly} />
+        <SubKpi icon={<RefreshCcw size={20} />} label="Expired/Suspended" value={stats.expired} />
       </div>
 
-      <div className="super-subscriptions-toolbar">
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search restaurant, slug, owner email..."
-        />
-        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-          <option value="all">All statuses</option>
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </select>
-      </div>
+      {message && <div className="auth-message">{message}</div>}
 
-      <div className="super-subscriptions-table-wrap">
-        <table className="super-subscriptions-table">
+      <div className="restaurants-table-wrap">
+        <table className="restaurants-table">
           <thead>
             <tr>
               <th>Restaurant</th>
               <th>Status</th>
               <th>Plan</th>
               <th>Period</th>
-              <th>Quick actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td colSpan="5">Loading subscriptions...</td></tr>
-            ) : filteredRestaurants.length === 0 ? (
-              <tr><td colSpan="5">No restaurants matched this filter.</td></tr>
-            ) : (
-              filteredRestaurants.map((restaurant) => (
-                <tr key={restaurant.id}>
-                  <td>
-                    <strong>{restaurant.name || 'Restaurant'}</strong>
-                    <span>{restaurant.slug || restaurant.owner_email || 'No slug/email'}</span>
-                  </td>
-                  <td>
-                    <span className={`subscription-status-pill ${restaurant.subscription_status || 'trialing'}`}>
-                      {formatTitle(restaurant.subscription_status || 'trialing')}
-                    </span>
-                  </td>
-                  <td>
-                    <strong>{formatPlan(restaurant.subscription_plan)}</strong>
-                    <span>{restaurant.subscription_payment_gateway || 'mamo_pay ready'}</span>
-                  </td>
-                  <td>
-                    <strong>{formatDate(restaurant.subscription_current_period_end || restaurant.subscription_trial_ends_at)}</strong>
-                    <span>Grace: {formatDate(restaurant.subscription_grace_until)}</span>
-                  </td>
-                  <td>
-                    <div className="super-subscription-row-actions">
-                      <button
-                        type="button"
-                        disabled={savingId === restaurant.id}
-                        onClick={() => extendTrial(restaurant, 7)}
-                      >
-                        +7d trial
-                      </button>
-                      <button
-                        type="button"
-                        disabled={savingId === restaurant.id}
-                        onClick={() => updateRestaurantSubscription({
-                          restaurant,
-                          status: 'active',
-                          planKey: 'qr_menu_monthly',
-                          periodDays: 30,
-                        })}
-                      >
-                        Active monthly
-                      </button>
-                      <button
-                        type="button"
-                        disabled={savingId === restaurant.id}
-                        onClick={() => updateRestaurantSubscription({
-                          restaurant,
-                          status: 'active',
-                          planKey: 'qr_menu_yearly',
-                          periodDays: 365,
-                        })}
-                      >
-                        Active yearly
-                      </button>
-                      <button
-                        type="button"
-                        className="danger"
-                        disabled={savingId === restaurant.id}
-                        onClick={() => updateRestaurantSubscription({
-                          restaurant,
-                          status: 'suspended',
-                          planKey: restaurant.subscription_plan || 'qr_menu_monthly',
-                          periodDays: 0,
-                        })}
-                      >
-                        Suspend
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            {restaurants.length === 0 ? (
+              <tr><td colSpan="5">{loading ? 'Loading subscriptions...' : 'No restaurants found.'}</td></tr>
+            ) : restaurants.map((restaurant) => (
+              <tr key={restaurant.id}>
+                <td><strong>{restaurant.name || 'Restaurant'}</strong><span>{restaurant.owner_email || restaurant.slug || restaurant.id}</span></td>
+                <td><span className={`status-pill ${restaurant.subscription_status || 'trialing'}`}>{restaurant.subscription_status || 'trialing'}</span></td>
+                <td>{formatTitle(restaurant.subscription_plan || 'trial')}</td>
+                <td>{formatPeriod(restaurant)}</td>
+                <td>
+                  <div className="table-actions">
+                    <button type="button" className="tiny-button" onClick={() => runAction(restaurant, 'extend_trial_7_days')} disabled={Boolean(updatingId)}>Extend 7d</button>
+                    <button type="button" className="tiny-button success" onClick={() => runAction(restaurant, 'activate_monthly')} disabled={Boolean(updatingId)}>Monthly</button>
+                    <button type="button" className="tiny-button success" onClick={() => runAction(restaurant, 'activate_yearly')} disabled={Boolean(updatingId)}>Yearly</button>
+                    <button type="button" className="tiny-button danger" onClick={() => runAction(restaurant, 'suspend')} disabled={Boolean(updatingId)}>Suspend</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-      <div className="super-subscriptions-foot-grid">
-        <section>
-          <div className="super-subscriptions-panel-head">
-            <CheckCircle2 size={19} />
-            <div>
-              <strong>Latest paid invoices</strong>
-              <span>{invoices.length} recent records</span>
-            </div>
-          </div>
-          <div className="super-subscriptions-mini-list">
-            {invoices.slice(0, 6).map((invoice) => (
-              <article key={invoice.id}>
-                <strong>{invoice.invoice_number || 'Invoice'}</strong>
-                <span>{invoice.plan_name || invoice.plan_key} • AED {Number(invoice.amount || 0).toFixed(2)}</span>
-              </article>
-            ))}
-            {invoices.length === 0 && <div className="super-empty">No invoices found yet.</div>}
-          </div>
-        </section>
-
-        <section>
-          <div className="super-subscriptions-panel-head">
-            <ShieldCheck size={19} />
-            <div>
-              <strong>Latest payment attempts</strong>
-              <span>{attempts.length} recent records</span>
-            </div>
-          </div>
-          <div className="super-subscriptions-mini-list">
-            {attempts.slice(0, 6).map((attempt) => (
-              <article key={attempt.id}>
-                <strong>{formatTitle(attempt.status || 'created')}</strong>
-                <span>{attempt.plan_name || attempt.plan_key} • AED {Number(attempt.amount || 0).toFixed(2)}</span>
-              </article>
-            ))}
-            {attempts.length === 0 && <div className="super-empty">No payment attempts found yet.</div>}
-          </div>
-        </section>
-      </div>
+      <section className="super-sub-attempts">
+        <h3>Recent Mamo Payment Attempts</h3>
+        <div className="restaurants-table-wrap">
+          <table className="restaurants-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Plan</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attempts.length === 0 ? (
+                <tr><td colSpan="5">No payment attempts yet.</td></tr>
+              ) : attempts.map((attempt) => (
+                <tr key={attempt.id}>
+                  <td><strong>{attempt.payment_reference || attempt.mamo_payment_link_id || attempt.id}</strong></td>
+                  <td>{formatTitle(attempt.plan_key || attempt.plan || 'subscription')}</td>
+                  <td>AED {Number(attempt.final_amount ?? attempt.amount ?? 0).toFixed(2)}</td>
+                  <td>{attempt.status || 'created'}</td>
+                  <td>{formatDate(attempt.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
   )
 }
 
-function Kpi({ icon, label, value, note }) {
+function SubKpi({ icon, label, value }) {
   return (
-    <article>
+    <article className="super-sub-kpi">
       <div>{icon}</div>
       <span>{label}</span>
       <strong>{value}</strong>
-      <small>{note}</small>
     </article>
   )
 }
 
-function formatPlan(value) {
-  if (value === 'qr_menu_yearly') return 'QR Menu Yearly'
-  if (value === 'qr_menu_monthly') return 'QR Menu Monthly'
-  return formatTitle(value || 'QR Menu Monthly')
-}
-
-function formatTitle(value) {
-  return String(value || '')
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+function formatPeriod(restaurant) {
+  const start = restaurant.subscription_current_period_start ? formatDate(restaurant.subscription_current_period_start) : '—'
+  const end = restaurant.subscription_current_period_end ? formatDate(restaurant.subscription_current_period_end) : '—'
+  return `${start} → ${end}`
 }
 
 function formatDate(value) {
-  if (!value) return 'Not set'
-
+  if (!value) return '—'
   try {
-    return new Intl.DateTimeFormat('en-AE', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).format(new Date(value))
+    return new Intl.DateTimeFormat('en-AE', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
   } catch {
     return value
   }
 }
 
-function formatDateInput(value) {
-  const date = value instanceof Date ? value : new Date(value)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function addDays(value, days) {
-  const date = value instanceof Date ? new Date(value) : new Date(value)
-  date.setDate(date.getDate() + Number(days || 0))
-  return date
-}
-
-function downloadCsv(filename, rows) {
-  const csv = rows
-    .map((row) => row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(','))
-    .join('\n')
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  URL.revokeObjectURL(url)
+function formatTitle(value) {
+  return String(value || '').replace(/[_-]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 export default SuperAdminSubscriptionsManagement
