@@ -1,0 +1,1015 @@
+/* Spizy public customer menu app upgrade: desktop + mobile */
+.public-menu-page {
+  --public-shell-max: 1240px;
+  --public-sidebar-width: 292px;
+  --public-radius-xl: 34px;
+  --public-radius-lg: 26px;
+  --public-border: rgba(255, 191, 77, 0.18);
+  --public-border-strong: rgba(255, 191, 77, 0.32);
+  --public-surface: rgba(12, 12, 12, 0.78);
+  --public-surface-strong: rgba(19, 18, 17, 0.94);
+  --public-text: #fff9ed;
+  --public-muted: rgba(255, 249, 237, 0.68);
+  --public-gold: var(--spizy-public-secondary, #ffbf4d);
+  --public-orange: var(--spizy-public-accent, #ff7a18);
+  min-height: 100svh;
+  padding: clamp(14px, 2.3vw, 28px);
+  background:
+    radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--public-orange) 24%, transparent), transparent 32rem),
+    radial-gradient(circle at 88% 10%, rgba(255, 191, 77, 0.12), transparent 30rem),
+    linear-gradient(180deg, #120804 0%, #050403 100%);
+  color: var(--public-text);
+  overflow-x: hidden;
+}
+
+.public-menu-page .public-menu-header {
+  width: min(var(--public-shell-max), 100%);
+  min-height: clamp(142px, 20vw, 210px);
+  margin: 0 auto clamp(14px, 2vw, 22px);
+  padding: clamp(18px, 3vw, 30px);
+  border-radius: var(--public-radius-xl);
+  border: 1px solid var(--public-border);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--public-orange) 18%, transparent), transparent 36rem),
+    linear-gradient(135deg, rgba(24, 18, 13, 0.95), rgba(8, 8, 8, 0.92));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  position: sticky;
+  top: clamp(8px, 1.2vw, 14px);
+  z-index: 80;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  backdrop-filter: blur(18px);
+}
+
+.public-menu-header-cover-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.public-menu-header-cover-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.12) contrast(1.08);
+}
+
+.public-menu-page .public-menu-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgba(4, 4, 4, 0.88), rgba(8, 5, 3, 0.58), rgba(4, 4, 4, 0.84)),
+    radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--public-orange) 28%, transparent), transparent 26rem);
+  pointer-events: none;
+}
+
+.public-menu-page .public-restaurant-brand,
+.public-menu-page .public-header-side-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.public-menu-page .public-restaurant-brand {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 22px);
+  min-width: 0;
+}
+
+.public-menu-page .public-menu-logo {
+  width: clamp(66px, 9vw, 104px);
+  height: clamp(66px, 9vw, 104px);
+  border-radius: clamp(20px, 3vw, 34px);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #170802;
+  font-size: clamp(24px, 4vw, 42px);
+  font-weight: 1000;
+  background: linear-gradient(135deg, #ffcf5b, var(--public-orange));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 44px color-mix(in srgb, var(--public-orange) 26%, transparent);
+  overflow: hidden;
+}
+
+.public-menu-page .public-menu-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.public-menu-page .public-menu-label {
+  margin: 0 0 7px;
+  color: var(--public-gold);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-size: clamp(11px, 1.4vw, 14px);
+  font-weight: 1000;
+}
+
+.public-menu-page .public-restaurant-brand h1 {
+  margin: 0;
+  max-width: 800px;
+  color: #fff;
+  font-size: clamp(34px, 7vw, 72px);
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+}
+
+.public-menu-page .public-restaurant-brand span {
+  display: block;
+  margin-top: clamp(8px, 1.2vw, 14px);
+  color: rgba(255, 249, 237, 0.76);
+  font-size: clamp(16px, 2vw, 23px);
+  line-height: 1.45;
+}
+
+.public-menu-page .public-header-side-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  max-width: 420px;
+}
+
+.public-menu-page .public-header-side-actions > *,
+.public-menu-page .public-book-table-button,
+.public-menu-page .public-service-call-button,
+.public-menu-page .public-direction-button,
+.public-menu-page .public-table-pill {
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff6e8;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.public-menu-page .public-book-table-button,
+.public-menu-page .public-service-call-button {
+  background: linear-gradient(135deg, #ffca55, var(--public-orange));
+  color: #140702;
+  border: 0;
+}
+
+.public-menu-experience-shell {
+  width: min(var(--public-shell-max), 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: var(--public-sidebar-width) minmax(0, 1fr);
+  gap: clamp(14px, 2vw, 22px);
+  align-items: start;
+}
+
+.public-customer-sidebar {
+  position: sticky;
+  top: clamp(180px, 21vw, 238px);
+  max-height: calc(100svh - clamp(196px, 24vw, 260px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--public-orange) 18%, transparent), transparent 38%),
+    rgba(5, 5, 5, 0.72);
+  border: 1px solid var(--public-border);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.36);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--public-orange) 48%, transparent) transparent;
+}
+
+.public-customer-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.public-customer-sidebar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--public-orange) 50%, transparent);
+  border-radius: 999px;
+}
+
+.public-customer-sidebar-card.brand {
+  padding: 14px;
+  border-radius: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 191, 77, 0.12), rgba(255, 122, 24, 0.1));
+  border: 1px solid rgba(255, 191, 77, 0.16);
+}
+
+.public-customer-avatar {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: #190803;
+  background: linear-gradient(135deg, #ffcf5b, var(--public-orange));
+  font-weight: 1000;
+}
+
+.public-customer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.public-customer-sidebar-card span,
+.public-customer-sidebar-section p {
+  color: var(--public-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  font-weight: 1000;
+}
+
+.public-customer-sidebar-card strong {
+  display: block;
+  margin-top: 3px;
+  color: #fff;
+  font-size: 15px;
+}
+
+.public-customer-sidebar-card small {
+  display: block;
+  margin-top: 3px;
+  color: var(--public-muted);
+  font-weight: 800;
+}
+
+.public-customer-sidebar-section {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.public-customer-sidebar-section p {
+  margin: 6px 6px 2px;
+}
+
+.public-customer-sidebar-section button,
+.public-customer-sidebar-section a {
+  min-height: 46px;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  padding: 10px 11px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #fff4e7;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.public-customer-sidebar-section button:hover,
+.public-customer-sidebar-section a:hover,
+.public-customer-sidebar-section button.active {
+  transform: translateX(2px);
+  background: rgba(255, 122, 24, 0.12);
+  border-color: rgba(255, 191, 77, 0.24);
+}
+
+.public-customer-sidebar-section svg {
+  color: var(--public-gold);
+}
+
+.public-customer-sidebar-section span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 900;
+}
+
+.public-customer-sidebar-section button > strong {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #160702;
+  background: linear-gradient(135deg, #ffcf5b, var(--public-orange));
+  font-size: 12px;
+}
+
+.public-menu-main-feed {
+  min-width: 0;
+  display: grid;
+  gap: clamp(14px, 2vw, 20px);
+}
+
+.public-menu-page .public-menu-cover-card {
+  min-height: clamp(140px, 22vw, 260px);
+  margin: 0;
+  border-radius: var(--public-radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--public-border);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.32);
+}
+
+.public-menu-page .public-service-quick-card,
+.public-menu-page .public-reservation-quick-card,
+.public-menu-page .public-view-only-notice,
+.public-menu-page .public-menu-tools,
+.public-menu-section-head {
+  margin: 0;
+  border-radius: var(--public-radius-lg);
+  border: 1px solid var(--public-border);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--public-orange) 12%, transparent), transparent 28rem),
+    var(--public-surface);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.24);
+}
+
+.public-menu-page .public-service-quick-card,
+.public-menu-page .public-reservation-quick-card {
+  padding: clamp(16px, 2.5vw, 22px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.public-menu-page .public-service-quick-card strong,
+.public-menu-page .public-reservation-quick-card strong {
+  color: #fff;
+  font-size: clamp(18px, 2.6vw, 30px);
+  letter-spacing: -0.035em;
+}
+
+.public-menu-page .public-service-quick-card button,
+.public-menu-page .public-reservation-quick-card button {
+  border-radius: 999px;
+  min-height: 52px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #ffcf5b, var(--public-orange));
+  color: #150702;
+  border: 0;
+  font-weight: 1000;
+}
+
+.public-menu-page .public-menu-tools {
+  position: sticky;
+  top: clamp(180px, 21vw, 238px);
+  z-index: 45;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  backdrop-filter: blur(16px);
+}
+
+.public-menu-page .public-search-box {
+  min-height: 50px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.44);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+}
+
+.public-menu-page .public-category-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.public-menu-page .public-category-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.public-menu-page .public-category-strip button {
+  min-height: 36px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.public-menu-section-head {
+  padding: clamp(16px, 2vw, 22px);
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-end;
+}
+
+.public-menu-section-head p {
+  margin: 0 0 6px;
+  color: var(--public-gold);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 1000;
+}
+
+.public-menu-section-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(26px, 4vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.public-menu-section-head span {
+  display: block;
+  margin-top: 8px;
+  color: var(--public-muted);
+  line-height: 1.5;
+}
+
+.public-menu-section-head > strong {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: #170702;
+  background: linear-gradient(135deg, #ffcf5b, var(--public-orange));
+  white-space: nowrap;
+}
+
+.public-menu-page .public-product-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 1.8vw, 18px);
+}
+
+.public-menu-page .public-product-card {
+  min-width: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(22, 22, 22, 0.94), rgba(10, 10, 10, 0.95));
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
+}
+
+.public-menu-page .public-product-main {
+  min-height: 158px;
+}
+
+.public-menu-page .public-product-image {
+  border-radius: 22px;
+}
+
+.public-menu-page .public-product-info h3 {
+  color: #fff;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.08;
+}
+
+.public-menu-page .public-product-info p {
+  color: rgba(255, 249, 237, 0.66);
+  line-height: 1.5;
+}
+
+.public-menu-page .public-add-button,
+.public-menu-page .public-row-qty button {
+  border-radius: 999px;
+}
+
+.public-menu-page .floating-cart-button {
+  z-index: 110;
+}
+
+@media (min-width: 1180px) {
+  .public-menu-page .public-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .public-menu-page .public-menu-header {
+    position: relative;
+    top: auto;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .public-menu-page .public-header-side-actions {
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  .public-menu-experience-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .public-customer-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    max-height: none;
+    overflow: visible;
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 24px;
+    backdrop-filter: blur(18px);
+  }
+
+  .public-customer-sidebar-card.brand {
+    display: none;
+  }
+
+  .public-customer-sidebar-section {
+    margin: 0;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px;
+    scrollbar-width: none;
+  }
+
+  .public-customer-sidebar-section::-webkit-scrollbar {
+    display: none;
+  }
+
+  .public-customer-sidebar-section p {
+    display: none;
+  }
+
+  .public-customer-sidebar-section button,
+  .public-customer-sidebar-section a {
+    width: auto;
+    min-width: 112px;
+    grid-template-columns: auto 1fr auto;
+    flex: 0 0 auto;
+  }
+
+  .public-customer-sidebar-section.categories {
+    display: none;
+  }
+
+  .public-menu-page .public-menu-tools {
+    position: relative;
+    top: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .public-menu-page {
+    padding: 12px 12px 90px;
+  }
+
+  .public-menu-page .public-menu-header {
+    min-height: 132px;
+    border-radius: 28px;
+    padding: 16px;
+  }
+
+  .public-menu-page .public-restaurant-brand {
+    align-items: center;
+  }
+
+  .public-menu-page .public-menu-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+    font-size: 24px;
+  }
+
+  .public-menu-page .public-restaurant-brand h1 {
+    font-size: clamp(32px, 10vw, 46px);
+  }
+
+  .public-menu-page .public-restaurant-brand span {
+    font-size: 16px;
+    margin-top: 6px;
+  }
+
+  .public-menu-page .public-header-side-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .public-menu-page .public-header-side-actions > *,
+  .public-menu-page .public-book-table-button,
+  .public-menu-page .public-service-call-button,
+  .public-menu-page .public-direction-button,
+  .public-menu-page .public-table-pill {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .public-customer-sidebar {
+    margin-left: -2px;
+    margin-right: -2px;
+  }
+
+  .public-customer-sidebar-section button,
+  .public-customer-sidebar-section a {
+    min-width: 104px;
+    min-height: 52px;
+    border-radius: 18px;
+    padding: 10px;
+  }
+
+  .public-customer-sidebar-section span {
+    font-size: 12px;
+  }
+
+  .public-menu-page .public-service-quick-card,
+  .public-menu-page .public-reservation-quick-card {
+    grid-template-columns: 1fr;
+    border-radius: 26px;
+  }
+
+  .public-menu-page .public-service-quick-card button,
+  .public-menu-page .public-reservation-quick-card button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .public-menu-section-head {
+    border-radius: 26px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .public-menu-section-head > strong {
+    width: 100%;
+    text-align: center;
+  }
+
+  .public-menu-page .public-product-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .public-menu-page .public-product-card {
+    border-radius: 24px;
+  }
+}
+
+@media (max-width: 430px) {
+  .public-menu-page .public-header-side-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .public-menu-page .public-menu-header {
+    min-height: 122px;
+  }
+
+  .public-menu-page .public-menu-logo {
+    width: 58px;
+    height: 58px;
+    border-radius: 20px;
+  }
+
+  .public-menu-page .public-restaurant-brand h1 {
+    font-size: 34px;
+  }
+
+  .public-customer-sidebar-section button,
+  .public-customer-sidebar-section a {
+    min-width: 96px;
+  }
+}
+
+/* 2026-06-29 Customer mobile sidebar refinement
+   Mobile order: hero -> search/category tools -> items -> bottom bar.
+   Book table, service calls, campaigns, directions and categories live inside the mobile side menu. */
+.public-mobile-menu-trigger,
+.public-customer-sidebar-mobile-head,
+.public-customer-sidebar-backdrop {
+  display: none;
+}
+
+.public-sidebar-campaign-card {
+  padding: 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 191, 77, 0.1), rgba(255, 122, 24, 0.08));
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  display: grid;
+  gap: 8px;
+}
+
+.public-sidebar-campaign-card > span {
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: var(--public-gold);
+  background: rgba(0, 0, 0, 0.32);
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.public-sidebar-campaign-card > strong {
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.public-sidebar-campaign-card > small {
+  color: var(--public-muted);
+  line-height: 1.45;
+}
+
+.public-sidebar-campaign-card > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.public-sidebar-campaign-card > div > button {
+  min-width: 0;
+  min-height: 38px;
+  border-radius: 14px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+@media (min-width: 981px) {
+  .public-menu-page .public-header-side-actions {
+    display: flex;
+  }
+
+  .public-customer-sidebar-mobile-head {
+    display: none !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .public-menu-page {
+    padding-bottom: 104px;
+  }
+
+  .public-menu-page .public-menu-header {
+    position: relative;
+    top: auto;
+    min-height: 118px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .public-menu-page .public-restaurant-brand {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .public-menu-page .public-menu-logo {
+    width: 62px;
+    height: 62px;
+    border-radius: 21px;
+    font-size: 24px;
+  }
+
+  .public-menu-page .public-restaurant-brand h1 {
+    font-size: clamp(28px, 8vw, 40px);
+    line-height: 0.98;
+  }
+
+  .public-menu-page .public-restaurant-brand span {
+    max-width: 100%;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .public-menu-page .public-header-side-actions {
+    display: none !important;
+  }
+
+  .public-mobile-menu-trigger {
+    position: relative;
+    z-index: 2;
+    min-height: 44px;
+    border: 1px solid rgba(255, 191, 77, 0.2);
+    border-radius: 999px;
+    padding: 0 14px;
+    color: #160702;
+    background: linear-gradient(135deg, #ffcf5b, var(--public-orange));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 1000;
+    white-space: nowrap;
+    box-shadow: 0 16px 34px color-mix(in srgb, var(--public-orange) 22%, transparent);
+  }
+
+  .public-menu-experience-shell {
+    display: block;
+  }
+
+  .public-menu-main-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .public-menu-page .public-menu-tools {
+    order: 1;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    margin: 0;
+    padding: 10px;
+    border-radius: 22px;
+    backdrop-filter: blur(18px);
+  }
+
+  .public-menu-section-head {
+    order: 2;
+    padding: 14px 16px;
+    border-radius: 22px;
+  }
+
+  .public-menu-page .public-product-grid,
+  .public-empty-menu {
+    order: 3;
+  }
+
+  .public-menu-page .public-menu-cover-card,
+  .public-social-links-row,
+  .public-menu-page .public-service-quick-card,
+  .public-menu-page .public-reservation-quick-card,
+  .public-menu-page .public-view-only-notice,
+  .public-menu-schedule-notice,
+  .public-campaign-strip,
+  .public-combo-deals-section {
+    display: none !important;
+  }
+
+  .public-customer-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 180;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(7px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .public-customer-sidebar-backdrop.open {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .public-customer-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0;
+    bottom: 0;
+    z-index: 190;
+    width: min(86vw, 360px);
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 14px;
+    border-radius: 0 28px 28px 0;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    display: block !important;
+    transform: translateX(-104%);
+    opacity: 0.98;
+    transition: transform 0.24s ease;
+    box-shadow: 24px 0 80px rgba(0, 0, 0, 0.48);
+  }
+
+  .public-customer-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .public-customer-sidebar-mobile-head {
+    position: sticky;
+    top: -14px;
+    z-index: 2;
+    margin: -14px -14px 12px;
+    padding: 14px;
+    min-height: 58px;
+    border-bottom: 1px solid rgba(255, 191, 77, 0.14);
+    background: rgba(8, 8, 8, 0.94);
+    backdrop-filter: blur(18px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .public-customer-sidebar-mobile-head strong {
+    color: #fff;
+    font-size: 17px;
+  }
+
+  .public-customer-sidebar-mobile-head button {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 191, 77, 0.16);
+    border-radius: 999px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    display: grid;
+    place-items: center;
+  }
+
+  .public-customer-sidebar-card.brand {
+    display: flex !important;
+    margin-bottom: 14px;
+  }
+
+  .public-customer-sidebar-section {
+    margin-top: 14px;
+    display: grid !important;
+    gap: 8px;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .public-customer-sidebar-section p {
+    display: block !important;
+    margin: 8px 6px 2px;
+  }
+
+  .public-customer-sidebar-section button,
+  .public-customer-sidebar-section a {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 48px;
+    flex: none !important;
+    border-radius: 18px;
+  }
+
+  .public-customer-sidebar-section.categories {
+    display: grid !important;
+  }
+
+  .public-customer-sidebar-section.campaigns {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .public-menu-page {
+    padding: 10px 10px 96px;
+  }
+
+  .public-menu-page .public-menu-header {
+    min-height: 104px;
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  .public-menu-page .public-menu-logo {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+  }
+
+  .public-menu-page .public-menu-label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .public-menu-page .public-restaurant-brand h1 {
+    font-size: 30px;
+  }
+
+  .public-mobile-menu-trigger {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .public-mobile-menu-trigger svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .public-menu-section-head span {
+    display: none;
+  }
+
+  .public-menu-section-head > strong {
+    width: auto;
+  }
+}

@@ -12,6 +12,7 @@ import {
   Sparkles,
   Star,
   MapPin,
+  Menu,
   Minus,
   Plus,
   QrCode,
@@ -39,7 +40,7 @@ import './PublicComboDeals.css'
 import './PublicMenuSchedule.css'
 import './PublicPaymentGateways.css'
 import './PublicPaymentStatusPolish.css'
-import './PublicOrderCompletionFlow.css'
+import './PublicMenuAppUpgrade.css'
 
 const phoneCountryOptions = [
   { code: '+971', label: 'UAE' },
@@ -76,6 +77,7 @@ function PublicMenuPage() {
   const [showOrdersModal, setShowOrdersModal] = useState(false)
   const [showRewardsModal, setShowRewardsModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showCustomerSidebar, setShowCustomerSidebar] = useState(false)
   const [orderSuccess, setOrderSuccess] = useState(null)
   const [reviewOrder, setReviewOrder] = useState(null)
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
@@ -1887,7 +1889,7 @@ function PublicMenuPage() {
       return
     }
 
-    showPublicMessage('Order completion request sent to restaurant.')
+    showPublicMessage('Bill request sent to restaurant.')
     await loadCustomerOrders()
   }
 
@@ -2243,6 +2245,12 @@ function PublicMenuPage() {
       <PublicWarningListener />
 
       <header className="public-menu-header">
+        {publicTheme.show_cover_image && restaurant.public_cover_url && (
+          <div className="public-menu-header-cover-bg">
+            <img src={restaurant.public_cover_url} alt="" aria-hidden="true" />
+          </div>
+        )}
+
         <div className="public-restaurant-brand">
           {publicTheme.show_logo && (
           <div className="public-menu-logo">
@@ -2260,6 +2268,15 @@ function PublicMenuPage() {
             <span>{restaurant.address || 'Fresh menu. Easy ordering.'}</span>
           </div>
         </div>
+
+        <button
+          type="button"
+          className="public-mobile-menu-trigger"
+          onClick={() => setShowCustomerSidebar(true)}
+        >
+          <Menu size={18} />
+          Menu
+        </button>
 
         <div className="public-header-side-actions">
           {reservationEnabled && (
@@ -2310,11 +2327,50 @@ function PublicMenuPage() {
         </div>
       </header>
 
-      {publicTheme.show_cover_image && restaurant.public_cover_url && (
-        <section className="public-menu-cover-card">
-          <img src={restaurant.public_cover_url} alt={`${restaurant.name} cover`} />
-        </section>
-      )}
+      <div className="public-menu-experience-shell">
+        <PublicCustomerSidebar
+          restaurant={restaurant}
+          table={table}
+          isTableOrder={isTableOrder}
+          acceptsOrders={acceptsOrders}
+          reservationEnabled={reservationEnabled}
+          restaurantDirectionUrl={restaurantDirectionUrl}
+          categories={categories}
+          categoryFilter={categoryFilter}
+          cartCount={cart.length}
+          orderCount={customerOrders.length}
+          rewardsEnabled={restaurant?.rewards_enabled !== false}
+          activeCampaigns={activeCampaigns}
+          currency={currency}
+          isOpen={showCustomerSidebar}
+          onClose={() => setShowCustomerSidebar(false)}
+          onHome={handleBottomHome}
+          onMenu={() =>
+            document.querySelector('#public-menu-items')?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            })
+          }
+          onCategorySelect={setCategoryFilter}
+          onSearchFocus={() =>
+            document.querySelector('.public-search-box input')?.focus()
+          }
+          onCart={handleBottomCart}
+          onOrders={loadCustomerOrders}
+          onRewards={() => loadCustomerRewards()}
+          onProfile={() => setShowProfileModal(true)}
+          onBookTable={handleOpenReservation}
+          onCallService={handleOpenServiceRequest}
+          onCampaignAction={handleCampaignAction}
+          onCopyCoupon={handleCopyCampaignCoupon}
+        />
+
+        <div className="public-menu-main-feed">
+          {publicTheme.show_cover_image && restaurant.public_cover_url && (
+            <section className="public-menu-cover-card">
+              <img src={restaurant.public_cover_url} alt={`${restaurant.name} cover`} />
+            </section>
+          )}
 
       {publicTheme.show_social_links && <PublicSocialLinks restaurant={restaurant} />}
 
@@ -2409,6 +2465,15 @@ function PublicMenuPage() {
           ))}
         </div>
       </section>
+
+          <section className="public-menu-section-head">
+            <div>
+              <p>Fresh menu</p>
+              <h2>Choose your favourites</h2>
+              <span>Browse all available items, tap to customize, and add directly to cart.</span>
+            </div>
+            <strong>{filteredProducts.length} item{filteredProducts.length === 1 ? '' : 's'}</strong>
+          </section>
 
       {filteredProducts.length === 0 ? (
         <section className="public-empty-menu">
@@ -2551,6 +2616,9 @@ function PublicMenuPage() {
         </section>
       )}
 
+        </div>
+      </div>
+
       {acceptsOrders && cart.length > 0 && (
         <button
           type="button"
@@ -2568,7 +2636,7 @@ function PublicMenuPage() {
         onHome={handleBottomHome}
         onOrders={loadCustomerOrders}
         onCart={handleBottomCart}
-        onRewards={() => loadCustomerRewards()}
+        onMore={() => setShowCustomerSidebar(true)}
         onProfile={() => setShowProfileModal(true)}
       />
 
@@ -2775,6 +2843,194 @@ function PublicMenuPage() {
   )
 }
 
+
+
+function PublicCustomerSidebar({
+  restaurant,
+  table,
+  isTableOrder,
+  acceptsOrders,
+  reservationEnabled,
+  restaurantDirectionUrl,
+  categories,
+  categoryFilter,
+  cartCount,
+  orderCount,
+  rewardsEnabled,
+  activeCampaigns = [],
+  currency,
+  isOpen = false,
+  onClose,
+  onHome,
+  onMenu,
+  onCategorySelect,
+  onSearchFocus,
+  onCart,
+  onOrders,
+  onRewards,
+  onProfile,
+  onBookTable,
+  onCallService,
+  onCampaignAction,
+  onCopyCoupon,
+}) {
+  const activeCategories = Array.isArray(categories) ? categories : []
+  const sidebarCampaigns = Array.isArray(activeCampaigns) ? activeCampaigns : []
+  const runAction = (action) => {
+    action?.()
+    onClose?.()
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className={`public-customer-sidebar-backdrop ${isOpen ? 'open' : ''}`}
+        aria-label="Close menu"
+        onClick={onClose}
+      />
+      <aside
+        className={`public-customer-sidebar ${isOpen ? 'open' : ''}`}
+        aria-label="Customer menu actions"
+      >
+        <div className="public-customer-sidebar-mobile-head">
+          <strong>Menu actions</strong>
+          <button type="button" onClick={onClose} aria-label="Close menu">
+            <X size={18} />
+          </button>
+        </div>
+      <div className="public-customer-sidebar-card brand">
+        <div className="public-customer-avatar">
+          {restaurant?.logo_url ? (
+            <img src={restaurant.logo_url} alt={restaurant?.name || 'Restaurant'} />
+          ) : (
+            restaurant?.name?.slice(0, 2)?.toUpperCase() || 'SP'
+          )}
+        </div>
+        <div>
+          <span>Ordering at</span>
+          <strong>{restaurant?.name || 'Restaurant'}</strong>
+          <small>
+            {isTableOrder
+              ? table?.table_name || 'Table order'
+              : 'Delivery / takeaway'}
+          </small>
+        </div>
+      </div>
+
+      <div className="public-customer-sidebar-section">
+        <p>Quick actions</p>
+        <button type="button" className="active" onClick={() => runAction(onHome)}>
+          <Home size={18} />
+          <span>Home</span>
+        </button>
+        <button type="button" onClick={() => runAction(onMenu)}>
+          <Store size={18} />
+          <span>Menu items</span>
+        </button>
+        <button type="button" onClick={() => runAction(onSearchFocus)}>
+          <Search size={18} />
+          <span>Search food</span>
+        </button>
+        {acceptsOrders && (
+          <button type="button" onClick={() => runAction(onCart)}>
+            <ShoppingCart size={18} />
+            <span>Cart</span>
+            <strong>{cartCount}</strong>
+          </button>
+        )}
+        <button type="button" onClick={() => runAction(onOrders)}>
+          <ClipboardList size={18} />
+          <span>My orders</span>
+          {orderCount > 0 && <strong>{orderCount}</strong>}
+        </button>
+        {rewardsEnabled && (
+          <button type="button" onClick={() => runAction(onRewards)}>
+            <Gift size={18} />
+            <span>Rewards</span>
+          </button>
+        )}
+        <button type="button" onClick={() => runAction(onProfile)}>
+          <UserRound size={18} />
+          <span>Profile</span>
+        </button>
+      </div>
+
+      <div className="public-customer-sidebar-section service">
+        <p>Restaurant services</p>
+        {reservationEnabled && (
+          <button type="button" onClick={() => runAction(onBookTable)}>
+            <CalendarCheck size={18} />
+            <span>Book table</span>
+          </button>
+        )}
+        {isTableOrder && (
+          <button type="button" onClick={() => runAction(onCallService)}>
+            <BellRing size={18} />
+            <span>Call waiter</span>
+          </button>
+        )}
+        {restaurantDirectionUrl && (
+          <a href={restaurantDirectionUrl} target="_blank" rel="noreferrer">
+            <MapPin size={18} />
+            <span>Directions</span>
+          </a>
+        )}
+      </div>
+
+      {sidebarCampaigns.length > 0 && (
+        <div className="public-customer-sidebar-section campaigns">
+          <p>Offers & campaigns</p>
+          {sidebarCampaigns.map((campaign) => (
+            <article className="public-sidebar-campaign-card" key={campaign.id}>
+              <span>{getPublicCampaignCountdown(campaign.end_at)}</span>
+              <strong>{campaign.title || 'Special offer'}</strong>
+              <small>{campaign.subtitle || campaign.description || 'Limited-time restaurant offer.'}</small>
+              <div>
+                <button type="button" onClick={() => runAction(() => onCampaignAction?.(campaign))}>
+                  <TicketPercent size={16} />
+                  {campaign.button_text || getCampaignDefaultButton(campaign, currency)}
+                </button>
+                {campaign.coupon_code && (
+                  <button type="button" onClick={() => runAction(() => onCopyCoupon?.(campaign))}>
+                    <Copy size={16} />
+                    Copy
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {activeCategories.length > 0 && (
+        <div className="public-customer-sidebar-section categories">
+          <p>Categories</p>
+          <button
+            type="button"
+            className={categoryFilter === 'all' ? 'active' : ''}
+            onClick={() => runAction(() => onCategorySelect('all'))}
+          >
+            <Sparkles size={17} />
+            <span>All menu</span>
+          </button>
+          {activeCategories.slice(0, 10).map((category) => (
+            <button
+              type="button"
+              key={category.id}
+              className={categoryFilter === category.id ? 'active' : ''}
+              onClick={() => runAction(() => onCategorySelect(category.id))}
+            >
+              <TicketPercent size={17} />
+              <span>{category.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      </aside>
+    </>
+  )
+}
 
 
 
@@ -3432,7 +3688,7 @@ function PublicMobileBottomBar({
   onHome,
   onOrders,
   onCart,
-  onRewards,
+  onMore,
   onProfile,
 }) {
   return (
@@ -3453,9 +3709,9 @@ function PublicMobileBottomBar({
         <span>Cart</span>
       </button>
 
-      <button type="button" onClick={onRewards}>
-        <Gift size={20} />
-        <span>Rewards</span>
+      <button type="button" onClick={onMore}>
+        <Menu size={20} />
+        <span>More</span>
       </button>
 
       <button type="button" onClick={onProfile}>
@@ -4265,7 +4521,7 @@ function PublicOrdersModal({
             <p className="public-menu-label">My Orders</p>
             <h2>Order history</h2>
             <span>
-              Track live table bills, completion requests and completed orders.
+              Track live table bills, bill requests and completed orders.
             </span>
           </div>
 
@@ -4307,7 +4563,7 @@ function PublicOrdersModal({
             {ongoingOrders.length > 0 && (
               <PublicOrdersSection
                 title="Live table orders"
-                subtitle="Ongoing bills from this device/session with live status."
+                subtitle="Ongoing bills from this device/session."
                 orders={ongoingOrders}
                 currency={currency}
                 onRequestBill={onRequestBill}
@@ -4388,7 +4644,7 @@ function PublicOrderCard({
     <article
       className={`public-order-card polished ${
         isLive ? 'live' : 'past'
-      } ${order.status === 'bill_requested' ? 'bill-requested completion-requested' : ''}`}
+      } ${order.status === 'bill_requested' ? 'bill-requested' : ''}`}
     >
       <div className="public-order-card-head">
         <div>
@@ -4405,7 +4661,7 @@ function PublicOrderCard({
           {isLive && (
             <div className="public-live-order-badge">
               <span />
-              {order.status === 'bill_requested' ? 'Completion requested' : 'Ongoing / Live order'}
+              {order.status === 'bill_requested' ? 'Bill requested' : 'Live order'}
             </div>
           )}
 
@@ -4453,22 +4709,19 @@ function PublicOrderCard({
       {order.order_type === 'dine_in' &&
         isLive &&
         order.status !== 'bill_requested' && (
-          <div className="public-customer-completion-box">
-            <p>Finished dining? Send a completion request so the restaurant can close your bill.</p>
-            <button
-              type="button"
-              className="public-request-bill-button"
-              onClick={() => onRequestBill(order)}
-              disabled={loading}
-            >
-              Complete Order / Request Bill
-            </button>
-          </div>
+          <button
+            type="button"
+            className="public-request-bill-button"
+            onClick={() => onRequestBill(order)}
+            disabled={loading}
+          >
+            Complete Order / Request Bill
+          </button>
         )}
 
       {order.status === 'bill_requested' && (
         <div className="public-bill-requested-note">
-          Completion request sent. The restaurant can now verify payment and complete this bill.
+          Bill request sent. Restaurant will complete the bill after payment.
         </div>
       )}
 
@@ -5207,40 +5460,6 @@ async function createPublicStripeCheckoutSession({
 
   if (!data?.success) {
     throw new Error(data?.message || data?.error || 'Unable to open Stripe checkout.')
-  }
-
-  return data
-}
-
-async function createPublicPayPalCheckoutOrder({
-  restaurantId,
-  restaurantSlug,
-  orderId,
-  orderCode,
-  orderReference,
-  customerSessionId,
-}) {
-  const { data, error } = await supabase.functions.invoke(
-    'create-paypal-checkout-order',
-    {
-      body: {
-        restaurant_id: restaurantId,
-        restaurant_slug: restaurantSlug,
-        order_id: orderId || null,
-        order_code: orderCode || null,
-        order_reference: orderReference || null,
-        customer_session_id: customerSessionId || null,
-        origin: window.location.origin,
-      },
-    },
-  )
-
-  if (error) {
-    throw new Error(error.message || 'Unable to open PayPal checkout.')
-  }
-
-  if (!data?.success) {
-    throw new Error(data?.message || data?.error || 'Unable to open PayPal checkout.')
   }
 
   return data
