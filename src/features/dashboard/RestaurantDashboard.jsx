@@ -6,7 +6,7 @@ import MenuScheduleManagement from '../../restaurant/MenuScheduleManagement'
 import NutritionLabelsManagement from '../../restaurant/NutritionLabelsManagement'
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantOnboardingWizard from '../../restaurant/RestaurantOnboardingWizard'
-import SubscriptionBillingManagement from '../../restaurant/SubscriptionBillingManagement'
+import SubscriptionCenterScratch from '../../restaurant/SubscriptionCenterScratch'
 import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import PWAMobilePolishManagement from '../../restaurant/PWAMobilePolishManagement'
 import OfflinePOSQueueManagement from '../../restaurant/OfflinePOSQueueManagement'
@@ -88,6 +88,7 @@ const sectionPermissionMap = {
   overview: ['always'],
   onboarding: ['settings'],
   'subscription-billing': ['settings'],
+  subscriptions: ['settings'],
   'pwa-mobile': ['settings', 'reports'],
   'offline-pos': ['pos', 'orders', 'settings'],
   'launch-qa': ['settings', 'reports'],
@@ -178,6 +179,7 @@ const restaurantSections = [
   'overview',
   'onboarding',
   'subscription-billing',
+  'subscriptions',
   'pwa-mobile',
   'offline-pos',
   'launch-qa',
@@ -243,8 +245,34 @@ const restaurantSections = [
 
 function getSafeSection(section) {
   if (!section) return 'overview'
-  return restaurantSections.includes(section) ? section : 'overview'
+
+  const normalizedSection = String(section)
+
+  if (normalizedSection === 'subscription-billing') {
+    return 'subscriptions'
+  }
+
+  return restaurantSections.includes(normalizedSection) ? normalizedSection : 'overview'
 }
+
+function canAccessSubscriptionBilling(staffAccess) {
+  if (!staffAccess?.isLimited) return true
+  return staffAccess?.permissions?.settings === true
+}
+
+function ensureCriticalRestaurantSections(sections = [], staffAccess = null) {
+  const next = new Set(Array.isArray(sections) ? sections : [])
+
+  // Subscription billing is a launch-critical owner/settings module. Keep it visible even
+  // when launch-safe filtering or older cached launchMode builds hide it.
+  if (canAccessSubscriptionBilling(staffAccess)) {
+    next.add('subscription-billing')
+    next.add('subscriptions')
+  }
+
+  return restaurantSections.filter((section) => next.has(section))
+}
+
 
 function RestaurantDashboard({ profile, restaurant }) {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -269,13 +297,16 @@ function RestaurantDashboard({ profile, restaurant }) {
   )
 
   const visibleAllowedSections = useMemo(
-    () => getLaunchVisibleSections(allowedSections),
-    [allowedSections],
+    () => ensureCriticalRestaurantSections(getLaunchVisibleSections(allowedSections), staffAccess),
+    [allowedSections, staffAccess],
   )
 
   const handleSectionChange = (section) => {
     const safeSection = getSafeSection(section)
-    const nextSection = visibleAllowedSections.includes(safeSection)
+    const subscriptionAllowed =
+      safeSection === 'subscriptions' && canAccessSubscriptionBilling(staffAccess)
+
+    const nextSection = visibleAllowedSections.includes(safeSection) || subscriptionAllowed
       ? safeSection
       : 'overview'
 
@@ -284,6 +315,10 @@ function RestaurantDashboard({ profile, restaurant }) {
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('section', nextSection)
     setSearchParams(nextParams, { replace: true })
+
+    window.requestAnimationFrame?.(() => {
+      document.querySelector('.spizy-pro-restaurant-workspace')?.scrollTo({ top: 0, behavior: 'smooth' })
+    })
   }
 
   useEffect(() => {
@@ -383,6 +418,7 @@ function RestaurantDashboard({ profile, restaurant }) {
   useEffect(() => {
     if (staffAccess.loading) return
     if (visibleAllowedSections.includes(activeSection)) return
+    if (activeSection === 'subscriptions' && canAccessSubscriptionBilling(staffAccess)) return
     handleSectionChange('overview')
   }, [activeSection, staffAccess.loading, visibleAllowedSections])
 
@@ -407,10 +443,13 @@ function RestaurantDashboard({ profile, restaurant }) {
     )
   }
 
-  const activeSectionAllowed = visibleAllowedSections.includes(activeSection)
+  const activeSectionAllowed =
+    visibleAllowedSections.includes(activeSection) ||
+    (activeSection === 'subscriptions' && canAccessSubscriptionBilling(staffAccess))
 
   return (
-    <div className="restaurant-layout spizy-pro-restaurant-layout">
+    <div className="spizy-restaurant-dashboard-shell">
+      <div className="restaurant-layout spizy-pro-restaurant-layout">
       <RestaurantSidebar
         restaurant={restaurant}
         activeSection={activeSectionAllowed ? activeSection : 'overview'}
@@ -422,7 +461,7 @@ function RestaurantDashboard({ profile, restaurant }) {
       <div className="restaurant-workspace spizy-pro-restaurant-workspace">
         <SubscriptionTrialHeaderBar
           restaurant={restaurant}
-          onSubscribe={() => handleSectionChange('subscription-billing')}
+          onSubscribe={() => handleSectionChange('subscriptions')}
         />
 
         {staffAccess.isLimited && staffAccess.message && (
@@ -448,7 +487,7 @@ function RestaurantDashboard({ profile, restaurant }) {
               <RestaurantOverview profile={profile} restaurant={restaurant} onOpenSection={handleSectionChange} />
             )}
             {activeSection === 'onboarding' && <RestaurantOnboardingWizard restaurant={restaurant} onOpenSection={handleSectionChange} />}
-            {activeSection === 'subscription-billing' && <SubscriptionBillingManagement restaurant={restaurant} profile={profile} onOpenSection={handleSectionChange} />}
+            {activeSection === 'subscriptions' && <SubscriptionCenterScratch restaurant={restaurant} profile={profile} onOpenSection={handleSectionChange} />}
             {activeSection === 'pwa-mobile' && <PWAMobilePolishManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
             {activeSection === 'offline-pos' && <OfflinePOSQueueManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
             {activeSection === 'launch-qa' && <LaunchQAReadinessManagement restaurant={restaurant} onOpenSection={handleSectionChange} />}
@@ -511,6 +550,7 @@ function RestaurantDashboard({ profile, restaurant }) {
           </>
         )}
       </div>
+    </div>
     </div>
   )
 }

@@ -1,0 +1,276 @@
+.spizy-subscription-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.spizy-subscription-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.spizy-subscription-panel {
+  position: relative;
+  z-index: 1;
+  width: min(980px, calc(100vw - 28px));
+  max-height: min(820px, calc(100vh - 28px));
+  overflow: auto;
+  border-radius: 30px;
+  padding: clamp(18px, 3vw, 28px);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.22), transparent 34%),
+    linear-gradient(180deg, rgba(26, 23, 20, 0.98), rgba(8, 8, 8, 0.99));
+  border: 1px solid rgba(255, 191, 77, 0.24);
+  box-shadow: 0 34px 110px rgba(0, 0, 0, 0.72);
+}
+
+.spizy-subscription-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.spizy-subscription-panel-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(30px, 5vw, 48px);
+  letter-spacing: -0.05em;
+}
+
+.spizy-subscription-panel-head span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+}
+
+.spizy-subscription-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  border-radius: 16px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.spizy-subscription-status-grid,
+.spizy-subscription-plan-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.spizy-subscription-status-card,
+.spizy-subscription-plan-card,
+.spizy-subscription-coupon,
+.spizy-subscription-safe-note,
+.spizy-subscription-message {
+  border: 1px solid rgba(255, 191, 77, 0.16);
+  border-radius: 22px;
+  background: rgba(8, 8, 8, 0.58);
+}
+
+.spizy-subscription-status-card {
+  min-height: 138px;
+  padding: 18px;
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+}
+
+.spizy-subscription-status-card div {
+  width: 42px;
+  height: 42px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  color: #ffc247;
+  background: rgba(255, 191, 77, 0.12);
+}
+
+.spizy-subscription-status-card span,
+.spizy-subscription-coupon span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.spizy-subscription-status-card strong {
+  color: #fff;
+  font-size: 22px;
+}
+
+.spizy-subscription-status-card small,
+.spizy-subscription-plan-note,
+.spizy-subscription-plan-card li,
+.spizy-subscription-safe-note span {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+
+.spizy-subscription-coupon {
+  margin-top: 18px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.spizy-subscription-coupon input {
+  width: 100%;
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  border-radius: 16px;
+  padding: 14px 15px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.42);
+  outline: none;
+}
+
+.spizy-subscription-plan-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.spizy-subscription-plan-card {
+  padding: 20px;
+}
+
+.spizy-subscription-plan-card.featured {
+  border-color: rgba(255, 191, 77, 0.42);
+  background:
+    radial-gradient(circle at top right, rgba(255, 191, 77, 0.14), transparent 34%),
+    rgba(8, 8, 8, 0.66);
+}
+
+.spizy-subscription-plan-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  color: #ffc247;
+}
+
+.spizy-subscription-plan-top p {
+  margin: 0 0 4px;
+  color: #ffc247;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.spizy-subscription-plan-top h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+}
+
+.spizy-subscription-price {
+  margin-top: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.spizy-subscription-price strong {
+  color: #fff;
+  font-size: 42px;
+  letter-spacing: -0.05em;
+}
+
+.spizy-subscription-price span {
+  color: rgba(255, 255, 255, 0.64);
+  padding-bottom: 7px;
+}
+
+.spizy-subscription-plan-card ul {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.spizy-subscription-plan-card li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.spizy-subscription-plan-card li svg {
+  color: #42e980;
+}
+
+.spizy-subscription-plan-card button {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 999px;
+  color: #1a0b02;
+  background: linear-gradient(135deg, #ffc247, #ff7a18);
+  font-weight: 1000;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spizy-subscription-plan-card button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.spizy-subscription-message {
+  margin-top: 14px;
+  padding: 14px;
+  color: #ffd99a;
+}
+
+.spizy-subscription-safe-note {
+  margin-top: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.spizy-subscription-safe-note svg {
+  color: #ffc247;
+  flex: 0 0 auto;
+  margin-top: 3px;
+}
+
+@media (max-width: 760px) {
+  .spizy-subscription-overlay {
+    padding: 0;
+    align-items: end;
+  }
+
+  .spizy-subscription-panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 26px 26px 0 0;
+    padding: 18px;
+  }
+
+  .spizy-subscription-status-grid,
+  .spizy-subscription-plan-grid {
+    grid-template-columns: 1fr;
+  }
+}

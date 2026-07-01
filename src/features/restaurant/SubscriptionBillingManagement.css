@@ -426,3 +426,15 @@
     width: 100%;
   }
 }
+
+/* 2026-07-01 subscription pricing update */
+.subscription-plan-card.current-plan {
+  border-color: rgba(34, 197, 94, 0.42) !important;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.12), 0 18px 46px rgba(34, 197, 94, 0.08) !important;
+}
+
+.subscription-plan-card.current-plan .subscription-primary-button {
+  opacity: 0.72;
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+}

@@ -6,6 +6,8 @@ import MenuScheduleManagement from '../../restaurant/MenuScheduleManagement'
 import NutritionLabelsManagement from '../../restaurant/NutritionLabelsManagement'
 import RestaurantOverview from '../../restaurant/RestaurantOverview'
 import RestaurantPlaceholder from '../../restaurant/RestaurantPlaceholder'
+import SubscriptionBillingManagement from '../../restaurant/SubscriptionBillingManagement'
+import SubscriptionTrialHeaderBar from '../../restaurant/SubscriptionTrialHeaderBar'
 import RestaurantSidebar from '../../restaurant/RestaurantSidebar'
 import NewOrderPOS from '../../restaurant/NewOrderPOS'
 import OrdersManagement from '../../restaurant/OrdersManagement'
@@ -68,6 +70,7 @@ const defaultStaffPermissions = {
 
 const sectionPermissionMap = {
   overview: ['always'],
+  'subscription-billing': ['settings'],
   alerts: ['pos', 'orders', 'menu', 'customers', 'reports', 'settings'],
   pos: ['pos'],
   floor: ['pos', 'orders'],
@@ -148,6 +151,7 @@ function hasSectionPermission(section, accessState) {
 
 const restaurantSections = [
   'overview',
+  'subscription-billing',
   'pos',
   'alerts',
   'orders',
@@ -199,7 +203,10 @@ const restaurantSections = [
 function getSafeSection(section) {
   if (!section) return 'overview'
 
-  return restaurantSections.includes(section) ? section : 'overview'
+  const normalizedSection = String(section)
+  if (normalizedSection === 'subscriptions') return 'subscription-billing'
+
+  return restaurantSections.includes(normalizedSection) ? normalizedSection : 'overview'
 }
 
 function RestaurantDashboard({ profile, restaurant }) {
@@ -237,6 +244,11 @@ function RestaurantDashboard({ profile, restaurant }) {
     nextParams.set('section', nextSection)
 
     setSearchParams(nextParams, { replace: true })
+
+    window.requestAnimationFrame?.(() => {
+      document.querySelector('.restaurant-workspace')?.scrollTo({ top: 0, behavior: 'smooth' })
+      document.querySelector('.spizy-pro-restaurant-workspace')?.scrollTo({ top: 0, behavior: 'smooth' })
+    })
   }
 
   useEffect(() => {
@@ -374,6 +386,11 @@ function RestaurantDashboard({ profile, restaurant }) {
       />
 
       <div className="restaurant-workspace">
+        <SubscriptionTrialHeaderBar
+          restaurant={restaurant}
+          onSubscribe={() => handleSectionChange('subscription-billing')}
+        />
+
         {staffAccess.isLimited && staffAccess.message && (
           <StaffAccessGuardPanel
             title="Staff access needs setup"
@@ -395,6 +412,14 @@ function RestaurantDashboard({ profile, restaurant }) {
                     <RestaurantOverview
                       profile={profile}
                       restaurant={restaurant}
+                      onOpenSection={handleSectionChange}
+                    />
+                  )}
+
+                  {activeSection === 'subscription-billing' && (
+                    <SubscriptionBillingManagement
+                      restaurant={restaurant}
+                      profile={profile}
                       onOpenSection={handleSectionChange}
                     />
                   )}

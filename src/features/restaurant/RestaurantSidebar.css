@@ -332,3 +332,212 @@
     overflow: visible !important;
   }
 }
+
+/* Emergency subscription visibility pin: always readable, independent of launch filtering */
+.spizy-sidebar-subscription-pin {
+  width: 100%;
+  margin: 12px 0 10px;
+  min-height: 68px;
+  border: 1px solid rgba(255, 191, 77, 0.32);
+  border-radius: 20px;
+  padding: 12px;
+  color: #fff8ed;
+  background:
+    radial-gradient(circle at top left, rgba(255, 191, 77, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(64, 38, 15, 0.95), rgba(12, 12, 12, 0.95));
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+}
+
+.spizy-sidebar-subscription-pin:hover,
+.spizy-sidebar-subscription-pin.active {
+  border-color: rgba(255, 191, 77, 0.62);
+  background:
+    radial-gradient(circle at top left, rgba(255, 191, 77, 0.24), transparent 38%),
+    linear-gradient(135deg, rgba(86, 48, 16, 0.98), rgba(18, 14, 10, 0.98));
+}
+
+.spizy-sidebar-subscription-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 15px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 24px rgba(255, 122, 24, 0.24);
+}
+
+.spizy-sidebar-subscription-pin span {
+  min-width: 0;
+}
+
+.spizy-sidebar-subscription-pin strong {
+  display: block;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.spizy-sidebar-subscription-pin small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 248, 237, 0.74);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spizy-sidebar-subscription-pin b {
+  padding: 6px 9px;
+  border-radius: 999px;
+  color: #1b0c02;
+  background: #ffbf4d;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* 2026-07-01 subscription sidebar click/readability hotfix
+   The previous emergency pinned subscription shortcut sat outside the nav scroll and overlapped
+   the Daily Operations accordion. Subscription is now shown as a normal Daily Operations menu row. */
+.spizy-sidebar-subscription-pin {
+  display: none !important;
+}
+.pro-sidebar-scroll {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+.pro-nav-group,
+.pro-nav-group-button,
+.pro-nav-items,
+.pro-nav-button {
+  position: relative !important;
+  z-index: 2 !important;
+  pointer-events: auto !important;
+}
+
+/* 2026-07-01 final mobile + clickability polish */
+.pro-nav-button,
+.pro-nav-group-button,
+.pro-sidebar-search input,
+.pro-sidebar-search button {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.pro-sidebar-scroll {
+  pointer-events: auto !important;
+}
+
+@media (max-width: 860px) {
+  .restaurant-layout,
+  .spizy-pro-restaurant-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .restaurant-sidebar.pro-restaurant-sidebar,
+  .pro-restaurant-sidebar {
+    height: auto !important;
+    max-height: 430px !important;
+    min-height: 0 !important;
+    grid-template-rows: auto auto minmax(120px, 1fr) auto !important;
+    border-radius: 24px !important;
+    padding: 14px !important;
+  }
+
+  .pro-sidebar-head {
+    padding: 12px !important;
+    border-radius: 20px !important;
+  }
+
+  .restaurant-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 14px !important;
+  }
+
+  .pro-sidebar-search {
+    min-height: 46px !important;
+    border-radius: 16px !important;
+  }
+
+  .pro-sidebar-scroll {
+    max-height: 230px !important;
+    min-height: 130px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 3px !important;
+  }
+
+  .pro-nav-group-button {
+    min-height: 48px !important;
+    border-radius: 16px !important;
+    padding: 8px 10px !important;
+  }
+
+  .pro-nav-group-button strong {
+    font-size: 11px !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  .pro-nav-group-button small {
+    font-size: 10px !important;
+  }
+
+  .pro-nav-button,
+  .restaurant-nav-button.pro-nav-button {
+    min-height: 54px !important;
+    border-radius: 16px !important;
+    padding: 8px !important;
+  }
+
+  .pro-nav-icon {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  .pro-nav-button strong {
+    font-size: 13px !important;
+  }
+
+  .pro-nav-button small {
+    font-size: 10px !important;
+  }
+
+  .pro-nav-tag {
+    font-size: 8px !important;
+    padding: 3px 6px !important;
+  }
+
+  .pro-sidebar-foot {
+    min-height: 42px !important;
+    border-radius: 16px !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .restaurant-sidebar.pro-restaurant-sidebar,
+  .pro-restaurant-sidebar {
+    max-height: 390px !important;
+  }
+
+  .pro-sidebar-scroll {
+    max-height: 190px !important;
+  }
+}

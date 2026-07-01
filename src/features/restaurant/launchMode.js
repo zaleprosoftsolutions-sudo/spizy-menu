@@ -13,6 +13,7 @@ const launchCoreSections = new Set([
   'overview',
   'onboarding',
   'subscription-billing',
+  'subscriptions',
   'pwa-mobile',
   'launch-qa',
   'deployment-center',

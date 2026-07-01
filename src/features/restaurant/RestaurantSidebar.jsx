@@ -50,7 +50,7 @@ import {
   WifiOff,
   X,
 } from 'lucide-react'
-import { getLaunchVisibleSections, getSpizyLaunchModeLabel } from './launchMode'
+import { getLaunchVisibleSections } from './launchMode'
 import './RestaurantSidebar.css'
 
 const STORAGE_OPEN_GROUPS = 'spizy.restaurant.sidebar.openGroups.v5'
@@ -205,7 +205,7 @@ function RestaurantSidebar({
     [allowedSections],
   )
   const visibleSectionSet = useMemo(() => new Set(visibleSections), [visibleSections])
-  const launchModeLabel = getSpizyLaunchModeLabel()
+  const canShowSubscriptionShortcut = !staffAccess?.isLimited || staffAccess?.permissions?.settings === true
 
   const filteredGroups = useMemo(() => {
     const keyword = search.trim().toLowerCase()
@@ -213,7 +213,12 @@ function RestaurantSidebar({
     return restaurantNavGroups
       .map((group) => {
         const items = group.items.filter((item) => {
-          if (!visibleSectionSet.has(item.id)) return false
+          if (item.id === 'subscription-billing') {
+            if (!canShowSubscriptionShortcut) return false
+          } else if (!visibleSectionSet.has(item.id)) {
+            return false
+          }
+
           if (!keyword) return true
 
           return [item.label, item.description, group.title, group.subtitle]
@@ -223,7 +228,7 @@ function RestaurantSidebar({
         return { ...group, items }
       })
       .filter((group) => group.items.length > 0)
-  }, [search, visibleSectionSet])
+  }, [canShowSubscriptionShortcut, search, visibleSectionSet])
 
   useEffect(() => {
     const activeGroup = restaurantNavGroups.find((group) =>
@@ -274,6 +279,27 @@ function RestaurantSidebar({
     setOpenGroups((current) => ({ ...current, [groupId]: !current[groupId] }))
   }
 
+  const openSection = (sectionId, { forceNavigate = false } = {}) => {
+    if (!sectionId) return
+
+    setSearch('')
+
+    onSectionChange?.(sectionId)
+
+    window.requestAnimationFrame?.(() => {
+      document.querySelector('.spizy-pro-restaurant-workspace')?.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+
+    if (forceNavigate) {
+      window.setTimeout(() => {
+        const currentSection = new URLSearchParams(window.location.search).get('section')
+        if (currentSection !== sectionId) {
+          window.history.replaceState(null, '', getSectionHref(sectionId))
+        }
+      }, 90)
+    }
+  }
+
   return (
     <aside className="restaurant-sidebar pro-restaurant-sidebar">
       <div className="restaurant-sidebar-head pro-sidebar-head">
@@ -300,6 +326,7 @@ function RestaurantSidebar({
           </button>
         )}
       </div>
+
 
       <nav className="restaurant-nav pro-sidebar-scroll" ref={scrollRef}>
         {filteredGroups.map((group) => {
@@ -329,11 +356,16 @@ function RestaurantSidebar({
                     const tagTone = String(item.tag || '').toLowerCase()
 
                     return (
-                      <button
-                        type="button"
+                      <a
                         key={item.id}
+                        href={getSectionHref(item.id)}
                         className={`restaurant-nav-button pro-nav-button ${isActive ? 'active' : ''}`}
-                        onClick={() => onSectionChange(item.id)}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+
+                          openSection(item.id)
+                        }}
                       >
                         <div className="pro-nav-icon"><Icon size={18} /></div>
                         <span>
@@ -341,7 +373,7 @@ function RestaurantSidebar({
                           <small>{item.description}</small>
                         </span>
                         {item.tag && <i className={`pro-nav-tag ${tagTone}`}>{item.tag}</i>}
-                      </button>
+                      </a>
                     )
                   })}
                 </div>
@@ -365,11 +397,20 @@ function RestaurantSidebar({
       <div className="restaurant-sidebar-foot pro-sidebar-foot">
         <Store size={16} />
         <span>Spizy restaurant OS</span>
-        {launchModeLabel === 'Launch-safe mode active' && <small>Launch</small>}
         <Tags size={16} />
       </div>
     </aside>
   )
+}
+
+
+function getSectionHref(sectionId) {
+  if (typeof window === 'undefined') {
+    return `/dashboard?section=${encodeURIComponent(sectionId)}`
+  }
+
+  const pathname = window.location.pathname || '/dashboard'
+  return `${pathname}?section=${encodeURIComponent(sectionId)}`
 }
 
 function getInitialOpenGroups(activeSection) {

@@ -1,4 +1,4 @@
-/* Final restaurant dashboard scrolling model */
+/* Clean restaurant dashboard shell: independent sidebar/content scrolling + visible trial bar */
 .dashboard-page {
   overflow: hidden !important;
 }
@@ -15,22 +15,51 @@
 .dashboard-header {
   position: sticky !important;
   top: 0 !important;
-  z-index: 80 !important;
-  background: rgba(8, 8, 8, 0.92) !important;
+  z-index: 90 !important;
+  background: rgba(8, 8, 8, 0.94) !important;
   backdrop-filter: blur(18px) !important;
 }
 
-.spizy-pro-restaurant-layout {
-  height: calc(100vh - 188px) !important;
-  min-height: 620px !important;
+.spizy-restaurant-dashboard-shell {
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  height: calc(100vh - 178px) !important;
+  min-height: 0 !important;
   overflow: hidden !important;
 }
 
-.spizy-pro-restaurant-workspace {
+.spizy-pro-restaurant-layout,
+.restaurant-layout.spizy-pro-restaurant-layout {
+  height: 100% !important;
   min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.spizy-pro-restaurant-workspace,
+.restaurant-workspace.spizy-pro-restaurant-workspace {
+  min-height: 0 !important;
+  height: 100% !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
   scroll-behavior: smooth;
+}
+
+.spizy-pro-restaurant-workspace > .subscription-trial-header-bar {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 120 !important;
+  margin: 0 0 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.subscription-trial-cta,
+.subscription-trial-header-bar button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 .spizy-launch-mode-panel {
@@ -41,10 +70,15 @@
   .dashboard-page,
   .dashboard-card,
   .dashboard-shell,
+  .spizy-restaurant-dashboard-shell,
   .spizy-pro-restaurant-layout,
   .spizy-pro-restaurant-workspace {
-    max-height: none !important;
     height: auto !important;
+    max-height: none !important;
     overflow: visible !important;
+  }
+
+  .spizy-restaurant-dashboard-shell {
+    display: block !important;
   }
 }
