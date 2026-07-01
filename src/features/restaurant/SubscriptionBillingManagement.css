@@ -438,3 +438,158 @@
   cursor: not-allowed;
   filter: grayscale(0.25);
 }
+
+/* 2026-07-01 checkout review popup + short subscribe buttons */
+.subscription-coupon-strip.compact {
+  grid-template-columns: auto 1fr !important;
+}
+
+.subscription-checkout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+.subscription-checkout-modal {
+  width: min(560px, 100%);
+  max-height: min(760px, calc(100vh - 36px));
+  overflow-y: auto;
+  position: relative;
+  border-radius: 30px;
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(255, 191, 77, 0.32);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.22), transparent 42%),
+    linear-gradient(180deg, rgba(35, 24, 15, 0.98), rgba(8, 8, 8, 0.98));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.subscription-checkout-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #fff8ed;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.subscription-checkout-head {
+  padding-right: 42px;
+}
+
+.subscription-checkout-head h2 {
+  margin: 4px 0 6px;
+  color: #fff8ed !important;
+  font-size: 34px;
+  letter-spacing: -0.05em;
+}
+
+.subscription-checkout-head span {
+  color: rgba(255, 248, 237, 0.68);
+  line-height: 1.55;
+}
+
+.subscription-breakdown-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.subscription-breakdown-card div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: rgba(255, 248, 237, 0.72);
+}
+
+.subscription-breakdown-card strong {
+  color: #fff8ed;
+  text-align: right;
+}
+
+.subscription-breakdown-total {
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.subscription-breakdown-total strong {
+  color: #ffbf4d;
+}
+
+.subscription-popup-coupon-field {
+  display: grid;
+  gap: 8px;
+  color: #fff8ed;
+  font-weight: 900;
+}
+
+.subscription-popup-coupon-field input {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 16px;
+  padding: 0 14px;
+  color: #fff8ed;
+  background: rgba(0, 0, 0, 0.36);
+  border: 1px solid rgba(255, 191, 77, 0.18);
+  outline: 0;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.subscription-popup-coupon-field small {
+  color: rgba(255, 248, 237, 0.58);
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.subscription-checkout-actions {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 12px;
+}
+
+.subscription-checkout-actions .subscription-primary-button,
+.subscription-checkout-actions .subscription-secondary-button {
+  margin-top: 0;
+  min-height: 52px;
+}
+
+@media (max-width: 560px) {
+  .subscription-checkout-modal {
+    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .subscription-checkout-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-breakdown-card div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .subscription-breakdown-card strong {
+    text-align: left;
+  }
+}

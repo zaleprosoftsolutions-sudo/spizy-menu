@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Sparkles,
   WalletCards,
+  X,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import './SubscriptionBillingManagement.css'
@@ -65,6 +66,7 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
   const [attempts, setAttempts] = useState([])
   const [invoices, setInvoices] = useState([])
   const [couponCode, setCouponCode] = useState('')
+  const [checkoutPlan, setCheckoutPlan] = useState(null)
 
   const subscriptionState = useMemo(
     () => buildSubscriptionState(restaurant),
@@ -136,16 +138,17 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
       text: 'Spizy is verifying the returned subscription payment status.',
     })
 
-    const { data, error } = await invokeFunctionWithTimeout(
+    const { data, error } = await supabase.functions.invoke(
       'verify-mamo-subscription-payment',
       {
-        restaurant_id: restaurant.id,
-        attempt_id: attemptId || null,
-        payment_link_id: paymentLinkId || null,
-        transaction_id: transactionId || null,
-        redirect_status: mamoStatus || null,
+        body: {
+          restaurant_id: restaurant.id,
+          attempt_id: attemptId || null,
+          payment_link_id: paymentLinkId || null,
+          transaction_id: transactionId || null,
+          redirect_status: mamoStatus || null,
+        },
       },
-      45000,
     )
 
     setVerifying(false)
@@ -154,7 +157,11 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
       setMessage({
         type: 'warning',
         title: 'Payment verification needs review',
-        text: formatFunctionError(data, error, 'Mamo Pay result could not be verified automatically.'),
+        text: await getFunctionErrorMessage(
+          data,
+          error,
+          'Mamo Pay result could not be verified automatically.',
+        ),
       })
       await loadBilling({ silent: true })
       return
@@ -169,13 +176,6 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
       text: data?.message || 'Billing status has been refreshed.',
     })
     await loadBilling({ silent: true })
-
-    if (data?.status === 'captured') {
-      window.setTimeout(() => {
-        const cleanUrl = `${window.location.origin}${window.location.pathname}?section=subscription-billing&subscription_verified=${Date.now()}`
-        window.location.replace(cleanUrl)
-      }, 1200)
-    }
   }, [loadBilling, restaurant?.id])
 
   useEffect(() => {
@@ -185,6 +185,16 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
   useEffect(() => {
     verifyReturnParams()
   }, [verifyReturnParams])
+
+  const openCheckoutReview = (plan) => {
+    setMessage(null)
+    setCheckoutPlan(plan)
+  }
+
+  const closeCheckoutReview = () => {
+    if (creatingPlan) return
+    setCheckoutPlan(null)
+  }
 
   const createCheckout = async (plan) => {
     if (!restaurant?.id) {
@@ -197,69 +207,51 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
     }
 
     setCreatingPlan(plan.key)
-    setMessage({
-      type: 'info',
-      title: 'Creating Mamo Pay checkout',
-      text: `Please wait. Spizy is creating the ${plan.shortName} payment link using the logged-in email automatically.`,
-    })
+    setMessage(null)
 
-    try {
-      const { data, error } = await invokeFunctionWithTimeout(
-        'create-mamo-subscription-checkout',
-        {
+    const { data, error } = await supabase.functions.invoke(
+      'create-mamo-subscription-checkout',
+      {
+        body: {
           restaurant_id: restaurant.id,
           plan_key: plan.key,
           billing_cycle: plan.billingCycle,
           coupon_code: couponCode.trim() || null,
-          customer_email: profile?.email || null,
         },
-        45000,
-      )
+      },
+    )
 
-      if (error || data?.error) {
-        setMessage({
-          type: 'error',
-          title: 'Mamo checkout failed',
-          text: formatFunctionError(data, error, 'Unable to create a Mamo Pay subscription checkout right now.'),
-        })
-        await loadBilling({ silent: true })
-        return
-      }
+    setCreatingPlan('')
 
-      const checkoutUrl = data?.checkout_url || data?.attempt?.mamo_checkout_url || ''
-
-      if (!checkoutUrl) {
-        setMessage({
-          type: 'error',
-          title: 'Mamo checkout link missing',
-          text: 'Mamo Pay responded but no checkout URL was returned. Check the latest failed attempt raw_response in Supabase.',
-        })
-        await loadBilling({ silent: true })
-        return
-      }
-
-      setMessage({
-        type: 'success',
-        title:
-          data?.discount_amount > 0
-            ? 'Discount applied'
-            : 'Mamo checkout link created',
-        text:
-          data?.message ||
-          `Redirecting to Mamo Pay checkout for ${plan.shortName} subscription.`,
-      })
-
-      await loadBilling({ silent: true })
-      window.location.assign(checkoutUrl)
-    } catch (error) {
+    if (error || data?.error) {
       setMessage({
         type: 'error',
-        title: 'Mamo checkout timeout',
-        text: error?.message || 'Mamo checkout request timed out. Please try again.',
+        title: 'Mamo checkout failed',
+        text: await getFunctionErrorMessage(
+          data,
+          error,
+          'Unable to create a Mamo Pay subscription checkout right now.',
+        ),
       })
-      await loadBilling({ silent: true })
-    } finally {
-      setCreatingPlan('')
+      return
+    }
+
+    setMessage({
+      type: 'success',
+      title:
+        data?.discount_amount > 0
+          ? 'Discount applied'
+          : 'Mamo checkout link created',
+      text:
+        data?.message ||
+        'The restaurant can now complete Spizy subscription payment through Mamo Pay.',
+    })
+
+    setCheckoutPlan(null)
+    await loadBilling({ silent: true })
+
+    if (data?.checkout_url) {
+      window.location.assign(data.checkout_url)
     }
   }
 
@@ -340,20 +332,14 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
         />
       </div>
 
-      <div className="subscription-coupon-strip">
+      <div className="subscription-coupon-strip compact">
         <Gift size={19} />
         <div>
           <strong>Have a discount coupon?</strong>
           <span>
-            Enter coupon code before clicking Subscribe. Coupons are controlled
-            by Super Admin only.
+            Choose a plan and enter the coupon in the checkout review popup before going to Mamo Pay.
           </span>
         </div>
-        <input
-          value={couponCode}
-          onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
-          placeholder="Coupon code"
-        />
       </div>
 
       {!subscriptionState.isActivePaid && (
@@ -390,10 +376,10 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
           const isYearlyUpgrade =
             subscriptionState.isMonthlySubscriber && plan.key === 'qr_menu_yearly'
           const actionLabel = isCurrentPlan
-            ? 'Current Active Plan'
+            ? 'Current Plan'
             : isYearlyUpgrade
-              ? 'Upgrade to Yearly with Mamo Pay'
-              : `Subscribe ${plan.shortName} with Mamo Pay`
+              ? 'Upgrade Yearly'
+              : 'Subscribe Now'
 
           return (
             <article
@@ -424,7 +410,7 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
               <button
                 type="button"
                 className="subscription-primary-button"
-                onClick={() => createCheckout(plan)}
+                onClick={() => openCheckoutReview(plan)}
                 disabled={creatingPlan === plan.key || isCurrentPlan}
               >
                 {creatingPlan === plan.key ? (
@@ -538,44 +524,100 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
           </div>
         )}
       </section>
+
+
+      {checkoutPlan && (
+        <CheckoutReviewModal
+          plan={checkoutPlan}
+          couponCode={couponCode}
+          setCouponCode={setCouponCode}
+          creating={creatingPlan === checkoutPlan.key}
+          onClose={closeCheckoutReview}
+          onConfirm={() => createCheckout(checkoutPlan)}
+        />
+      )}
     </section>
   )
 }
 
-function invokeFunctionWithTimeout(functionName, body, timeoutMs = 45000) {
-  let timeoutId
+async function getFunctionErrorMessage(data, error, fallback) {
+  if (data?.error) return data.error
 
-  const timeoutPromise = new Promise((resolve) => {
-    timeoutId = window.setTimeout(() => {
-      resolve({
-        data: null,
-        error: {
-          message: `${functionName} did not respond within ${Math.round(timeoutMs / 1000)} seconds. Check Supabase function logs and Mamo API secrets.`,
-        },
-      })
-    }, timeoutMs)
-  })
+  const context = error?.context
+  if (context?.json) {
+    try {
+      const cloned = typeof context.clone === 'function' ? context.clone() : context
+      const body = await cloned.json()
+      if (body?.error) return body.error
+      if (body?.message) return body.message
+    } catch {
+      // keep fallback below
+    }
+  }
 
-  const invokePromise = supabase.functions.invoke(functionName, { body })
-
-  return Promise.race([invokePromise, timeoutPromise]).finally(() => {
-    if (timeoutId) window.clearTimeout(timeoutId)
-  })
+  return error?.message || fallback
 }
 
-function formatFunctionError(data, error, fallback) {
-  const parts = [
-    data?.error,
-    data?.message,
-    error?.message,
-    data?.mamo_response?.message,
-    data?.mamo_response?.error,
-  ]
-    .filter(Boolean)
-    .map((value) => String(value))
+function CheckoutReviewModal({ plan, couponCode, setCouponCode, creating, onClose, onConfirm }) {
+  const cleanCoupon = String(couponCode || '').trim().toUpperCase()
 
-  if (parts.length > 0) return parts.join(' • ')
-  return fallback
+  return (
+    <div className="subscription-checkout-overlay" role="dialog" aria-modal="true" aria-label="Subscription checkout review">
+      <section className="subscription-checkout-modal">
+        <button type="button" className="subscription-checkout-close" onClick={onClose} aria-label="Close checkout review">
+          <X size={18} />
+        </button>
+
+        <div className="subscription-checkout-head">
+          <p className="pricing-label">Checkout Review</p>
+          <h2>{plan.shortName} Plan</h2>
+          <span>Review the price, add coupon if available, then continue to Mamo Pay.</span>
+        </div>
+
+        <div className="subscription-breakdown-card">
+          <div>
+            <span>Plan price</span>
+            <strong>{formatMoney(plan.currency, plan.amount)}</strong>
+          </div>
+          <div>
+            <span>Billing cycle</span>
+            <strong>{plan.billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}</strong>
+          </div>
+          <div>
+            <span>Coupon discount</span>
+            <strong>{cleanCoupon ? 'Applied at checkout' : formatMoney(plan.currency, 0)}</strong>
+          </div>
+          <div className="subscription-breakdown-total">
+            <span>Mamo amount</span>
+            <strong>{cleanCoupon ? 'Calculated after coupon validation' : formatMoney(plan.currency, plan.amount)}</strong>
+          </div>
+        </div>
+
+        <label className="subscription-popup-coupon-field">
+          Optional coupon code
+          <input
+            value={couponCode}
+            onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+            placeholder="TEST70"
+            autoFocus
+          />
+          <small>
+            Super Admin coupons are validated by Spizy before the Mamo Pay link is created.
+          </small>
+        </label>
+
+        <div className="subscription-checkout-actions">
+          <button type="button" className="subscription-secondary-button" onClick={onClose} disabled={creating}>
+            Cancel
+          </button>
+          <button type="button" className="subscription-primary-button" onClick={onConfirm} disabled={creating}>
+            {creating ? <RefreshCw size={17} /> : <ExternalLink size={17} />}
+            {creating ? 'Creating Link...' : 'Go to Checkout'}
+          </button>
+        </div>
+      </section>
+    </div>
+  )
 }
 
 function SubscriptionStatusCard({ icon, label, value, note, tone = 'neutral' }) {

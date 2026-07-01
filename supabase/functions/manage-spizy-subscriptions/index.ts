@@ -34,18 +34,20 @@ async function getRequesterRole(adminClient: ReturnType<typeof createClient>, au
   if (userError || !userData?.user) return { role: '', userId: '' }
 
   const user = userData.user
-  const metadataRole =
-    String(user.app_metadata?.role || user.user_metadata?.role || '').trim()
 
-  if (metadataRole) return { role: metadataRole, userId: user.id }
-
+  // Keep role detection aligned with DashboardPage/SuperAdminDashboard.
+  // Do not use the JWT platform role "authenticated" as the app role.
   const { data: profile } = await adminClient
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .maybeSingle()
 
-  return { role: String(profile?.role || '').trim(), userId: user.id }
+  const profileRole = String(profile?.role || '').trim()
+  if (profileRole) return { role: profileRole, userId: user.id }
+
+  const metadataRole = String(user.user_metadata?.role || user.app_metadata?.app_role || '').trim()
+  return { role: metadataRole, userId: user.id }
 }
 
 Deno.serve(async (request) => {
@@ -68,7 +70,7 @@ Deno.serve(async (request) => {
   const requester = await getRequesterRole(adminClient, authHeader)
 
   if (requester.role !== 'super_admin') {
-    return jsonResponse({ error: 'Only super admin can manage Spizy subscriptions.' }, 403)
+    return jsonResponse({ error: 'Only super admin can manage Spizy subscriptions.', detected_role: requester.role || 'none' }, 403)
   }
 
   const body = await request.json().catch(() => ({}))

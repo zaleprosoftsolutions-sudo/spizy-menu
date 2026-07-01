@@ -22,8 +22,8 @@ const statusOptions = [
 ]
 
 const planOptions = [
-  { value: 'qr_menu_monthly', label: 'QR Menu Monthly', cycle: 'monthly' },
-  { value: 'qr_menu_yearly', label: 'QR Menu Yearly', cycle: 'yearly' },
+  { value: 'qr_menu_monthly', label: 'QR Menu Monthly - AED 75', cycle: 'monthly' },
+  { value: 'qr_menu_yearly', label: 'QR Menu Yearly - AED 750', cycle: 'yearly' },
 ]
 
 function SuperAdminSubscriptionsManagement({ onStatsRefresh }) {
@@ -77,8 +77,8 @@ function SuperAdminSubscriptionsManagement({ onStatsRefresh }) {
     const monthlyRevenue = restaurants
       .filter((item) => item.subscription_status === 'active')
       .reduce((totalAmount, item) => {
-        if (item.subscription_plan === 'qr_menu_yearly') return totalAmount + 41.58
-        return totalAmount + 50
+        if (item.subscription_plan === 'qr_menu_yearly') return totalAmount + 62.5
+        return totalAmount + 75
       }, 0)
 
     return { total, active, trialing, risk, monthlyRevenue }

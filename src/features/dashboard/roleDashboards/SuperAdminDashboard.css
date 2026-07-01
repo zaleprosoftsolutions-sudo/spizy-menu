@@ -1,0 +1,344 @@
+.super-admin-os-shell {
+  display: grid;
+  grid-template-columns: 310px minmax(0, 1fr);
+  gap: 22px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.super-admin-sidebar,
+.super-admin-workspace,
+.super-admin-hero-panel,
+.super-admin-kpi-card,
+.super-admin-action-card,
+.super-admin-workspace-title {
+  border: 1px solid rgba(255, 191, 77, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 30rem),
+    linear-gradient(180deg, rgba(20, 20, 20, 0.96), rgba(7, 7, 7, 0.96));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+
+.super-admin-sidebar {
+  min-height: 0;
+  height: 100%;
+  border-radius: 30px;
+  padding: 16px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.super-admin-sidebar-card {
+  border-radius: 22px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  background: rgba(255, 122, 24, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.14);
+}
+
+.super-admin-avatar,
+.super-admin-nav-icon,
+.super-admin-hero-icon,
+.super-admin-kpi-card div,
+.super-admin-action-card div {
+  display: grid;
+  place-items: center;
+  color: #1b0c02;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18);
+  box-shadow: 0 14px 30px rgba(255, 122, 24, 0.18);
+}
+
+.super-admin-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+}
+
+.super-admin-sidebar-card span,
+.super-admin-nav-button small,
+.super-admin-kpi-card span,
+.super-admin-action-card p,
+.super-admin-hero-panel p {
+  color: rgba(255, 248, 237, 0.66);
+}
+
+.super-admin-sidebar-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #fff8ed;
+  font-size: 15px;
+}
+
+.super-admin-nav {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: grid;
+  align-content: start;
+  gap: 9px;
+}
+
+.super-admin-nav::-webkit-scrollbar,
+.super-admin-workspace::-webkit-scrollbar {
+  width: 8px;
+}
+
+.super-admin-nav::-webkit-scrollbar-thumb,
+.super-admin-workspace::-webkit-scrollbar-thumb {
+  background: rgba(255, 191, 77, 0.28);
+  border-radius: 999px;
+}
+
+.super-admin-nav-button {
+  width: 100%;
+  min-height: 66px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 11px;
+  color: #d6d6d6;
+  background: transparent;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.super-admin-nav-button:hover,
+.super-admin-nav-button.active {
+  border-color: rgba(255, 191, 77, 0.34);
+  background: linear-gradient(135deg, rgba(255, 191, 77, 0.16), rgba(255, 122, 24, 0.08));
+}
+
+.super-admin-nav-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 15px;
+}
+
+.super-admin-nav-button strong {
+  display: block;
+  color: #fff8ed;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.super-admin-nav-button small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.super-admin-sidebar-footer {
+  min-height: 48px;
+  border-radius: 18px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #ffbf4d;
+  background: rgba(255, 122, 24, 0.08);
+  border: 1px solid rgba(255, 191, 77, 0.12);
+}
+
+.super-admin-sidebar-footer span {
+  color: #fff8ed;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.super-admin-workspace {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 30px;
+  padding: 18px;
+}
+
+.super-admin-workspace-title {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-radius: 24px;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  backdrop-filter: blur(18px);
+}
+
+.super-admin-workspace-title h1 {
+  margin: 0;
+  color: #fff8ed;
+  font-size: clamp(26px, 3vw, 42px);
+  letter-spacing: -0.05em;
+}
+
+.super-admin-workspace-title button,
+.super-admin-action-card button {
+  border: 0;
+  border-radius: 999px;
+  min-height: 42px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #1b0c02;
+  background: linear-gradient(135deg, #ffbf4d, #ff7a18);
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.super-admin-action-card button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.super-admin-overview {
+  display: grid;
+  gap: 18px;
+}
+
+.super-admin-hero-panel {
+  border-radius: 28px;
+  padding: clamp(24px, 4vw, 42px);
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+}
+
+.super-admin-hero-panel h2 {
+  margin: 0;
+  color: #fff8ed;
+  font-size: clamp(36px, 5vw, 62px);
+  letter-spacing: -0.065em;
+}
+
+.super-admin-hero-panel p {
+  max-width: 900px;
+  line-height: 1.65;
+}
+
+.super-admin-hero-icon {
+  width: 92px;
+  height: 92px;
+  border-radius: 28px;
+  flex: 0 0 auto;
+}
+
+.super-admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.super-admin-kpi-card {
+  border-radius: 24px;
+  min-height: 130px;
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+}
+
+.super-admin-kpi-card div,
+.super-admin-action-card div {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+}
+
+.super-admin-kpi-card strong {
+  color: #fff8ed;
+  font-size: 28px;
+}
+
+.super-admin-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.super-admin-action-card {
+  border-radius: 24px;
+  padding: 20px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.super-admin-action-card h3 {
+  margin: 0;
+  color: #fff8ed;
+  font-size: 20px;
+}
+
+.super-admin-action-card p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.super-admin-action-card button {
+  width: fit-content;
+  margin-top: 8px;
+}
+
+@media (max-width: 1180px) {
+  .super-admin-os-shell {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+
+  .super-admin-kpi-grid,
+  .super-admin-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .super-admin-os-shell {
+    height: auto;
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .super-admin-sidebar {
+    max-height: 420px;
+  }
+
+  .super-admin-workspace {
+    overflow: visible;
+  }
+
+  .super-admin-workspace-title,
+  .super-admin-hero-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .super-admin-workspace-title button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .super-admin-kpi-grid,
+  .super-admin-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
