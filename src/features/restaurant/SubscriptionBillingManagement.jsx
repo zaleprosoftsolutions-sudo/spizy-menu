@@ -67,10 +67,15 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
   const [invoices, setInvoices] = useState([])
   const [couponCode, setCouponCode] = useState('')
   const [checkoutPlan, setCheckoutPlan] = useState(null)
+  const [couponPreview, setCouponPreview] = useState(null)
+  const [couponChecking, setCouponChecking] = useState(false)
+  const [liveRestaurant, setLiveRestaurant] = useState(null)
+
+  const effectiveRestaurant = liveRestaurant || restaurant
 
   const subscriptionState = useMemo(
-    () => buildSubscriptionState(restaurant),
-    [restaurant],
+    () => buildSubscriptionState(effectiveRestaurant),
+    [effectiveRestaurant],
   )
 
   const loadBilling = useCallback(
@@ -120,6 +125,23 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
     [restaurant?.id],
   )
 
+  const refreshRestaurantSubscription = useCallback(async () => {
+    if (!restaurant?.id) return null
+
+    const { data, error } = await supabase
+      .from('restaurants')
+      .select('*')
+      .eq('id', restaurant.id)
+      .maybeSingle()
+
+    if (!error && data) {
+      setLiveRestaurant(data)
+      return data
+    }
+
+    return null
+  }, [restaurant?.id])
+
   const verifyReturnParams = useCallback(async () => {
     if (!restaurant?.id || typeof window === 'undefined') return
 
@@ -167,20 +189,27 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
       return
     }
 
-    setMessage({
-      type: data?.status === 'captured' ? 'success' : 'info',
-      title:
-        data?.status === 'captured'
-          ? 'Subscription payment verified'
-          : 'Payment status checked',
-      text: data?.message || 'Billing status has been refreshed.',
-    })
+    const isCaptured = data?.status === 'captured'
+    const latestRestaurant = await refreshRestaurantSubscription()
     await loadBilling({ silent: true })
-  }, [loadBilling, restaurant?.id])
+
+    setMessage({
+      type: isCaptured ? 'success' : 'info',
+      title: isCaptured
+        ? 'Payment successful — subscription activated'
+        : 'Payment status checked',
+      text: isCaptured
+        ? buildSuccessMessage(data, latestRestaurant)
+        : data?.message || 'Billing status has been refreshed.',
+    })
+
+    cleanMamoReturnUrl()
+  }, [loadBilling, refreshRestaurantSubscription, restaurant?.id])
 
   useEffect(() => {
     loadBilling()
-  }, [loadBilling])
+    refreshRestaurantSubscription()
+  }, [loadBilling, refreshRestaurantSubscription])
 
   useEffect(() => {
     verifyReturnParams()
@@ -188,12 +217,75 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
 
   const openCheckoutReview = (plan) => {
     setMessage(null)
+    setCouponPreview(null)
     setCheckoutPlan(plan)
   }
 
   const closeCheckoutReview = () => {
     if (creatingPlan) return
     setCheckoutPlan(null)
+    setCouponPreview(null)
+  }
+
+  const applyCouponPreview = async (plan) => {
+    if (!plan || !restaurant?.id) return
+
+    const cleanCoupon = String(couponCode || '').trim().toUpperCase()
+    if (!cleanCoupon) {
+      setCouponPreview({
+        type: 'idle',
+        title: 'No coupon entered',
+        text: 'Enter a coupon code first, then click Apply Coupon.',
+        originalAmount: plan.amount,
+        discountAmount: 0,
+        finalAmount: plan.amount,
+      })
+      return
+    }
+
+    setCouponChecking(true)
+    setCouponPreview(null)
+
+    const { data, error } = await supabase.functions.invoke(
+      'create-mamo-subscription-checkout',
+      {
+        body: {
+          restaurant_id: restaurant.id,
+          plan_key: plan.key,
+          billing_cycle: plan.billingCycle,
+          coupon_code: cleanCoupon,
+          preview_only: true,
+        },
+      },
+    )
+
+    setCouponChecking(false)
+
+    if (error || data?.error) {
+      setCouponPreview({
+        type: 'error',
+        title: 'Coupon not applied',
+        text: await getFunctionErrorMessage(
+          data,
+          error,
+          'This coupon could not be validated.',
+        ),
+        originalAmount: plan.amount,
+        discountAmount: 0,
+        finalAmount: plan.amount,
+      })
+      return
+    }
+
+    setCouponPreview({
+      type: Number(data?.discount_amount || 0) > 0 ? 'success' : 'info',
+      title: Number(data?.discount_amount || 0) > 0 ? 'Coupon applied' : 'Coupon checked',
+      text: data?.message || 'Coupon pricing has been calculated.',
+      couponCode: data?.coupon_code || cleanCoupon,
+      originalAmount: Number(data?.original_amount ?? plan.amount),
+      discountAmount: Number(data?.discount_amount || 0),
+      finalAmount: Number(data?.final_amount ?? plan.amount),
+    })
   }
 
   const createCheckout = async (plan) => {
@@ -327,8 +419,8 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
         <SubscriptionStatusCard
           icon={<WalletCards size={20} />}
           label="Last Payment"
-          value={formatDateTime(restaurant?.subscription_last_payment_at)}
-          note={restaurant?.subscription_payment_gateway || 'Mamo Pay pending'}
+          value={formatDateTime(effectiveRestaurant?.subscription_last_payment_at)}
+          note={effectiveRestaurant?.subscription_payment_gateway || 'Mamo Pay pending'}
         />
       </div>
 
@@ -530,14 +622,55 @@ function SubscriptionBillingManagement({ restaurant, profile, onOpenSection }) {
         <CheckoutReviewModal
           plan={checkoutPlan}
           couponCode={couponCode}
-          setCouponCode={setCouponCode}
+          setCouponCode={(value) => {
+            setCouponCode(value)
+            setCouponPreview(null)
+          }}
+          couponPreview={couponPreview}
+          couponChecking={couponChecking}
           creating={creatingPlan === checkoutPlan.key}
+          onApplyCoupon={() => applyCouponPreview(checkoutPlan)}
+          onClearCoupon={() => {
+            setCouponCode('')
+            setCouponPreview(null)
+          }}
           onClose={closeCheckoutReview}
           onConfirm={() => createCheckout(checkoutPlan)}
         />
       )}
     </section>
   )
+}
+
+function cleanMamoReturnUrl() {
+  if (typeof window === 'undefined') return
+  const params = new URLSearchParams(window.location.search)
+  const hasMamoParams = [
+    'attempt_id',
+    'status',
+    'mamo_status',
+    'transactionId',
+    'transaction_id',
+    'paymentLinkId',
+    'payment_link_id',
+  ].some((key) => params.has(key))
+
+  if (!hasMamoParams) return
+
+  const cleanParams = new URLSearchParams()
+  cleanParams.set('section', 'subscription-billing')
+  window.history.replaceState({}, '', `${window.location.pathname}?${cleanParams.toString()}`)
+}
+
+function buildSuccessMessage(data, latestRestaurant) {
+  const plan = subscriptionPlans.find((item) => item.key === latestRestaurant?.subscription_plan)
+  const periodEnd = latestRestaurant?.subscription_current_period_end
+  const planName = plan?.shortName || formatTitle(latestRestaurant?.subscription_plan || 'subscription')
+  const paidText = data?.attempt?.amount
+    ? `Paid ${formatMoney(data.attempt.currency || 'AED', data.attempt.amount)}. `
+    : ''
+  const endText = periodEnd ? `Active until ${formatDate(periodEnd)}.` : 'Subscription details are updated.'
+  return `${paidText}${planName} plan is active. ${endText}`
 }
 
 async function getFunctionErrorMessage(data, error, fallback) {
@@ -558,8 +691,24 @@ async function getFunctionErrorMessage(data, error, fallback) {
   return error?.message || fallback
 }
 
-function CheckoutReviewModal({ plan, couponCode, setCouponCode, creating, onClose, onConfirm }) {
+function CheckoutReviewModal({
+  plan,
+  couponCode,
+  setCouponCode,
+  couponPreview,
+  couponChecking,
+  creating,
+  onApplyCoupon,
+  onClearCoupon,
+  onClose,
+  onConfirm,
+}) {
   const cleanCoupon = String(couponCode || '').trim().toUpperCase()
+  const originalAmount = Number(couponPreview?.originalAmount ?? plan.amount)
+  const discountAmount = Number(couponPreview?.discountAmount || 0)
+  const finalAmount = Number(couponPreview?.finalAmount ?? plan.amount)
+  const hasAppliedCoupon = couponPreview?.type === 'success' && discountAmount > 0
+  const couponNeedsApply = Boolean(cleanCoupon && couponPreview?.couponCode !== cleanCoupon)
 
   return (
     <div className="subscription-checkout-overlay" role="dialog" aria-modal="true" aria-label="Subscription checkout review">
@@ -571,13 +720,13 @@ function CheckoutReviewModal({ plan, couponCode, setCouponCode, creating, onClos
         <div className="subscription-checkout-head">
           <p className="pricing-label">Checkout Review</p>
           <h2>{plan.shortName} Plan</h2>
-          <span>Review the price, add coupon if available, then continue to Mamo Pay.</span>
+          <span>Apply coupon first, confirm the payable amount, then continue to Mamo Pay.</span>
         </div>
 
         <div className="subscription-breakdown-card">
           <div>
             <span>Plan price</span>
-            <strong>{formatMoney(plan.currency, plan.amount)}</strong>
+            <strong>{formatMoney(plan.currency, originalAmount)}</strong>
           </div>
           <div>
             <span>Billing cycle</span>
@@ -585,34 +734,62 @@ function CheckoutReviewModal({ plan, couponCode, setCouponCode, creating, onClos
           </div>
           <div>
             <span>Coupon discount</span>
-            <strong>{cleanCoupon ? 'Applied at checkout' : formatMoney(plan.currency, 0)}</strong>
+            <strong className={hasAppliedCoupon ? 'discount-good' : ''}>
+              {hasAppliedCoupon ? `- ${formatMoney(plan.currency, discountAmount)}` : formatMoney(plan.currency, 0)}
+            </strong>
           </div>
           <div className="subscription-breakdown-total">
             <span>Mamo amount</span>
-            <strong>{cleanCoupon ? 'Calculated after coupon validation' : formatMoney(plan.currency, plan.amount)}</strong>
+            <strong>{formatMoney(plan.currency, finalAmount)}</strong>
           </div>
         </div>
 
         <label className="subscription-popup-coupon-field">
           Optional coupon code
-          <input
-            value={couponCode}
-            onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
-            placeholder="TEST70"
-            autoFocus
-          />
+          <div className="subscription-coupon-apply-row">
+            <input
+              value={couponCode}
+              onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+              placeholder="TEST70"
+              autoFocus
+            />
+            <button
+              type="button"
+              className="subscription-apply-coupon-button"
+              onClick={onApplyCoupon}
+              disabled={couponChecking || creating || !cleanCoupon}
+            >
+              {couponChecking ? <RefreshCw size={15} /> : <Gift size={15} />}
+              {couponChecking ? 'Checking...' : 'Apply Coupon'}
+            </button>
+          </div>
           <small>
-            Super Admin coupons are validated by Spizy before the Mamo Pay link is created.
+            Super Admin coupons are validated before the Mamo Pay link is created.
           </small>
         </label>
+
+        {couponPreview && (
+          <div className={`subscription-coupon-preview ${couponPreview.type}`}>
+            {couponPreview.type === 'error' ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}
+            <div>
+              <strong>{couponPreview.title}</strong>
+              <span>{couponPreview.text}</span>
+            </div>
+            {couponPreview.type !== 'idle' && (
+              <button type="button" onClick={onClearCoupon} disabled={creating || couponChecking}>
+                Clear
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="subscription-checkout-actions">
           <button type="button" className="subscription-secondary-button" onClick={onClose} disabled={creating}>
             Cancel
           </button>
-          <button type="button" className="subscription-primary-button" onClick={onConfirm} disabled={creating}>
+          <button type="button" className="subscription-primary-button" onClick={onConfirm} disabled={creating || couponChecking || couponPreview?.type === 'error' || couponNeedsApply}>
             {creating ? <RefreshCw size={17} /> : <ExternalLink size={17} />}
-            {creating ? 'Creating Link...' : 'Go to Checkout'}
+            {creating ? 'Creating Link...' : couponNeedsApply ? 'Apply Coupon First' : 'Go to Checkout'}
           </button>
         </div>
       </section>

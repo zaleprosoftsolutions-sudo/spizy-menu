@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
     const planKey = String(body.plan_key || 'qr_menu_monthly') as PlanKey
     const plan = subscriptionPlans[planKey] || subscriptionPlans.qr_menu_monthly
     const couponCode = normalizeCouponCode(body.coupon_code)
+    const previewOnly = body.preview_only === true || String(body.preview_only || '').toLowerCase() === 'true'
     const bodyEmail = String(body.customer_email || '').trim().toLowerCase()
 
     if (!restaurantId) return jsonResponse({ error: 'restaurant_id is required.' }, 400)
@@ -100,6 +101,25 @@ Deno.serve(async (req) => {
     const originalAmount = plan.amount
     const discountAmount = roundMoney(Number(couponResult.discountAmount || 0))
     const finalAmount = Math.max(roundMoney(Number(couponResult.finalAmount || plan.amount)), 2)
+
+    if (previewOnly) {
+      return jsonResponse({
+        success: true,
+        preview_only: true,
+        message: discountAmount > 0
+          ? `Coupon ${couponResult.coupon?.code || couponCode} applied. Pay ${formatMoney(plan.currency, finalAmount)} instead of ${formatMoney(plan.currency, originalAmount)}.`
+          : 'Coupon checked. No discount was applied.',
+        plan_key: plan.key,
+        plan_name: plan.displayName,
+        billing_cycle: plan.cycle,
+        currency: plan.currency,
+        original_amount: originalAmount,
+        discount_amount: discountAmount,
+        final_amount: finalAmount,
+        coupon_code: couponResult.coupon?.code || null,
+      })
+    }
+
     const periodStart = toDateKey(new Date())
     const periodEnd = addDaysDateKey(new Date(), plan.days)
     const graceUntil = addDaysDateKey(new Date(), plan.days + 7)
