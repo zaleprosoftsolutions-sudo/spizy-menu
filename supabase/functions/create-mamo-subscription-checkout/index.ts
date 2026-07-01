@@ -154,16 +154,15 @@ Deno.serve(async (req) => {
       first_name: truncate(firstName(displayName), 50),
       last_name: truncate(lastName(displayName), 50),
       email: customerEmail,
+      // Mamo allows max 5 custom_data keys. Keep only the identifiers needed
+      // to map the payment back to the subscription attempt. All pricing,
+      // coupon and period details are already saved in Supabase on the attempt row.
       custom_data: {
-        source: 'spizy_subscription_billing',
-        restaurant_id: restaurantId,
-        restaurant_slug: restaurant.slug || null,
-        plan_key: plan.key,
-        attempt_id: attempt.id,
-        coupon_code: couponResult.coupon?.code || null,
-        original_amount: originalAmount,
-        discount_amount: discountAmount,
-        final_amount: finalAmount,
+        source: 'spizy_subscription',
+        attempt_id: String(attempt.id),
+        restaurant_id: String(restaurantId),
+        plan_key: String(plan.key),
+        coupon_code: String(couponResult.coupon?.code || 'none'),
       },
     })
 
